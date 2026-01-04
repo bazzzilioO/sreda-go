@@ -290,7 +290,7 @@ export default {
     }
 
     if (url.pathname === "/health") {
-      return new Response("OK: sreda-go | upsert-v2", {
+      return new Response("OK: sreda-go | GIT-LIVE", {
         status: 200,
         headers: { "Content-Type": "text/plain; charset=UTF-8", ...CACHE_HEADERS },
       });
