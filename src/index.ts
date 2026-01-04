@@ -413,6 +413,50 @@ export default {
     if (
       segments.length === 3 &&
       segments[0] === "debug" &&
+      segments[1] === "iskra" &&
+      segments[2] === "latest"
+    ) {
+      const base = env.ISKRA_API_BASE?.replace(/\/$/, "");
+
+      if (!base) {
+        return jsonResponse({ error: "missing_iskra_api_base" }, 500);
+      }
+
+      const urlToFetch = `${base}/api/smartlink/latest`;
+      const headers: HeadersInit = {};
+
+      if (env.ISKRA_API_KEY) {
+        headers["X-API-Key"] = env.ISKRA_API_KEY;
+      }
+
+      try {
+        const iskraResponse = await fetch(urlToFetch, { headers });
+        const bodyText = await iskraResponse.text();
+
+        return jsonResponse({
+          iskra_base: env.ISKRA_API_BASE,
+          has_key: Boolean(env.ISKRA_API_KEY),
+          url: urlToFetch,
+          status: iskraResponse.status,
+          ok: iskraResponse.ok,
+          body: bodyText.slice(0, 2000),
+        });
+      } catch (error) {
+        return jsonResponse({
+          iskra_base: env.ISKRA_API_BASE,
+          has_key: Boolean(env.ISKRA_API_KEY),
+          url: urlToFetch,
+          status: null,
+          ok: false,
+          body: null,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    if (
+      segments.length === 3 &&
+      segments[0] === "debug" &&
       segments[1] === "iskra"
     ) {
       const id = decodeURIComponent(segments[2]);
