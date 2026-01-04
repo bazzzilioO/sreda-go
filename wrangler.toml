@@ -2,5 +2,12 @@ name = "sreda-go"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 
+[d1_databases]
+[[d1_databases]]
+binding = "DB"
+database_name = "sreda_smartlinks"
+database_id = "d71cfaaf-10ec-4c66-83a2-b674cdee6407"
+
 [vars]
 ENVIRONMENT = "production"
+ISKRA_API_BASE = "https://<TO_BE_SET_IN_CLOUDFLARE>"

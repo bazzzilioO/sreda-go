@@ -24,3 +24,14 @@ npm run deploy
 1. В Cloudflare UI откройте **Workers & Pages** → ваш Worker → **Settings**.
 2. Перейдите в **Domains & Routes** и нажмите **Add custom domain**.
 3. Введите `go.sreda.pw` и следуйте подсказкам для завершения привязки.
+
+## Переменные окружения
+- `ISKRA_API_BASE` — базовый URL API ИСКРЫ (например, `https://api.example.com`).
+- `SMARTLINK_API_KEY` — приватный ключ для чтения смартлинков из бота. Добавляется как секрет.
+
+### Установка секрета SMARTLINK_API_KEY в Cloudflare
+```bash
+# В рабочем окружении
+wrangler secret put SMARTLINK_API_KEY
+```
+Введите ключ при запросе в терминале — он не будет записан в репозиторий.

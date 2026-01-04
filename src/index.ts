@@ -1,3 +1,28 @@
+interface Env {
+  DB: D1Database;
+  ISKRA_API_BASE: string;
+  SMARTLINK_API_KEY?: string;
+}
+
+type ApiSmartlink = {
+  artist?: string;
+  title?: string;
+  release_date?: string;
+  links?: Record<string, string>;
+};
+
+const CACHE_HEADERS = { "Cache-Control": "public, max-age=60" } as const;
+const LINK_ORDER = [
+  "telegram",
+  "spotify",
+  "apple",
+  "yandex",
+  "vk",
+  "youtube",
+  "bandlink",
+  "other",
+];
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => {
     switch (char) {
@@ -17,13 +42,13 @@ function escapeHtml(value: string): string {
   });
 }
 
-function renderSmartlink(artist: string, slug: string): Response {
-  const html = `<!DOCTYPE html>
+function htmlPage(body: string, { title = "SREDA go" } = {}): string {
+  return `<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SREDA Smartlink</title>
+  <title>${escapeHtml(title)}</title>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
@@ -39,7 +64,7 @@ function renderSmartlink(artist: string, slug: string): Response {
       padding: 1.5rem;
     }
     .card {
-      width: min(540px, 100%);
+      width: min(640px, 100%);
       background: rgba(16, 24, 40, 0.72);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 16px;
@@ -47,93 +72,122 @@ function renderSmartlink(artist: string, slug: string): Response {
       padding: 2.5rem;
       backdrop-filter: blur(6px);
     }
-    h1 {
-      margin: 0 0 1rem;
-      font-size: 2rem;
-      letter-spacing: 0.02em;
-      color: #f4f6fb;
-    }
-    .meta {
-      margin: 0.35rem 0;
-      font-size: 1rem;
-      color: #b9c1d6;
-    }
-    .meta span {
-      color: #f3b266;
-      font-weight: 600;
-    }
-    .actions {
-      margin-top: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-    }
-    .primary-button {
+    a { color: inherit; }
+    h1 { margin: 0 0 0.5rem; font-size: 2rem; letter-spacing: 0.01em; color: #f4f6fb; }
+    p { margin: 0; color: #c8d0e2; }
+    .meta { margin-top: 0.5rem; color: #b9c1d6; }
+    .meta strong { color: #f3b266; }
+    .links { margin-top: 1.5rem; display: grid; gap: 0.75rem; }
+    .link-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.95rem 1.25rem;
+      padding: 0.9rem 1.2rem;
       border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #ff9f3f, #ff635f);
-      color: #0c0c0f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e6e9ef;
       font-weight: 700;
       text-decoration: none;
-      transition: transform 120ms ease, box-shadow 120ms ease;
-      box-shadow: 0 12px 24px rgba(255, 132, 92, 0.35);
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
     }
-    .primary-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 18px 30px rgba(255, 132, 92, 0.4);
-    }
-    .secondary-link {
-      color: #8fb4ff;
-      text-decoration: none;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-    .secondary-link:hover {
-      color: #bcd4ff;
-      text-decoration: underline;
-    }
+    .link-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.16); box-shadow: 0 18px 30px rgba(0,0,0,0.35); }
+    .small { margin-top: 2rem; font-size: 0.95rem; color: #98a4bd; }
+    .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem; color: #cfd7ea; }
   </style>
 </head>
 <body>
   <main class="card">
-    <h1>SREDA Smartlink</h1>
-    <p class="meta">artist: <span>${escapeHtml(artist)}</span></p>
-    <p class="meta">slug: <span>${escapeHtml(slug)}</span></p>
-    <div class="actions">
-      <a class="primary-button" href="https://t.me/iskramusic_bot" target="_blank" rel="noopener noreferrer">⚡ Открыть ИСКРУ в Telegram</a>
-      <a class="secondary-link" href="https://t.me/sreda_music" target="_blank" rel="noopener noreferrer">📰 Обновления проекта</a>
-    </div>
+    ${body}
   </main>
 </body>
 </html>`;
+}
 
-  return new Response(html, {
+function renderHome(): Response {
+  const body = `<h1>SREDA go</h1>
+    <p>Укороченные ссылки для релизов SREDA.</p>
+    <p class="meta">Используйте формат <strong>go.sreda.pw/&lt;artist&gt;/&lt;slug&gt;</strong>.</p>`;
+  return new Response(htmlPage(body, { title: "SREDA go" }), {
     status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=UTF-8",
-    },
+    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
 }
 
-function notFound(): Response {
-  return new Response("Not found", {
+function renderNotFound(message = "Ссылка не найдена"): Response {
+  const body = `<h1>404</h1><p class="meta">${escapeHtml(message)}</p>`;
+  return new Response(htmlPage(body, { title: "Не найдено" }), {
     status: 404,
-    headers: {
-      "Content-Type": "text/plain; charset=UTF-8",
-    },
+    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+  });
+}
+
+function renderError(): Response {
+  const body = `<h1>Временная ошибка</h1><p class="meta">Не удалось загрузить данные. Попробуйте позже.</p>`;
+  return new Response(htmlPage(body, { title: "Ошибка" }), {
+    status: 502,
+    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+  });
+}
+
+function renderSmartlink(
+  artistSlug: string,
+  slug: string,
+  data: ApiSmartlink,
+): Response {
+  const title = data.title ?? "Релиз";
+  const artist = data.artist ?? artistSlug;
+  const releaseDate = data.release_date;
+
+  const links = data.links ?? {};
+  const orderedEntries: [string, string][] = [];
+
+  for (const key of LINK_ORDER) {
+    if (key === "other") {
+      continue;
+    }
+    const url = links[key];
+    if (url) {
+      orderedEntries.push([key, url]);
+    }
+  }
+
+  const remaining = Object.entries(links).filter(
+    ([platform]) => !LINK_ORDER.includes(platform),
+  );
+  if (remaining.length) {
+    orderedEntries.push(...remaining);
+  }
+
+  const otherUrl = links["other"];
+  if (otherUrl) {
+    orderedEntries.push(["other", otherUrl]);
+  }
+
+  const linkButtons = orderedEntries
+    .map(([platform, url]) => {
+      const label = platform.charAt(0).toUpperCase() + platform.slice(1);
+      return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+    })
+    .join("\n");
+
+  const body = `
+    <h1>${escapeHtml(title)}</h1>
+    <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
+    <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
+    <p class="small">Канонический URL: <span class="tag">go.sreda.pw/${escapeHtml(artistSlug)}/${escapeHtml(slug)}</span></p>
+  `;
+
+  return new Response(htmlPage(body, { title: `${title} — ${artist}` }), {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
 }
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method !== "GET") {
-      return notFound();
+      return renderNotFound();
     }
 
     const url = new URL(request.url);
@@ -142,17 +196,57 @@ export default {
     if (url.pathname === "/health") {
       return new Response("OK: sreda-go", {
         status: 200,
-        headers: {
-          "Content-Type": "text/plain; charset=UTF-8",
-        },
+        headers: { "Content-Type": "text/plain; charset=UTF-8", ...CACHE_HEADERS },
       });
     }
 
-    if (segments.length === 2) {
-      const [artist, slug] = segments.map((segment) => decodeURIComponent(segment));
-      return renderSmartlink(artist, slug);
+    if (segments.length === 0) {
+      return renderHome();
     }
 
-    return notFound();
+    if (segments.length !== 2) {
+      return renderNotFound();
+    }
+
+    const [artistSlug, slug] = segments.map((segment) => decodeURIComponent(segment));
+
+    try {
+      const query = await env.DB.prepare(
+        "SELECT id FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1",
+      )
+        .bind(artistSlug, slug)
+        .all<{ id: string }>();
+
+      const record = query.results?.[0];
+      if (!record?.id) {
+        return renderNotFound("Смартлинк не найден");
+      }
+
+      const base = env.ISKRA_API_BASE?.replace(/\/$/, "");
+      if (!base) {
+        return renderError();
+      }
+
+      const headers = new Headers();
+      if (env.SMARTLINK_API_KEY) {
+        headers.set("X-API-Key", env.SMARTLINK_API_KEY);
+      }
+
+      const response = await fetch(`${base}/api/smartlink/${record.id}`, { headers });
+
+      if (response.status === 404) {
+        return renderNotFound("Смартлинк отсутствует в боте");
+      }
+
+      if (!response.ok) {
+        return renderError();
+      }
+
+      const data = (await response.json()) as ApiSmartlink;
+      return renderSmartlink(artistSlug, slug, data);
+    } catch (error) {
+      console.error("smartlink fetch error", error);
+      return renderError();
+    }
   },
 };
