@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 
 [vars]
-ISKRA_API_BASE = "https://пример.up.railway.app"
+ISKRA_API_BASE = "iskra-bot-production.up.railway.app"
 
 [[d1_databases]]
 binding = "DB"
