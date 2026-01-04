@@ -11,6 +11,17 @@ type ApiSmartlink = {
   links?: Record<string, string>;
 };
 
+type UpsertRequest = {
+  id?: string | number;
+  artist_slug?: string;
+  slug?: string;
+  title?: string;
+  artist_name?: string;
+  release_date?: string;
+  cover_source?: string;
+  links?: Record<string, string>;
+};
+
 const CACHE_HEADERS = { "Cache-Control": "public, max-age=60" } as const;
 const LINK_ORDER = [
   "telegram",
@@ -22,6 +33,13 @@ const LINK_ORDER = [
   "bandlink",
   "other",
 ];
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json; charset=UTF-8" },
+  });
+}
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => {
@@ -186,12 +204,78 @@ function renderSmartlink(
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    const segments = url.pathname.split("/").filter(Boolean);
+
+    if (url.pathname === "/api/index/upsert") {
+      if (request.method !== "POST") {
+        return jsonResponse({ error: "method_not_allowed" }, 405);
+      }
+
+      const apiKey = env.SMARTLINK_API_KEY;
+      if (!apiKey) {
+        return jsonResponse({ error: "server_error" }, 500);
+      }
+
+      const providedKey = request.headers.get("X-API-Key");
+      if (providedKey !== apiKey) {
+        return jsonResponse({ error: "unauthorized" }, 401);
+      }
+
+      let payload: UpsertRequest;
+      try {
+        payload = (await request.json()) as UpsertRequest;
+      } catch (error) {
+        console.error("upsert parse error", error);
+        return jsonResponse({ error: "bad_request" }, 400);
+      }
+
+      const { id, artist_slug, slug, title, artist_name, release_date, cover_source, links } =
+        payload ?? {};
+
+      if (!id || !artist_slug || !slug || !title) {
+        return jsonResponse({ error: "bad_request" }, 400);
+      }
+
+      const linksJson = JSON.stringify(typeof links === "object" && links ? links : {});
+
+      try {
+        await env.DB.prepare(
+          `INSERT INTO smartlinks (
+            id, artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
+          ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))
+          ON CONFLICT(artist_slug, slug) DO UPDATE SET
+            id=excluded.id,
+            title=excluded.title,
+            artist_name=excluded.artist_name,
+            release_date=excluded.release_date,
+            cover_source=excluded.cover_source,
+            links_json=excluded.links_json,
+            updated_at=datetime('now')
+        `,
+        )
+          .bind(
+            String(id),
+            artist_slug,
+            slug,
+            title,
+            artist_name ?? null,
+            release_date ?? null,
+            cover_source ?? null,
+            linksJson,
+          )
+          .run();
+
+        return jsonResponse({ ok: true });
+      } catch (error) {
+        console.error("upsert db error", error);
+        return jsonResponse({ error: "server_error" }, 500);
+      }
+    }
+
     if (request.method !== "GET") {
       return renderNotFound();
     }
-
-    const url = new URL(request.url);
-    const segments = url.pathname.split("/").filter(Boolean);
 
     if (url.pathname === "/health") {
       return new Response("OK: sreda-go", {

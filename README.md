@@ -4,6 +4,7 @@
 
 - `GET /health` → возвращает `OK: sreda-go`.
 - `GET /:artist/:slug` → темная HTML-страница с данными артиста и ссылки на ИСКРУ/обновления.
+- `POST /api/index/upsert` → обновление/создание смартлинка (доступ только по приватному ключу).
 - Остальные пути → `404 Not found`.
 
 ## Быстрый старт
@@ -35,3 +36,23 @@ npm run deploy
 wrangler secret put SMARTLINK_API_KEY
 ```
 Введите ключ при запросе в терминале — он не будет записан в репозиторий.
+
+## API: upsert индекса смартлинков
+Эндпоинт для бота, защищенный заголовком `X-API-Key` (значение из секрета `SMARTLINK_API_KEY`).
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $SMARTLINK_API_KEY" \
+  -d '{
+    "id": "123",
+    "artist_slug": "artist",
+    "slug": "track",
+    "title": "Track Title",
+    "artist_name": "Artist Name",
+    "links": {"spotify": "https://..."}
+  }' \
+  https://go.sreda.pw/api/index/upsert
+```
+
+Тело запроса: `id`, `artist_slug`, `slug`, `title` — обязательные поля. Остальные поля (`artist_name`, `release_date`, `cover_source`, `links`) опциональны.
