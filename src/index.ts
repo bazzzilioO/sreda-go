@@ -22,6 +22,56 @@ type UpsertRequest = {
   links?: Record<string, string>;
 };
 
+function slugify(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  return value
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+async function syncSmartlinkToWeb(payload: UpsertRequest, env: Env): Promise<void> {
+  const apiKey = env.SMARTLINK_API_KEY;
+  if (!apiKey) return;
+
+  const artistSlug = slugify(payload.artist_slug ?? payload.artist_name);
+  const slug = slugify(payload.slug ?? payload.title);
+
+  if (!payload.id || !artistSlug || !slug || !payload.title) {
+    return;
+  }
+
+  const body = {
+    id: payload.id,
+    artist_slug: artistSlug,
+    slug,
+    title: payload.title,
+    artist_name: payload.artist_name,
+    release_date: payload.release_date,
+    links: payload.links,
+  };
+
+  try {
+    const response = await fetch("https://go.sreda.pw/api/index/upsert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": apiKey,
+        "X-Skip-Sync": "1",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.warn("smartlink sync failed", response.status, await response.text());
+    }
+  } catch (error) {
+    console.warn("smartlink sync error", error);
+  }
+}
+
 const CACHE_HEADERS = { "Cache-Control": "public, max-age=60" } as const;
 const LINK_ORDER = [
   "telegram",
@@ -273,6 +323,10 @@ export default {
             linksJson,
           )
           .run();
+
+        if (!request.headers.get("X-Skip-Sync")) {
+          void syncSmartlinkToWeb(payload, env);
+        }
 
         return jsonResponse({ ok: true });
       } catch (error) {
