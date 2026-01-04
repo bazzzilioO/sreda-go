@@ -205,14 +205,10 @@ function renderSmartlink(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const segments = url.pathname.split("/").filter(Boolean);
+    const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
+    const segments = normalizedPath.split("/").filter(Boolean);
 
-    if (
-      segments.length === 3 &&
-      segments[0] === "api" &&
-      segments[1] === "index" &&
-      segments[2] === "upsert"
-    ) {
+    if (normalizedPath === "/api/index/upsert") {
       if (request.method === "GET") {
         return new Response("OK: /api/index/upsert жив. Используй POST + X-API-Key + JSON body.", {
           status: 200,
@@ -289,7 +285,7 @@ export default {
       return renderNotFound();
     }
 
-    if (url.pathname === "/health") {
+    if (normalizedPath === "/health") {
       return new Response("OK: sreda-go | GIT-LIVE", {
         status: 200,
         headers: { "Content-Type": "text/plain; charset=UTF-8", ...CACHE_HEADERS },
