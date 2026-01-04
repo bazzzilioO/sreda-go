@@ -510,39 +510,82 @@ export default {
 
     try {
       const query = await env.DB.prepare(
-        "SELECT id FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1",
+        `SELECT
+          id,
+          artist_slug,
+          slug,
+          title,
+          artist_name,
+          release_date,
+          cover_source,
+          links_json
+        FROM smartlinks
+        WHERE artist_slug=?1 AND slug=?2
+        LIMIT 1`,
       )
         .bind(artistSlug, slug)
-        .all<{ id: string }>();
+        .all<{
+          id: string;
+          artist_slug: string;
+          slug: string;
+          title: string | null;
+          artist_name: string | null;
+          release_date: string | null;
+          cover_source: string | null;
+          links_json: string | null;
+        }>();
 
       const record = query.results?.[0];
       if (!record?.id) {
         return renderNotFound("Смартлинк не найден");
       }
 
-      const base = env.ISKRA_API_BASE?.replace(/\/$/, "");
-      if (!base) {
-        return renderError();
+      let links: Record<string, string> = {};
+      try {
+        const parsed = record.links_json ? JSON.parse(record.links_json) : null;
+        if (parsed && typeof parsed === "object") {
+          if (Array.isArray(parsed)) {
+            const normalized: Record<string, string> = {};
+            for (const entry of parsed) {
+              if (entry && typeof entry === "object") {
+                const platform =
+                  (entry as { platform?: string; name?: string }).platform ??
+                  (entry as { name?: string }).name;
+                const url = (entry as { url?: string; link?: string }).url ??
+                  (entry as { link?: string }).link;
+                if (platform && url && typeof platform === "string" && typeof url === "string") {
+                  normalized[platform] = url;
+                  continue;
+                }
+              }
+
+              if (Array.isArray(entry) && entry.length >= 2) {
+                const [platform, url] = entry;
+                if (typeof platform === "string" && typeof url === "string") {
+                  normalized[platform] = url;
+                }
+              }
+            }
+            links = normalized;
+          } else {
+            links = Object.fromEntries(
+              Object.entries(parsed).filter(
+                ([, value]) => typeof value === "string" && value.length > 0,
+              ),
+            );
+          }
+        }
+      } catch (parseError) {
+        console.warn("smartlink links_json parse error", parseError);
       }
 
-      const url = `${base}/api/smartlink/${record.id}`;
-      const headers: HeadersInit = {};
+      const data: ApiSmartlink = {
+        title: record.title ?? undefined,
+        artist: record.artist_name ?? artistSlug,
+        release_date: record.release_date ?? undefined,
+        links,
+      };
 
-      if (env.ISKRA_API_KEY) {
-        headers["X-API-Key"] = env.ISKRA_API_KEY;
-      }
-
-      const response = await fetch(url, { headers });
-
-      if (response.status === 404) {
-        return renderNotFound("Смартлинк отсутствует в боте");
-      }
-
-      if (!response.ok) {
-        return renderError();
-      }
-
-      const data = (await response.json()) as ApiSmartlink;
       return renderSmartlink(artistSlug, slug, data);
     } catch (error) {
       console.error("smartlink fetch error", error);
