@@ -207,7 +207,8 @@ export default {
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
 
-    if (url.pathname === "/api/index/upsert") {
+    if (segments.length >= 3 && segments[0] === "api" && segments[1] === "index" && segments[2] === "upsert") {
+
       if (request.method !== "POST") {
         return jsonResponse({ error: "method_not_allowed" }, 405);
       }
