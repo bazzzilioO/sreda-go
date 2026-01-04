@@ -2,6 +2,7 @@ interface Env {
   DB: D1Database;
   ISKRA_API_BASE: string;
   SMARTLINK_API_KEY?: string;
+  ISKRA_API_KEY?: string;
   GO_INDEX_BASE?: string;
 }
 
@@ -436,12 +437,14 @@ export default {
         return renderError();
       }
 
-      const headers = new Headers();
-      if (env.SMARTLINK_API_KEY) {
-        headers.set("X-API-Key", env.SMARTLINK_API_KEY);
+      const url = `${base}/api/smartlink/${record.id}`;
+      const headers: HeadersInit = {};
+
+      if (env.ISKRA_API_KEY) {
+        headers["X-API-Key"] = env.ISKRA_API_KEY;
       }
 
-      const response = await fetch(`${base}/api/smartlink/${record.id}`, { headers });
+      const response = await fetch(url, { headers });
 
       if (response.status === 404) {
         return renderNotFound("Смартлинк отсутствует в боте");
