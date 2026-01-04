@@ -2,6 +2,7 @@ interface Env {
   DB: D1Database;
   ISKRA_API_BASE: string;
   SMARTLINK_API_KEY?: string;
+  GO_INDEX_BASE?: string;
 }
 
 type ApiSmartlink = {
@@ -17,30 +18,50 @@ type UpsertRequest = {
   slug?: string;
   title?: string;
   artist_name?: string;
+  artist?: string;
   release_date?: string;
   cover_source?: string;
   links?: Record<string, string>;
 };
 
-function slugify(value?: string | null): string | undefined {
-  if (!value) return undefined;
+function slugify(value?: string | null): string {
+  if (!value) return "";
   return value
     .toLowerCase()
-    .replace(/\s+/g, "-")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+    .replace(/^-+|-+$/g, "");
 }
 
-async function syncSmartlinkToWeb(payload: UpsertRequest, env: Env): Promise<void> {
-  const apiKey = env.SMARTLINK_API_KEY;
-  if (!apiKey) return;
+function buildSlug(value: string | undefined | null, id?: string | number): string | undefined {
+  const slug = slugify(value);
+  if (slug) return slug;
+  if (id !== undefined && id !== null) {
+    return `release-${id}`;
+  }
+  return undefined;
+}
 
-  const artistSlug = slugify(payload.artist_slug ?? payload.artist_name);
-  const slug = slugify(payload.slug ?? payload.title);
+async function syncSmartlinkToWeb(
+  payload: UpsertRequest,
+  env: Env,
+): Promise<[boolean, number | null, string | null]> {
+  const apiKey = env.SMARTLINK_API_KEY;
+  if (!apiKey) return [false, null, "missing_api_key"];
+
+  const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+
+  const artistSlug = buildSlug(
+    payload.artist_slug ?? payload.artist_name ?? payload.artist,
+    payload.id,
+  );
+  const slug = buildSlug(payload.slug ?? payload.title, payload.id);
 
   if (!payload.id || !artistSlug || !slug || !payload.title) {
-    return;
+    console.warn("smartlink sync skipped", payload.id, artistSlug, slug, payload.title);
+    return [false, null, "invalid_payload"];
   }
 
   const body = {
@@ -54,7 +75,7 @@ async function syncSmartlinkToWeb(payload: UpsertRequest, env: Env): Promise<voi
   };
 
   try {
-    const response = await fetch("https://go.sreda.pw/api/index/upsert", {
+    const response = await fetch(`${goIndexBase}/api/index/upsert`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,10 +86,14 @@ async function syncSmartlinkToWeb(payload: UpsertRequest, env: Env): Promise<voi
     });
 
     if (!response.ok) {
-      console.warn("smartlink sync failed", response.status, await response.text());
+      const errorText = await response.text();
+      console.warn("smartlink sync failed", response.status, errorText);
+      return [false, response.status, errorText || null];
     }
+    return [true, response.status, null];
   } catch (error) {
     console.warn("smartlink sync error", error);
+    return [false, null, error instanceof Error ? error.message : String(error)];
   }
 }
 
@@ -257,6 +282,7 @@ export default {
     const url = new URL(request.url);
     const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
     const segments = normalizedPath.split("/").filter(Boolean);
+    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
 
     if (normalizedPath === "/api/index/upsert") {
       if (request.method === "GET") {
@@ -288,10 +314,16 @@ export default {
         return jsonResponse({ error: "bad_request" }, 400);
       }
 
-      const { id, artist_slug, slug, title, artist_name, release_date, cover_source, links } =
+      const { id, title, artist_name, artist, release_date, cover_source, links, slug, artist_slug } =
         payload ?? {};
 
-      if (!id || !artist_slug || !slug || !title) {
+      const computedArtistSlug = buildSlug(
+        artist_slug ?? artist_name ?? artist,
+        id,
+      );
+      const computedSlug = buildSlug(slug ?? title, id);
+
+      if (!id || !computedArtistSlug || !computedSlug || !title) {
         return jsonResponse({ error: "bad_request" }, 400);
       }
 
@@ -314,8 +346,8 @@ export default {
         )
           .bind(
             String(id),
-            artist_slug,
-            slug,
+            computedArtistSlug,
+            computedSlug,
             title,
             artist_name ?? null,
             release_date ?? null,
@@ -324,11 +356,42 @@ export default {
           )
           .run();
 
+        let syncResult: [boolean, number | null, string | null] = [false, null, null];
         if (!request.headers.get("X-Skip-Sync")) {
-          void syncSmartlinkToWeb(payload, env);
+          try {
+            syncResult = await syncSmartlinkToWeb(
+              {
+                ...payload,
+                id,
+                artist_slug: computedArtistSlug,
+                slug: computedSlug,
+                artist_name,
+                title,
+                release_date,
+                cover_source,
+                links,
+              },
+              env,
+            );
+          } catch (error) {
+            console.warn("smartlink sync error", error);
+            syncResult = [false, null, error instanceof Error ? error.message : String(error)];
+          }
         }
 
-        return jsonResponse({ ok: true });
+        const [synced, syncStatus, syncError] = syncResult;
+
+        const webUrl = `${goIndexBase}/${computedArtistSlug}/${computedSlug}`;
+
+        return jsonResponse({
+          ok: true,
+          web_url: webUrl,
+          sync: {
+            ok: synced,
+            status: syncStatus,
+            error: syncError,
+          },
+        });
       } catch (error) {
         console.error("upsert db error", error);
         return jsonResponse({ error: "server_error" }, 500);
