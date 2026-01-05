@@ -25,6 +25,8 @@ type UpsertRequest = {
   links?: Record<string, string>;
 };
 
+type LinkRecord = Record<string, string>;
+
 function slugify(value?: string | null): string {
   if (!value) return "";
   return value
@@ -43,6 +45,91 @@ function buildSlug(value: string | undefined | null, id?: string | number): stri
     return `release-${id}`;
   }
   return undefined;
+}
+
+function normalizeLinksInput(input: unknown, context: string): LinkRecord {
+  const normalized: LinkRecord = {};
+
+  if (input === undefined || input === null) {
+    return normalized;
+  }
+
+  if (typeof input === "string") {
+    const trimmed = input.trim();
+    if (!trimmed) return normalized;
+
+    try {
+      return normalizeLinksInput(JSON.parse(trimmed), context);
+    } catch (error) {
+      console.warn(`${context}: links string is not JSON, storing as 'other'`, trimmed);
+      normalized.other = trimmed;
+      return normalized;
+    }
+  }
+
+  if (Array.isArray(input)) {
+    for (const entry of input) {
+      if (entry && typeof entry === "object") {
+        const platform =
+          (entry as { platform?: string; name?: string }).platform ??
+          (entry as { name?: string }).name;
+        const url = (entry as { url?: string; link?: string }).url ?? (entry as { link?: string }).link;
+
+        if (platform && url && typeof platform === "string" && typeof url === "string") {
+          normalized[platform] = url;
+          continue;
+        }
+      }
+
+      if (Array.isArray(entry) && entry.length >= 2) {
+        const [platform, url] = entry as unknown[];
+        if (typeof platform === "string" && typeof url === "string") {
+          normalized[platform] = url;
+          continue;
+        }
+      }
+
+      console.warn(`${context}: skipping unrecognized link entry`, entry);
+    }
+
+    return normalized;
+  }
+
+  if (typeof input === "object") {
+    for (const [platform, value] of Object.entries(input as Record<string, unknown>)) {
+      if (typeof value === "string" && value.trim()) {
+        normalized[platform] = value;
+      } else if (value !== undefined && value !== null) {
+        console.warn(`${context}: non-string link value dropped`, platform, value);
+      }
+    }
+
+    return normalized;
+  }
+
+  console.warn(`${context}: unsupported links payload`, input);
+  return normalized;
+}
+
+function parseLinksFromJson(linksJson: string | null, context: string): LinkRecord {
+  if (!linksJson) {
+    console.warn(`${context}: links_json missing or null`);
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(linksJson);
+    const normalized = normalizeLinksInput(parsed, `${context}:parse`);
+
+    if (!Object.keys(normalized).length) {
+      console.warn(`${context}: parsed links empty`, linksJson);
+    }
+
+    return normalized;
+  } catch (error) {
+    console.warn(`${context}: links_json parse error`, error, linksJson);
+    return {};
+  }
 }
 
 async function syncSmartlinkToWeb(
@@ -330,10 +417,8 @@ export default {
         }
 
         const canonicalId = `${computedArtistSlug}:${computedSlug}`;
-        const linksJson =
-          typeof links === "string"
-            ? links
-            : JSON.stringify(typeof links === "object" && links ? links : {});
+        const normalizedLinks = normalizeLinksInput(links, "[upsert] links");
+        const linksJson = JSON.stringify(normalizedLinks);
 
         let action: "inserted" | "updated" = "inserted";
 
@@ -392,7 +477,7 @@ export default {
                 title,
                 release_date,
                 cover_source,
-                links,
+                links: normalizedLinks,
               },
               env,
             );
@@ -582,49 +667,11 @@ export default {
         return renderNotFound("Смартлинк не найден");
       }
 
-      const links: Record<string, string> = (() => {
-        if (!record.links_json) return {};
+      const links = parseLinksFromJson(record.links_json, `[render ${artistSlug}/${slug}]`);
 
-        try {
-          const parsed = JSON.parse(record.links_json);
-          if (parsed && typeof parsed === "object") {
-            if (Array.isArray(parsed)) {
-              const normalized: Record<string, string> = {};
-              for (const entry of parsed) {
-                if (entry && typeof entry === "object") {
-                  const platform =
-                    (entry as { platform?: string; name?: string }).platform ??
-                    (entry as { name?: string }).name;
-                  const url = (entry as { url?: string; link?: string }).url ??
-                    (entry as { link?: string }).link;
-                  if (platform && url && typeof platform === "string" && typeof url === "string") {
-                    normalized[platform] = url;
-                    continue;
-                  }
-                }
-
-                if (Array.isArray(entry) && entry.length >= 2) {
-                  const [platform, url] = entry;
-                  if (typeof platform === "string" && typeof url === "string") {
-                    normalized[platform] = url;
-                  }
-                }
-              }
-              return normalized;
-            }
-
-            return Object.fromEntries(
-              Object.entries(parsed).filter(
-                ([, value]) => typeof value === "string" && value.length > 0,
-              ),
-            );
-          }
-        } catch (parseError) {
-          console.warn("smartlink links_json parse error", parseError);
-        }
-
-        return {};
-      })();
+      if (!Object.keys(links).length) {
+        console.warn(`[render ${artistSlug}/${slug}]: no links to render`, record.links_json);
+      }
 
       const data: ApiSmartlink = {
         title: record.title ?? undefined,
