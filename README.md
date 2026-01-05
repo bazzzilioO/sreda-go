@@ -29,6 +29,7 @@ npm run deploy
 ## Переменные окружения
 - `ISKRA_API_BASE` — базовый URL API ИСКРЫ (например, `https://api.example.com`).
 - `SMARTLINK_API_KEY` — приватный ключ для чтения смартлинков из бота. Добавляется как секрет.
+- `TELEGRAM_BOT_TOKEN` — токен бота для загрузки и проксирования обложек Telegram.
 
 ### Установка секрета SMARTLINK_API_KEY в Cloudflare
 ```bash
@@ -60,5 +61,6 @@ curl -X POST \
 ### Формат данных
 - Таблица D1 `smartlinks` хранит строки с колонками: `id` (строковый идентификатор), `artist_slug`, `slug`, `title`, `artist_name`, `release_date`, `cover_source`, `links_json`, `created_at`, `updated_at`.
 - `links_json` — **TEXT** с JSON-объектом `Record<string, string>` (например `{ "spotify": "https://..." }`).
+- `cover_source` может содержать JSON вида `{ "type": "telegram", "file_id": "..." }` для обложек, загруженных в Telegram.
 - Обработчик `upsert` принимает поле `links` в гибком формате: объект, массив объектов/пар или строку с JSON. Строка, не являющаяся JSON, сохраняется как `{"other": "<строка>"}`. Перед записью всегда выполняется нормализация, чтобы в БД оставалась строка JSON.
 - Чтение (`GET /:artist/:slug`) всегда парсит `links_json` безопасно и логирует проблемы (пустые значения, некорректный JSON), поэтому кнопки рендерятся, если в `links_json` есть хотя бы один URL.
