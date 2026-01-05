@@ -10,6 +10,8 @@ interface Env {
 type TelegramCoverSource = { type: "telegram"; file_id: string };
 type CoverSource = TelegramCoverSource | string;
 
+const TELEGRAM_FILE_ID_PATTERN = /^[A-Za-z0-9_:-]+$/;
+
 type ApiSmartlink = {
   artist?: string;
   title?: string;
@@ -88,8 +90,8 @@ function isTelegramCoverSource(source: CoverSource | null): source is TelegramCo
   );
 }
 
-function coverProxyPath(artistSlug: string, slug: string): string {
-  return `/_cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}`;
+function validateTelegramFileId(fileId: string): boolean {
+  return Boolean(fileId) && fileId.length <= 256 && TELEGRAM_FILE_ID_PATTERN.test(fileId);
 }
 
 function resolveCoverUrl(
@@ -99,7 +101,17 @@ function resolveCoverUrl(
   slug: string,
 ): string | null {
   if (coverUrl) return coverUrl;
-  if (isTelegramCoverSource(coverSource)) return coverProxyPath(artistSlug, slug);
+  if (isTelegramCoverSource(coverSource)) {
+    if (!validateTelegramFileId(coverSource.file_id)) {
+      console.warn(
+        `[cover ${artistSlug}/${slug}] invalid telegram file_id, using placeholder`,
+        coverSource.file_id,
+      );
+      return null;
+    }
+
+    return `/cover/telegram/${encodeURIComponent(coverSource.file_id)}`;
+  }
   return null;
 }
 
@@ -206,6 +218,84 @@ async function handleCoverProxy(
   } catch (error) {
     console.error("[cover] db error", error);
     return new Response("Failed to load cover", { status: 500 });
+  }
+}
+
+async function handleTelegramCover(request: Request, env: Env, fileId: string): Promise<Response> {
+  const normalizedFileId = fileId.trim();
+
+  if (!validateTelegramFileId(normalizedFileId)) {
+    console.warn("[telegram cover] invalid file_id", fileId);
+    return new Response("Invalid file_id", { status: 400 });
+  }
+
+  const cacheKeyUrl = new URL(`/cover/telegram/${encodeURIComponent(normalizedFileId)}`, request.url);
+  const cacheKey = new Request(cacheKeyUrl.toString(), request);
+
+  const cached = await caches.default.match(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const botToken = env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    console.warn("[telegram cover] missing TELEGRAM_BOT_TOKEN env");
+    return new Response("Server misconfiguration", { status: 502 });
+  }
+
+  try {
+    const fileInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file_id: normalizedFileId }),
+    });
+
+    if (!fileInfoResponse.ok) {
+      console.warn("[telegram cover] getFile request failed", fileInfoResponse.status);
+      return new Response("Failed to load cover", { status: 502 });
+    }
+
+    const fileInfo = (await fileInfoResponse.json()) as {
+      ok?: boolean;
+      result?: { file_path?: string };
+      description?: string;
+    };
+
+    const filePath = fileInfo?.result?.file_path;
+    if (!fileInfo?.ok || !filePath) {
+      console.warn("[telegram cover] getFile response invalid", fileInfo);
+      return new Response("Cover not found", { status: 404 });
+    }
+
+    const fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+    const fileResponse = await fetch(fileUrl);
+
+    if (!fileResponse.ok || !fileResponse.body) {
+      console.warn("[telegram cover] file fetch failed", fileResponse.status);
+      return new Response("Failed to fetch cover", { status: fileResponse.status === 404 ? 404 : 502 });
+    }
+
+    const headers = new Headers();
+    const contentType = fileResponse.headers.get("content-type") ?? "image/jpeg";
+    headers.set("Content-Type", contentType);
+    headers.set("Cache-Control", "public, max-age=86400");
+
+    const contentLength = fileResponse.headers.get("content-length");
+    if (contentLength) {
+      headers.set("Content-Length", contentLength);
+    }
+
+    const proxied = new Response(fileResponse.body, {
+      status: 200,
+      headers,
+    });
+
+    await caches.default.put(cacheKey, proxied.clone());
+
+    return proxied;
+  } catch (error) {
+    console.error("[telegram cover] fetch error", error);
+    return new Response("Failed to load cover", { status: 502 });
   }
 }
 
@@ -447,6 +537,16 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       display: block;
       object-fit: cover;
     }
+    .cover-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+      color: #cfd7ea;
+      min-height: 280px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
     a { color: inherit; }
     h1 { margin: 0 0 0.5rem; font-size: 2rem; letter-spacing: 0.01em; color: #f4f6fb; }
     p { margin: 0; color: #c8d0e2; }
@@ -516,6 +616,13 @@ function renderSmartlink(
   const coverSource = data.cover_source ?? null;
   const coverUrl = resolveCoverUrl(data.cover_url, coverSource, artistSlug, slug);
 
+  if (!coverUrl) {
+    console.warn(`[render ${artistSlug}/${slug}]: missing cover, using placeholder`, {
+      cover_url: data.cover_url ?? null,
+      cover_source: coverSource,
+    });
+  }
+
   const links = data.links ?? {};
   const orderedEntries: [string, string][] = [];
 
@@ -549,7 +656,11 @@ function renderSmartlink(
     .join("\n");
 
   const body = `
-    ${coverUrl ? `<img class="cover" src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)}" loading="lazy" />` : ""}
+    ${
+      coverUrl
+        ? `<img class="cover" src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)}" loading="lazy" />`
+        : `<div class="cover cover-placeholder">NO COVER</div>`
+    }
     <h1>${escapeHtml(title)}</h1>
     <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
     <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
@@ -834,6 +945,11 @@ export default {
           error: error instanceof Error ? error.message : String(error),
         });
       }
+    }
+
+    if (segments.length === 3 && segments[0] === "cover" && segments[1] === "telegram") {
+      const fileId = decodeURIComponent(segments[2]);
+      return handleTelegramCover(request, env, fileId);
     }
 
     if (segments.length === 3 && segments[0] === "_cover") {
