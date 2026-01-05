@@ -14,6 +14,7 @@ type NormalizedCoverSourceResult = { value: string | null; error: boolean };
 const TELEGRAM_FILE_ID_PATTERN = /^[A-Za-z0-9_:-]+$/;
 
 type ApiSmartlink = {
+  id?: string;
   artist?: string;
   title?: string;
   release_date?: string;
@@ -128,19 +129,57 @@ function resolveCoverUrl(
   coverSource: CoverSource | null,
   artistSlug: string,
   slug: string,
+  smartlinkId?: string,
 ): string | null {
-  if (coverUrl) return coverUrl;
-  if (isTelegramCoverSource(coverSource)) {
-    if (!validateTelegramFileId(coverSource.file_id)) {
-      console.warn(
-        `[cover ${artistSlug}/${slug}] invalid telegram file_id, using placeholder`,
-        coverSource.file_id,
-      );
-      return null;
-    }
+  const targetId = smartlinkId || `${artistSlug}:${slug}`;
+  const telegramFileId = extractTelegramFileId(coverUrl, coverSource, `[cover ${artistSlug}/${slug}]`);
 
-    return `/cover/telegram/${encodeURIComponent(coverSource.file_id)}`;
+  if (telegramFileId) {
+    return `/api/cover/${encodeURIComponent(targetId)}`;
   }
+
+  if (coverUrl) return coverUrl.trim();
+
+  return null;
+}
+
+function extractTelegramFileId(
+  coverUrl: string | undefined,
+  coverSource: CoverSource | null,
+  context: string,
+): string | null {
+  const fromUrl = extractTelegramFileIdFromString(coverUrl, context);
+  if (fromUrl) return fromUrl;
+
+  if (typeof coverSource === "string") {
+    const fromSourceString = extractTelegramFileIdFromString(
+      coverSource,
+      `${context}:cover_source_string`,
+    );
+    if (fromSourceString) return fromSourceString;
+  }
+
+  if (isTelegramCoverSource(coverSource)) {
+    const fileId = coverSource.file_id.trim();
+    if (validateTelegramFileId(fileId)) return fileId;
+    console.warn(`${context}: invalid telegram cover_source file_id`, coverSource.file_id);
+  }
+
+  return null;
+}
+
+function extractTelegramFileIdFromString(value: string | undefined, context: string): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+
+  if (!trimmed.toLowerCase().startsWith("tg:")) {
+    return null;
+  }
+
+  const fileId = trimmed.slice(3).trim();
+  if (validateTelegramFileId(fileId)) return fileId;
+
+  console.warn(`${context}: invalid telegram file_id in string value`);
   return null;
 }
 
@@ -175,75 +214,24 @@ async function handleCoverProxy(
       return new Response("Not found", { status: 404 });
     }
 
-    if (record.cover_url) {
-      return Response.redirect(record.cover_url, 302);
-    }
-
     const coverSource = parseCoverSource(
       record.cover_source,
       `[cover ${artistSlug}/${slug}] cover_source`,
     );
+    const telegramFileId = extractTelegramFileId(
+      record.cover_url ?? undefined,
+      coverSource,
+      `[_cover ${artistSlug}/${slug}]`,
+    );
 
-    if (!isTelegramCoverSource(coverSource)) {
+    if (!telegramFileId) {
+      if (record.cover_url) {
+        return Response.redirect(record.cover_url, 302);
+      }
       return new Response("Not found", { status: 404 });
     }
 
-    const botToken = env.TELEGRAM_BOT_TOKEN;
-    if (!botToken) {
-      console.warn("[cover] missing TELEGRAM_BOT_TOKEN env");
-      return new Response("Server misconfiguration", { status: 502 });
-    }
-
-    const fileId = coverSource.file_id;
-
-    try {
-      const fileInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ file_id: fileId }),
-      });
-
-      if (!fileInfoResponse.ok) {
-        console.warn("[cover] getFile request failed", fileInfoResponse.status, artistSlug, slug);
-        return new Response("Failed to load cover", { status: 502 });
-      }
-
-      const fileInfo = (await fileInfoResponse.json()) as {
-        ok?: boolean;
-        result?: { file_path?: string };
-        description?: string;
-      };
-
-      const filePath = fileInfo?.result?.file_path;
-      if (!fileInfo?.ok || !filePath) {
-        console.warn("[cover] getFile response invalid", fileInfo);
-        return new Response("Cover not found", { status: 404 });
-      }
-
-      const fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
-      const fileResponse = await fetch(fileUrl);
-
-      if (!fileResponse.ok || !fileResponse.body) {
-        console.warn("[cover] file fetch failed", fileResponse.status, artistSlug, slug);
-        return new Response("Failed to fetch cover", { status: fileResponse.status === 404 ? 404 : 502 });
-      }
-
-      const headers = new Headers(fileResponse.headers);
-      headers.set("Cache-Control", "public, max-age=86400");
-      headers.delete("set-cookie");
-
-      const proxied = new Response(fileResponse.body, {
-        status: 200,
-        headers,
-      });
-
-      await caches.default.put(cacheKey, proxied.clone());
-
-      return proxied;
-    } catch (error) {
-      console.error("[cover] telegram fetch error", error);
-      return new Response("Failed to load cover", { status: 502 });
-    }
+    return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
   } catch (error) {
     console.error("[cover] db error", error);
     return new Response("Failed to load cover", { status: 500 });
@@ -266,22 +254,29 @@ async function handleTelegramCover(request: Request, env: Env, fileId: string): 
     return cached;
   }
 
+  return handleTelegramFileRequest(request, env, normalizedFileId, cacheKey);
+}
+
+async function handleTelegramFileRequest(
+  request: Request,
+  env: Env,
+  fileId: string,
+  cacheKey?: Request,
+): Promise<Response> {
   const botToken = env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
     console.warn("[telegram cover] missing TELEGRAM_BOT_TOKEN env");
-    return new Response("Server misconfiguration", { status: 502 });
+    return jsonResponse({ error: "telegram_token_missing" }, 502);
   }
 
   try {
-    const fileInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ file_id: normalizedFileId }),
-    });
+    const fileInfoResponse = await fetch(
+      `https://api.telegram.org/bot${botToken}/getFile?file_id=${encodeURIComponent(fileId)}`,
+    );
 
     if (!fileInfoResponse.ok) {
       console.warn("[telegram cover] getFile request failed", fileInfoResponse.status);
-      return new Response("Failed to load cover", { status: 502 });
+      return jsonResponse({ error: "telegram_getFile_failed", status: fileInfoResponse.status }, 502);
     }
 
     const fileInfo = (await fileInfoResponse.json()) as {
@@ -293,7 +288,7 @@ async function handleTelegramCover(request: Request, env: Env, fileId: string): 
     const filePath = fileInfo?.result?.file_path;
     if (!fileInfo?.ok || !filePath) {
       console.warn("[telegram cover] getFile response invalid", fileInfo);
-      return new Response("Cover not found", { status: 404 });
+      return jsonResponse({ error: "telegram_file_not_found" }, 502);
     }
 
     const fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
@@ -301,30 +296,86 @@ async function handleTelegramCover(request: Request, env: Env, fileId: string): 
 
     if (!fileResponse.ok || !fileResponse.body) {
       console.warn("[telegram cover] file fetch failed", fileResponse.status);
-      return new Response("Failed to fetch cover", { status: fileResponse.status === 404 ? 404 : 502 });
+      return jsonResponse({
+        error: "telegram_file_fetch_failed",
+        status: fileResponse.status,
+      }, fileResponse.status === 404 ? 404 : 502);
     }
 
     const headers = new Headers();
     const contentType = fileResponse.headers.get("content-type") ?? "image/jpeg";
     headers.set("Content-Type", contentType);
-    headers.set("Cache-Control", "public, max-age=86400");
+    headers.set("Cache-Control", "public, max-age=3600, s-maxage=86400");
 
     const contentLength = fileResponse.headers.get("content-length");
     if (contentLength) {
       headers.set("Content-Length", contentLength);
     }
 
+    const etag = fileResponse.headers.get("etag");
+    if (etag) {
+      headers.set("ETag", etag);
+    }
+
+    headers.delete("set-cookie");
+
     const proxied = new Response(fileResponse.body, {
       status: 200,
       headers,
     });
 
-    await caches.default.put(cacheKey, proxied.clone());
+    if (cacheKey) {
+      await caches.default.put(cacheKey, proxied.clone());
+    }
 
     return proxied;
   } catch (error) {
     console.error("[telegram cover] fetch error", error);
-    return new Response("Failed to load cover", { status: 502 });
+    return jsonResponse({ error: "telegram_fetch_error" }, 502);
+  }
+}
+
+async function handleCoverById(request: Request, env: Env, canonicalId: string): Promise<Response> {
+  const cacheKeyUrl = new URL(`/api/cover/${encodeURIComponent(canonicalId)}`, request.url);
+  const cacheKey = new Request(cacheKeyUrl.toString(), request);
+
+  const cached = await caches.default.match(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const query = await env.DB.prepare(
+      `SELECT cover_url, cover_source FROM smartlinks WHERE id=?1 LIMIT 1`,
+    )
+      .bind(canonicalId)
+      .all<{ cover_url: string | null; cover_source: string | null }>();
+
+    const record = query.results?.[0];
+    if (!record) {
+      return jsonResponse({ error: "not_found" }, 404);
+    }
+
+    const coverSource = parseCoverSource(record.cover_source, `[api/cover ${canonicalId}] cover_source`);
+    const telegramFileId = extractTelegramFileId(
+      record.cover_url ?? undefined,
+      coverSource,
+      `[api/cover ${canonicalId}]`,
+    );
+
+    if (!telegramFileId) {
+      return jsonResponse({ error: "cover_missing" }, 404);
+    }
+
+    if (!validateTelegramFileId(telegramFileId)) {
+      console.warn(`[api/cover ${canonicalId}] invalid telegram file_id`);
+      return jsonResponse({ error: "invalid_cover" }, 404);
+    }
+
+    return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
+  } catch (error) {
+    console.error("[api/cover] db error", error);
+    return jsonResponse({ error: "server_error" }, 500);
   }
 }
 
@@ -638,12 +689,13 @@ function renderSmartlink(
   artistSlug: string,
   slug: string,
   data: ApiSmartlink,
+  smartlinkId?: string,
 ): Response {
   const title = data.title ?? "Релиз";
   const artist = data.artist ?? artistSlug;
   const releaseDate = data.release_date;
   const coverSource = data.cover_source ?? null;
-  const coverUrl = resolveCoverUrl(data.cover_url, coverSource, artistSlug, slug);
+  const coverUrl = resolveCoverUrl(data.cover_url, coverSource, artistSlug, slug, smartlinkId);
 
   if (!coverUrl) {
     console.warn(`[render ${artistSlug}/${slug}]: missing cover, using placeholder`, {
@@ -871,6 +923,11 @@ export default {
       return renderNotFound();
     }
 
+    if (segments.length === 3 && segments[0] === "api" && segments[1] === "cover") {
+      const canonicalId = decodeURIComponent(segments[2]);
+      return handleCoverById(request, env, canonicalId);
+    }
+
     if (normalizedPath === "/health") {
       return new Response("OK: sreda-go | GIT-LIVE", {
         status: 200,
@@ -883,6 +940,7 @@ export default {
       const hasSMARTLINK_API_KEY = Boolean(env.SMARTLINK_API_KEY);
       const hasISKRA_API_BASE = Boolean(env.ISKRA_API_BASE);
       const hasISKRA_API_KEY = Boolean(env.ISKRA_API_KEY);
+      const hasTelegramToken = Boolean(env.TELEGRAM_BOT_TOKEN);
 
       return jsonResponse({
         ok: true,
@@ -890,6 +948,7 @@ export default {
         hasSMARTLINK_API_KEY,
         hasISKRA_API_BASE,
         hasISKRA_API_KEY,
+        hasTelegramToken,
         vars: {
           ISKRA_API_BASE: env.ISKRA_API_BASE ?? null,
         },
@@ -1049,6 +1108,7 @@ export default {
       }
 
       const data: ApiSmartlink = {
+        id: record.id,
         title: record.title ?? undefined,
         artist: record.artist_name ?? artistSlug,
         release_date: record.release_date ?? undefined,
@@ -1057,7 +1117,7 @@ export default {
         links,
       };
 
-      return renderSmartlink(artistSlug, slug, data);
+      return renderSmartlink(artistSlug, slug, data, record.id);
     } catch (error) {
       console.error("smartlink fetch error", error);
       return renderError();
