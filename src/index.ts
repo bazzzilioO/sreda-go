@@ -328,51 +328,52 @@ export default {
           return jsonResponse({ ok: false, error: "bad_request" }, 400);
         }
 
-        const linksJson = JSON.stringify(typeof links === "object" && links ? links : {});
-        const baseParams = [
-          computedArtistSlug,
-          computedSlug,
-          title,
-          artist_name ?? null,
-          release_date ?? null,
-          cover_source ?? null,
-          linksJson,
-        ];
+        const canonicalId = `${computedArtistSlug}:${computedSlug}`;
+        const linksJson =
+          typeof links === "string"
+            ? links
+            : JSON.stringify(typeof links === "object" && links ? links : {});
+
+        let action: "inserted" | "updated" = "inserted";
 
         try {
-          let updated = false;
+          const existingRecord = await env.DB.prepare(
+            `SELECT id FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
+          )
+            .bind(computedArtistSlug, computedSlug)
+            .all<{ id: string }>();
 
-          if (id !== undefined && id !== null) {
-            const updateResult = await env.DB.prepare(
-              `UPDATE smartlinks SET
-                artist_slug=?1,
-                slug=?2,
-                title=?3,
-                artist_name=?4,
-                release_date=?5,
-                cover_source=?6,
-                links_json=?7,
-                updated_at=datetime('now')
-              WHERE id=?8`,
+          await env.DB.prepare(
+            `INSERT INTO smartlinks (
+              id, artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))
+            ON CONFLICT(artist_slug, slug) DO UPDATE SET
+              title=excluded.title,
+              artist_name=excluded.artist_name,
+              release_date=excluded.release_date,
+              cover_source=excluded.cover_source,
+              links_json=excluded.links_json,
+              updated_at=datetime('now')`,
+          )
+            .bind(
+              canonicalId,
+              computedArtistSlug,
+              computedSlug,
+              title,
+              artist_name ?? null,
+              release_date ?? null,
+              cover_source ?? null,
+              linksJson,
             )
-              .bind(...baseParams, String(id))
-              .run();
+            .run();
 
-            updated = (updateResult.meta?.changes ?? 0) > 0;
-          }
-
-          if (!updated) {
-            await env.DB.prepare(
-              `INSERT INTO smartlinks (
-                artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
-              ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, datetime('now'), datetime('now'))`,
-            )
-              .bind(...baseParams)
-              .run();
-          }
+          action = existingRecord.results?.[0] ? "updated" : "inserted";
         } catch (error) {
           console.error("[upsert] db error", error);
-          return jsonResponse({ ok: false, error: "db_error", details: error instanceof Error ? error.message : String(error) }, 500);
+          return jsonResponse(
+            { ok: false, error: "db_error", message: error instanceof Error ? error.message : String(error) },
+            500,
+          );
         }
 
         let syncResult: [boolean, number | null, string | null] = [true, null, null];
@@ -381,7 +382,7 @@ export default {
             syncResult = await syncSmartlinkToWeb(
               {
                 ...payload,
-                id,
+                id: canonicalId,
                 artist_slug: computedArtistSlug,
                 slug: computedSlug,
                 artist_name,
@@ -403,7 +404,13 @@ export default {
           return jsonResponse({ ok: false, error: "sync_failed", details: { status: syncStatus, error: syncError } }, 502);
         }
 
-        return jsonResponse({ ok: true });
+        return jsonResponse({
+          ok: true,
+          action,
+          artist_slug: computedArtistSlug,
+          slug: computedSlug,
+          id: canonicalId,
+        });
       } catch (err) {
         console.error("[upsert] error", err);
         return jsonResponse(
