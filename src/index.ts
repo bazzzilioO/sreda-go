@@ -307,55 +307,60 @@ export default {
         return jsonResponse({ error: "unauthorized" }, 401);
       }
 
-      let payload: UpsertRequest;
       try {
-        payload = (await request.json()) as UpsertRequest;
-      } catch (error) {
-        console.error("upsert parse error", error);
-        return jsonResponse({ error: "bad_request" }, 400);
-      }
+        let payload: UpsertRequest;
+        try {
+          payload = (await request.json()) as UpsertRequest;
+        } catch (error) {
+          console.error("upsert parse error", error);
+          return jsonResponse({ error: "bad_request" }, 400);
+        }
 
-      const { id, title, artist_name, artist, release_date, cover_source, links, slug, artist_slug } =
-        payload ?? {};
+        const { id, title, artist_name, artist, release_date, cover_source, links, slug, artist_slug } =
+          payload ?? {};
 
-      const computedArtistSlug = buildSlug(
-        artist_slug ?? artist_name ?? artist,
-        id,
-      );
-      const computedSlug = buildSlug(slug ?? title, id);
+        const computedArtistSlug = buildSlug(
+          artist_slug ?? artist_name ?? artist,
+          id,
+        );
+        const computedSlug = buildSlug(slug ?? title, id);
 
-      if (!id || !computedArtistSlug || !computedSlug || !title) {
-        return jsonResponse({ error: "bad_request" }, 400);
-      }
+        if (!id || !computedArtistSlug || !computedSlug || !title) {
+          return jsonResponse({ error: "bad_request" }, 400);
+        }
 
-      const linksJson = JSON.stringify(typeof links === "object" && links ? links : {});
+        const linksJson = JSON.stringify(typeof links === "object" && links ? links : {});
 
-      try {
-        await env.DB.prepare(
-          `INSERT INTO smartlinks (
-            id, artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
-          ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))
-          ON CONFLICT(artist_slug, slug) DO UPDATE SET
-            id=excluded.id,
-            title=excluded.title,
-            artist_name=excluded.artist_name,
-            release_date=excluded.release_date,
-            cover_source=excluded.cover_source,
-            links_json=excluded.links_json,
-            updated_at=datetime('now')
-        `,
-        )
-          .bind(
-            String(id),
-            computedArtistSlug,
-            computedSlug,
-            title,
-            artist_name ?? null,
-            release_date ?? null,
-            cover_source ?? null,
-            linksJson,
+        try {
+          await env.DB.prepare(
+            `INSERT INTO smartlinks (
+              id, artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))
+            ON CONFLICT(artist_slug, slug) DO UPDATE SET
+              id=excluded.id,
+              title=excluded.title,
+              artist_name=excluded.artist_name,
+              release_date=excluded.release_date,
+              cover_source=excluded.cover_source,
+              links_json=excluded.links_json,
+              updated_at=datetime('now')
+          `,
           )
-          .run();
+            .bind(
+              String(id),
+              computedArtistSlug,
+              computedSlug,
+              title,
+              artist_name ?? null,
+              release_date ?? null,
+              cover_source ?? null,
+              linksJson,
+            )
+            .run();
+        } catch (error) {
+          console.error("[upsert] db error", error);
+          throw error;
+        }
 
         let syncResult: [boolean, number | null, string | null] = [false, null, null];
         if (!request.headers.get("X-Skip-Sync")) {
@@ -393,9 +398,12 @@ export default {
             error: syncError,
           },
         });
-      } catch (error) {
-        console.error("upsert db error", error);
-        return jsonResponse({ error: "server_error" }, 500);
+      } catch (err) {
+        console.error("[upsert] error", err);
+        return jsonResponse(
+          { error: "server_error", message: String((err as { message?: string } | null)?.message ?? err) },
+          500,
+        );
       }
     }
 
@@ -407,6 +415,24 @@ export default {
       return new Response("OK: sreda-go | GIT-LIVE", {
         status: 200,
         headers: { "Content-Type": "text/plain; charset=UTF-8", ...CACHE_HEADERS },
+      });
+    }
+
+    if (normalizedPath === "/debug") {
+      const hasDB = Boolean(env.DB);
+      const hasSMARTLINK_API_KEY = Boolean(env.SMARTLINK_API_KEY);
+      const hasISKRA_API_BASE = Boolean(env.ISKRA_API_BASE);
+      const hasISKRA_API_KEY = Boolean(env.ISKRA_API_KEY);
+
+      return jsonResponse({
+        ok: true,
+        hasDB,
+        hasSMARTLINK_API_KEY,
+        hasISKRA_API_BASE,
+        hasISKRA_API_KEY,
+        vars: {
+          ISKRA_API_BASE: env.ISKRA_API_BASE ?? null,
+        },
       });
     }
 
