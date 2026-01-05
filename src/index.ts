@@ -4,7 +4,11 @@ interface Env {
   SMARTLINK_API_KEY?: string;
   ISKRA_API_KEY?: string;
   GO_INDEX_BASE?: string;
+  TELEGRAM_BOT_TOKEN?: string;
 }
+
+type TelegramCoverSource = { type: "telegram"; file_id: string };
+type CoverSource = TelegramCoverSource | string;
 
 type ApiSmartlink = {
   artist?: string;
@@ -12,6 +16,7 @@ type ApiSmartlink = {
   release_date?: string;
   links?: Record<string, string>;
   cover_url?: string;
+  cover_source?: CoverSource;
 };
 
 type UpsertRequest = {
@@ -22,12 +27,187 @@ type UpsertRequest = {
   artist_name?: string;
   artist?: string;
   release_date?: string;
-  cover_source?: string;
+  cover_source?: unknown;
   cover_url?: string;
   links?: Record<string, string>;
 };
 
 type LinkRecord = Record<string, string>;
+
+function normalizeCoverSourceInput(input: unknown, context: string): string | null {
+  if (input === undefined || input === null) {
+    return null;
+  }
+
+  if (typeof input === "string") {
+    const trimmed = input.trim();
+    return trimmed || null;
+  }
+
+  if (typeof input === "object") {
+    const candidate = input as { type?: unknown; file_id?: unknown };
+    if (candidate.type === "telegram" && typeof candidate.file_id === "string" && candidate.file_id.trim()) {
+      return JSON.stringify({ type: "telegram", file_id: candidate.file_id.trim() });
+    }
+
+    console.warn(`${context}: unsupported cover_source object`, input);
+    return null;
+  }
+
+  console.warn(`${context}: unsupported cover_source type`, input);
+  return null;
+}
+
+function parseCoverSource(raw: string | null, context: string): CoverSource | null {
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      (parsed as { type?: unknown }).type === "telegram" &&
+      typeof (parsed as { file_id?: unknown }).file_id === "string" &&
+      (parsed as { file_id: string }).file_id.trim()
+    ) {
+      return { type: "telegram", file_id: (parsed as { file_id: string }).file_id.trim() };
+    }
+  } catch (error) {
+    console.warn(`${context}: cover_source parse error`, error, raw);
+  }
+
+  return raw;
+}
+
+function isTelegramCoverSource(source: CoverSource | null): source is TelegramCoverSource {
+  return (
+    Boolean(source) &&
+    typeof source === "object" &&
+    (source as { type?: unknown }).type === "telegram" &&
+    typeof (source as { file_id?: unknown }).file_id === "string"
+  );
+}
+
+function coverProxyPath(artistSlug: string, slug: string): string {
+  return `/_cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}`;
+}
+
+function resolveCoverUrl(
+  coverUrl: string | undefined,
+  coverSource: CoverSource | null,
+  artistSlug: string,
+  slug: string,
+): string | null {
+  if (coverUrl) return coverUrl;
+  if (isTelegramCoverSource(coverSource)) return coverProxyPath(artistSlug, slug);
+  return null;
+}
+
+async function handleCoverProxy(
+  request: Request,
+  env: Env,
+  artistSlug: string,
+  slug: string,
+): Promise<Response> {
+  const cacheKeyUrl = new URL(`/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}`, request.url);
+  const cacheKey = new Request(cacheKeyUrl.toString(), request);
+
+  const cached = await caches.default.match(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const query = await env.DB.prepare(
+      `SELECT
+        cover_source,
+        cover_url
+      FROM smartlinks
+      WHERE artist_slug=?1 AND slug=?2
+      LIMIT 1`,
+    )
+      .bind(artistSlug, slug)
+      .all<{ cover_source: string | null; cover_url: string | null }>();
+
+    const record = query.results?.[0];
+    if (!record) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    if (record.cover_url) {
+      return Response.redirect(record.cover_url, 302);
+    }
+
+    const coverSource = parseCoverSource(
+      record.cover_source,
+      `[cover ${artistSlug}/${slug}] cover_source`,
+    );
+
+    if (!isTelegramCoverSource(coverSource)) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    const botToken = env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      console.warn("[cover] missing TELEGRAM_BOT_TOKEN env");
+      return new Response("Server misconfiguration", { status: 502 });
+    }
+
+    const fileId = coverSource.file_id;
+
+    try {
+      const fileInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getFile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file_id: fileId }),
+      });
+
+      if (!fileInfoResponse.ok) {
+        console.warn("[cover] getFile request failed", fileInfoResponse.status, artistSlug, slug);
+        return new Response("Failed to load cover", { status: 502 });
+      }
+
+      const fileInfo = (await fileInfoResponse.json()) as {
+        ok?: boolean;
+        result?: { file_path?: string };
+        description?: string;
+      };
+
+      const filePath = fileInfo?.result?.file_path;
+      if (!fileInfo?.ok || !filePath) {
+        console.warn("[cover] getFile response invalid", fileInfo);
+        return new Response("Cover not found", { status: 404 });
+      }
+
+      const fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+      const fileResponse = await fetch(fileUrl);
+
+      if (!fileResponse.ok || !fileResponse.body) {
+        console.warn("[cover] file fetch failed", fileResponse.status, artistSlug, slug);
+        return new Response("Failed to fetch cover", { status: fileResponse.status === 404 ? 404 : 502 });
+      }
+
+      const headers = new Headers(fileResponse.headers);
+      headers.set("Cache-Control", "public, max-age=86400");
+      headers.delete("set-cookie");
+
+      const proxied = new Response(fileResponse.body, {
+        status: 200,
+        headers,
+      });
+
+      await caches.default.put(cacheKey, proxied.clone());
+
+      return proxied;
+    } catch (error) {
+      console.error("[cover] telegram fetch error", error);
+      return new Response("Failed to load cover", { status: 502 });
+    }
+  } catch (error) {
+    console.error("[cover] db error", error);
+    return new Response("Failed to load cover", { status: 500 });
+  }
+}
 
 function slugify(value?: string | null): string {
   if (!value) return "";
@@ -161,6 +341,7 @@ async function syncSmartlinkToWeb(
     title: payload.title,
     artist_name: payload.artist_name,
     release_date: payload.release_date,
+    cover_source: payload.cover_source,
     cover_url: payload.cover_url,
     links: payload.links,
   };
@@ -332,7 +513,8 @@ function renderSmartlink(
   const title = data.title ?? "Релиз";
   const artist = data.artist ?? artistSlug;
   const releaseDate = data.release_date;
-  const coverUrl = data.cover_url;
+  const coverSource = data.cover_source ?? null;
+  const coverUrl = resolveCoverUrl(data.cover_url, coverSource, artistSlug, slug);
 
   const links = data.links ?? {};
   const orderedEntries: [string, string][] = [];
@@ -444,6 +626,7 @@ export default {
         const canonicalId = `${computedArtistSlug}:${computedSlug}`;
         const normalizedLinks = normalizeLinksInput(links, "[upsert] links");
         const linksJson = JSON.stringify(normalizedLinks);
+        const normalizedCoverSource = normalizeCoverSourceInput(cover_source, "[upsert] cover_source");
 
         let action: "inserted" | "updated" = "inserted";
 
@@ -474,7 +657,7 @@ export default {
               title,
               artist_name ?? null,
               release_date ?? null,
-              cover_source ?? null,
+              normalizedCoverSource ?? null,
               cover_url ?? null,
               linksJson,
             )
@@ -503,7 +686,7 @@ export default {
                 artist_name,
                 title,
                 release_date,
-                cover_source,
+                cover_source: normalizedCoverSource ?? undefined,
                 cover_url,
                 links: normalizedLinks,
               },
@@ -653,6 +836,13 @@ export default {
       }
     }
 
+    if (segments.length === 3 && segments[0] === "_cover") {
+      const artistSlug = decodeURIComponent(segments[1]);
+      const slug = decodeURIComponent(segments[2]);
+
+      return handleCoverProxy(request, env, artistSlug, slug);
+    }
+
     if (segments.length === 0) {
       return renderHome();
     }
@@ -699,6 +889,8 @@ export default {
 
       const links = parseLinksFromJson(record.links_json, `[render ${artistSlug}/${slug}]`);
 
+      const coverSource = parseCoverSource(record.cover_source, `[render ${artistSlug}/${slug}] cover_source`);
+
       if (!Object.keys(links).length) {
         console.warn(`[render ${artistSlug}/${slug}]: no links to render`, record.links_json);
       }
@@ -708,6 +900,7 @@ export default {
         artist: record.artist_name ?? artistSlug,
         release_date: record.release_date ?? undefined,
         cover_url: record.cover_url ?? undefined,
+        cover_source: coverSource ?? undefined,
         links,
       };
 
