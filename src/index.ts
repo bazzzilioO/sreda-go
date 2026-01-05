@@ -582,44 +582,49 @@ export default {
         return renderNotFound("Смартлинк не найден");
       }
 
-      let links: Record<string, string> = {};
-      try {
-        const parsed = record.links_json ? JSON.parse(record.links_json) : null;
-        if (parsed && typeof parsed === "object") {
-          if (Array.isArray(parsed)) {
-            const normalized: Record<string, string> = {};
-            for (const entry of parsed) {
-              if (entry && typeof entry === "object") {
-                const platform =
-                  (entry as { platform?: string; name?: string }).platform ??
-                  (entry as { name?: string }).name;
-                const url = (entry as { url?: string; link?: string }).url ??
-                  (entry as { link?: string }).link;
-                if (platform && url && typeof platform === "string" && typeof url === "string") {
-                  normalized[platform] = url;
-                  continue;
-                }
-              }
+      const links: Record<string, string> = (() => {
+        if (!record.links_json) return {};
 
-              if (Array.isArray(entry) && entry.length >= 2) {
-                const [platform, url] = entry;
-                if (typeof platform === "string" && typeof url === "string") {
-                  normalized[platform] = url;
+        try {
+          const parsed = JSON.parse(record.links_json);
+          if (parsed && typeof parsed === "object") {
+            if (Array.isArray(parsed)) {
+              const normalized: Record<string, string> = {};
+              for (const entry of parsed) {
+                if (entry && typeof entry === "object") {
+                  const platform =
+                    (entry as { platform?: string; name?: string }).platform ??
+                    (entry as { name?: string }).name;
+                  const url = (entry as { url?: string; link?: string }).url ??
+                    (entry as { link?: string }).link;
+                  if (platform && url && typeof platform === "string" && typeof url === "string") {
+                    normalized[platform] = url;
+                    continue;
+                  }
+                }
+
+                if (Array.isArray(entry) && entry.length >= 2) {
+                  const [platform, url] = entry;
+                  if (typeof platform === "string" && typeof url === "string") {
+                    normalized[platform] = url;
+                  }
                 }
               }
+              return normalized;
             }
-            links = normalized;
-          } else {
-            links = Object.fromEntries(
+
+            return Object.fromEntries(
               Object.entries(parsed).filter(
                 ([, value]) => typeof value === "string" && value.length > 0,
               ),
             );
           }
+        } catch (parseError) {
+          console.warn("smartlink links_json parse error", parseError);
         }
-      } catch (parseError) {
-        console.warn("smartlink links_json parse error", parseError);
-      }
+
+        return {};
+      })();
 
       const data: ApiSmartlink = {
         title: record.title ?? undefined,
