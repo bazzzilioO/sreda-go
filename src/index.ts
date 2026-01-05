@@ -9,6 +9,7 @@ interface Env {
 
 type TelegramCoverSource = { type: "telegram"; file_id: string };
 type CoverSource = TelegramCoverSource | string;
+type NormalizedCoverSourceResult = { value: string | null; error: boolean };
 
 const TELEGRAM_FILE_ID_PATTERN = /^[A-Za-z0-9_:-]+$/;
 
@@ -36,7 +37,7 @@ type UpsertRequest = {
 
 type LinkRecord = Record<string, string>;
 
-function normalizeCoverSourceInput(input: unknown, context: string): string | null {
+function normalizeCoverUrlInput(input: unknown, context: string): string | null {
   if (input === undefined || input === null) {
     return null;
   }
@@ -46,18 +47,46 @@ function normalizeCoverSourceInput(input: unknown, context: string): string | nu
     return trimmed || null;
   }
 
+  console.warn(`${context}: unsupported cover_url type`, input);
+  return null;
+}
+
+function normalizeCoverSourceInput(input: unknown, context: string): NormalizedCoverSourceResult {
+  if (input === undefined || input === null) {
+    return { value: null, error: false };
+  }
+
+  if (typeof input === "string") {
+    const trimmed = input.trim();
+    return { value: trimmed || null, error: false };
+  }
+
   if (typeof input === "object") {
     const candidate = input as { type?: unknown; file_id?: unknown };
-    if (candidate.type === "telegram" && typeof candidate.file_id === "string" && candidate.file_id.trim()) {
-      return JSON.stringify({ type: "telegram", file_id: candidate.file_id.trim() });
+    if (candidate.type === "telegram") {
+      if (typeof candidate.file_id === "string") {
+        const trimmedFileId = candidate.file_id.trim();
+        if (validateTelegramFileId(trimmedFileId)) {
+          return {
+            value: JSON.stringify({ type: "telegram", file_id: trimmedFileId }),
+            error: false,
+          };
+        }
+
+        console.warn(`${context}: invalid telegram file_id`, candidate.file_id);
+        return { value: null, error: true };
+      }
+
+      console.warn(`${context}: missing telegram file_id`, input);
+      return { value: null, error: true };
     }
 
     console.warn(`${context}: unsupported cover_source object`, input);
-    return null;
+    return { value: null, error: true };
   }
 
   console.warn(`${context}: unsupported cover_source type`, input);
-  return null;
+  return { value: null, error: true };
 }
 
 function parseCoverSource(raw: string | null, context: string): CoverSource | null {
@@ -737,7 +766,15 @@ export default {
         const canonicalId = `${computedArtistSlug}:${computedSlug}`;
         const normalizedLinks = normalizeLinksInput(links, "[upsert] links");
         const linksJson = JSON.stringify(normalizedLinks);
+        const normalizedCoverUrl = normalizeCoverUrlInput(cover_url, "[upsert] cover_url");
         const normalizedCoverSource = normalizeCoverSourceInput(cover_source, "[upsert] cover_source");
+
+        if (normalizedCoverSource.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: "invalid_cover_source" },
+            400,
+          );
+        }
 
         let action: "inserted" | "updated" = "inserted";
 
@@ -768,8 +805,8 @@ export default {
               title,
               artist_name ?? null,
               release_date ?? null,
-              normalizedCoverSource ?? null,
-              cover_url ?? null,
+              normalizedCoverSource.value ?? null,
+              normalizedCoverUrl ?? null,
               linksJson,
             )
             .run();
@@ -797,8 +834,8 @@ export default {
                 artist_name,
                 title,
                 release_date,
-                cover_source: normalizedCoverSource ?? undefined,
-                cover_url,
+                cover_source: normalizedCoverSource.value ?? undefined,
+                cover_url: normalizedCoverUrl ?? undefined,
                 links: normalizedLinks,
               },
               env,
