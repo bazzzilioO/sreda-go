@@ -283,7 +283,6 @@ export default {
     const url = new URL(request.url);
     const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
     const segments = normalizedPath.split("/").filter(Boolean);
-    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
 
     if (normalizedPath === "/api/index/upsert") {
       if (request.method === "GET") {
@@ -294,17 +293,17 @@ export default {
       }
 
       if (request.method !== "POST") {
-        return jsonResponse({ error: "method_not_allowed" }, 405);
+        return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
       }
 
       const apiKey = env.SMARTLINK_API_KEY;
       if (!apiKey) {
-        return jsonResponse({ error: "server_error" }, 500);
+        return jsonResponse({ ok: false, error: "server_error" }, 500);
       }
 
       const providedKey = request.headers.get("X-API-Key");
       if (providedKey !== apiKey) {
-        return jsonResponse({ error: "unauthorized" }, 401);
+        return jsonResponse({ ok: false, error: "unauthorized" }, 401);
       }
 
       try {
@@ -313,7 +312,7 @@ export default {
           payload = (await request.json()) as UpsertRequest;
         } catch (error) {
           console.error("upsert parse error", error);
-          return jsonResponse({ error: "bad_request" }, 400);
+          return jsonResponse({ ok: false, error: "bad_request", details: "invalid_json" }, 400);
         }
 
         const { id, title, artist_name, artist, release_date, cover_source, links, slug, artist_slug } =
@@ -325,44 +324,58 @@ export default {
         );
         const computedSlug = buildSlug(slug ?? title, id);
 
-        if (!id || !computedArtistSlug || !computedSlug || !title) {
-          return jsonResponse({ error: "bad_request" }, 400);
+        if (!computedArtistSlug || !computedSlug || !title) {
+          return jsonResponse({ ok: false, error: "bad_request" }, 400);
         }
 
         const linksJson = JSON.stringify(typeof links === "object" && links ? links : {});
+        const baseParams = [
+          computedArtistSlug,
+          computedSlug,
+          title,
+          artist_name ?? null,
+          release_date ?? null,
+          cover_source ?? null,
+          linksJson,
+        ];
 
         try {
-          await env.DB.prepare(
-            `INSERT INTO smartlinks (
-              id, artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))
-            ON CONFLICT(artist_slug, slug) DO UPDATE SET
-              id=excluded.id,
-              title=excluded.title,
-              artist_name=excluded.artist_name,
-              release_date=excluded.release_date,
-              cover_source=excluded.cover_source,
-              links_json=excluded.links_json,
-              updated_at=datetime('now')
-          `,
-          )
-            .bind(
-              String(id),
-              computedArtistSlug,
-              computedSlug,
-              title,
-              artist_name ?? null,
-              release_date ?? null,
-              cover_source ?? null,
-              linksJson,
+          let updated = false;
+
+          if (id !== undefined && id !== null) {
+            const updateResult = await env.DB.prepare(
+              `UPDATE smartlinks SET
+                artist_slug=?1,
+                slug=?2,
+                title=?3,
+                artist_name=?4,
+                release_date=?5,
+                cover_source=?6,
+                links_json=?7,
+                updated_at=datetime('now')
+              WHERE id=?8`,
             )
-            .run();
+              .bind(...baseParams, String(id))
+              .run();
+
+            updated = (updateResult.meta?.changes ?? 0) > 0;
+          }
+
+          if (!updated) {
+            await env.DB.prepare(
+              `INSERT INTO smartlinks (
+                artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
+              ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, datetime('now'), datetime('now'))`,
+            )
+              .bind(...baseParams)
+              .run();
+          }
         } catch (error) {
           console.error("[upsert] db error", error);
-          throw error;
+          return jsonResponse({ ok: false, error: "db_error", details: error instanceof Error ? error.message : String(error) }, 500);
         }
 
-        let syncResult: [boolean, number | null, string | null] = [false, null, null];
+        let syncResult: [boolean, number | null, string | null] = [true, null, null];
         if (!request.headers.get("X-Skip-Sync")) {
           try {
             syncResult = await syncSmartlinkToWeb(
@@ -386,22 +399,15 @@ export default {
         }
 
         const [synced, syncStatus, syncError] = syncResult;
+        if (!synced) {
+          return jsonResponse({ ok: false, error: "sync_failed", details: { status: syncStatus, error: syncError } }, 502);
+        }
 
-        const webUrl = `${goIndexBase}/${computedArtistSlug}/${computedSlug}`;
-
-        return jsonResponse({
-          ok: true,
-          web_url: webUrl,
-          sync: {
-            ok: synced,
-            status: syncStatus,
-            error: syncError,
-          },
-        });
+        return jsonResponse({ ok: true });
       } catch (err) {
         console.error("[upsert] error", err);
         return jsonResponse(
-          { error: "server_error", message: String((err as { message?: string } | null)?.message ?? err) },
+          { ok: false, error: "server_error", details: String((err as { message?: string } | null)?.message ?? err) },
           500,
         );
       }
