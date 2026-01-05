@@ -302,7 +302,8 @@ export default {
       }
 
       const providedKey = request.headers.get("X-API-Key");
-      if (providedKey !== apiKey) {
+      const isAuthed = providedKey === apiKey;
+      if (!isAuthed) {
         return jsonResponse({ ok: false, error: "unauthorized" }, 401);
       }
 
@@ -376,8 +377,10 @@ export default {
           );
         }
 
+        const skipSync = request.headers.get("X-Skip-Sync") === "1" || isAuthed;
+
         let syncResult: [boolean, number | null, string | null] = [true, null, null];
-        if (!request.headers.get("X-Skip-Sync")) {
+        if (!skipSync) {
           try {
             syncResult = await syncSmartlinkToWeb(
               {
