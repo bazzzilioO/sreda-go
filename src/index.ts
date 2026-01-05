@@ -11,6 +11,7 @@ type ApiSmartlink = {
   title?: string;
   release_date?: string;
   links?: Record<string, string>;
+  cover_url?: string;
 };
 
 type UpsertRequest = {
@@ -22,6 +23,7 @@ type UpsertRequest = {
   artist?: string;
   release_date?: string;
   cover_source?: string;
+  cover_url?: string;
   links?: Record<string, string>;
 };
 
@@ -159,6 +161,7 @@ async function syncSmartlinkToWeb(
     title: payload.title,
     artist_name: payload.artist_name,
     release_date: payload.release_date,
+    cover_url: payload.cover_url,
     links: payload.links,
   };
 
@@ -253,6 +256,16 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       padding: 2.5rem;
       backdrop-filter: blur(6px);
     }
+    .cover {
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+      margin-bottom: 1.5rem;
+      display: block;
+      object-fit: cover;
+    }
     a { color: inherit; }
     h1 { margin: 0 0 0.5rem; font-size: 2rem; letter-spacing: 0.01em; color: #f4f6fb; }
     p { margin: 0; color: #c8d0e2; }
@@ -319,6 +332,7 @@ function renderSmartlink(
   const title = data.title ?? "Релиз";
   const artist = data.artist ?? artistSlug;
   const releaseDate = data.release_date;
+  const coverUrl = data.cover_url;
 
   const links = data.links ?? {};
   const orderedEntries: [string, string][] = [];
@@ -353,6 +367,7 @@ function renderSmartlink(
     .join("\n");
 
   const body = `
+    ${coverUrl ? `<img class="cover" src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)}" loading="lazy" />` : ""}
     <h1>${escapeHtml(title)}</h1>
     <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
     <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
@@ -403,8 +418,18 @@ export default {
           return jsonResponse({ ok: false, error: "bad_request", details: "invalid_json" }, 400);
         }
 
-        const { id, title, artist_name, artist, release_date, cover_source, links, slug, artist_slug } =
-          payload ?? {};
+        const {
+          id,
+          title,
+          artist_name,
+          artist,
+          release_date,
+          cover_source,
+          cover_url,
+          links,
+          slug,
+          artist_slug,
+        } = payload ?? {};
 
         const computedArtistSlug = buildSlug(
           artist_slug ?? artist_name ?? artist,
@@ -431,13 +456,14 @@ export default {
 
           await env.DB.prepare(
             `INSERT INTO smartlinks (
-              id, artist_slug, slug, title, artist_name, release_date, cover_source, links_json, created_at, updated_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))
+              id, artist_slug, slug, title, artist_name, release_date, cover_source, cover_url, links_json, created_at, updated_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, datetime('now'), datetime('now'))
             ON CONFLICT(artist_slug, slug) DO UPDATE SET
               title=excluded.title,
               artist_name=excluded.artist_name,
               release_date=excluded.release_date,
               cover_source=excluded.cover_source,
+              cover_url=excluded.cover_url,
               links_json=excluded.links_json,
               updated_at=datetime('now')`,
           )
@@ -449,6 +475,7 @@ export default {
               artist_name ?? null,
               release_date ?? null,
               cover_source ?? null,
+              cover_url ?? null,
               linksJson,
             )
             .run();
@@ -477,6 +504,7 @@ export default {
                 title,
                 release_date,
                 cover_source,
+                cover_url,
                 links: normalizedLinks,
               },
               env,
@@ -645,6 +673,7 @@ export default {
           artist_name,
           release_date,
           cover_source,
+          cover_url,
           links_json
         FROM smartlinks
         WHERE artist_slug=?1 AND slug=?2
@@ -659,6 +688,7 @@ export default {
           artist_name: string | null;
           release_date: string | null;
           cover_source: string | null;
+          cover_url: string | null;
           links_json: string | null;
         }>();
 
@@ -677,6 +707,7 @@ export default {
         title: record.title ?? undefined,
         artist: record.artist_name ?? artistSlug,
         release_date: record.release_date ?? undefined,
+        cover_url: record.cover_url ?? undefined,
         links,
       };
 
