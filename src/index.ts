@@ -46,7 +46,7 @@ function normalizeCoverVersionInput(input: unknown): number | null {
 
   const normalized = Math.trunc(input);
 
-  return normalized >= 1 ? normalized : 1;
+  return normalized >= 0 ? normalized : 0;
 }
 
 function normalizeCoverSourceInput(input: unknown, context: string): NormalizedCoverSourceResult {
@@ -159,6 +159,33 @@ function resolveCoverUrl(coverUrl?: string | null): string | null {
   const trimmed = coverUrl.trim();
 
   return trimmed || null;
+}
+
+function buildCoverUrlWithVersion(
+  coverUrl: string | null,
+  coverVersion: number | null | undefined,
+): string | null {
+  if (!coverUrl) return null;
+
+  const version = coverVersion ?? 0;
+
+  try {
+    const url = new URL(coverUrl, "https://placeholder.local");
+    url.searchParams.delete("v");
+    url.searchParams.set("v", String(version));
+
+    if (/^https?:\/\//i.test(coverUrl)) {
+      return url.toString();
+    }
+
+    const search = url.searchParams.toString();
+    const query = search ? `?${search}` : "";
+    return `${url.pathname || "/"}${query}${url.hash}`;
+  } catch (error) {
+    console.warn("[cover] failed to attach version, falling back", error);
+    const separator = coverUrl.includes("?") ? "&" : "?";
+    return `${coverUrl}${separator}v=${version}`;
+  }
 }
 
 function extractTelegramFileId(
@@ -787,8 +814,10 @@ function renderSmartlink(
   const releaseDate = data.release_date;
   const coverSource = data.cover_source ?? null;
   const coverUrl = resolveCoverUrl(data.cover_url);
+  const coverVersion = normalizeCoverVersionInput(data.cover_version ?? null);
+  const coverUrlWithVersion = buildCoverUrlWithVersion(coverUrl, coverVersion);
 
-  if (!coverUrl) {
+  if (!coverUrlWithVersion) {
     console.warn(`[render ${artistSlug}/${slug}]: missing cover, using placeholder`, {
       cover_url: data.cover_url ?? null,
       cover_source: coverSource,
@@ -829,8 +858,8 @@ function renderSmartlink(
 
   const body = `
     ${
-      coverUrl
-        ? `<img class="cover" src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)}" loading="lazy" />`
+      coverUrlWithVersion
+        ? `<img class="cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
         : `<div class="cover cover-placeholder">NO COVER</div>`
     }
     <h1>${escapeHtml(title)}</h1>
@@ -890,6 +919,7 @@ export default {
           artist,
           release_date,
           cover_source,
+          cover_url,
           cover_version,
           links,
           slug,
@@ -910,9 +940,11 @@ export default {
         const normalizedLinks = normalizeLinksInput(links, "[upsert] links");
         const linksJson = JSON.stringify(normalizedLinks);
         const coverSourceProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_source");
+        const coverUrlProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_url");
         const normalizedCoverSource = coverSourceProvided
           ? normalizeCoverSourceInput(cover_source, "[upsert] cover_source")
           : null;
+        const normalizedCoverUrl = coverUrlProvided ? resolveCoverUrl(cover_url) : null;
 
         if (normalizedCoverSource?.error) {
           return jsonResponse(
@@ -925,13 +957,20 @@ export default {
         let storedCoverUrl: string | null = null;
         let storedCoverVersion = normalizeCoverVersionInput(cover_version);
         let storedCoverSource: string | null = normalizedCoverSource?.value ?? null;
+        let storedCoverUpdatedAt: string | null = null;
 
         try {
           const existingRecord = await env.DB.prepare(
-            `SELECT id, cover_source, cover_version FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
+            `SELECT id, cover_source, cover_version, cover_url, cover_updated_at FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
           )
             .bind(computedArtistSlug, computedSlug)
-            .all<{ id: string; cover_source: string | null; cover_version: number | null }>();
+            .all<{
+              id: string;
+              cover_source: string | null;
+              cover_version: number | null;
+              cover_url: string | null;
+              cover_updated_at: string | null;
+            }>();
 
           const existing = existingRecord.results?.[0];
 
@@ -939,23 +978,43 @@ export default {
             storedCoverSource = existing?.cover_source ?? null;
           }
 
-          const baseCoverVersion = existing?.cover_version ?? 1;
+          const baseCoverVersion = existing?.cover_version ?? 0;
           if (storedCoverVersion !== null) {
-            storedCoverVersion = Math.max(1, storedCoverVersion);
-          } else if (coverSourceProvided) {
+            storedCoverVersion = Math.max(0, storedCoverVersion);
+          } else if (coverSourceProvided || coverUrlProvided) {
             storedCoverVersion = existing ? baseCoverVersion + 1 : 1;
           } else {
             storedCoverVersion = baseCoverVersion;
           }
 
-          const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+          storedCoverVersion ??= 0;
 
-          storedCoverUrl = `${goIndexBase}/api/cover/${encodeURIComponent(computedArtistSlug)}/${encodeURIComponent(computedSlug)}?v=${storedCoverVersion}`;
+          const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+          const defaultCoverUrl = `${goIndexBase}/api/cover/${encodeURIComponent(computedArtistSlug)}/${encodeURIComponent(computedSlug)}`;
+          const existingCoverUrl = resolveCoverUrl(existing?.cover_url ?? null);
+
+          if (coverUrlProvided) {
+            storedCoverUrl = normalizedCoverUrl;
+          } else if (existingCoverUrl) {
+            storedCoverUrl = existingCoverUrl;
+          } else if (storedCoverSource) {
+            storedCoverUrl = defaultCoverUrl;
+          } else {
+            storedCoverUrl = null;
+          }
+
+          const coverChanged =
+            coverUrlProvided ||
+            coverSourceProvided ||
+            storedCoverVersion !== baseCoverVersion;
+          storedCoverUpdatedAt = coverChanged
+            ? new Date().toISOString()
+            : existing?.cover_updated_at ?? null;
 
           await env.DB.prepare(
             `INSERT INTO smartlinks (
-              id, artist_slug, slug, title, artist_name, release_date, cover_source, cover_version, cover_url, links_json, created_at, updated_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, datetime('now'), datetime('now'))
+              id, artist_slug, slug, title, artist_name, release_date, cover_source, cover_version, cover_url, cover_updated_at, links_json, created_at, updated_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, datetime('now'), datetime('now'))
             ON CONFLICT(artist_slug, slug) DO UPDATE SET
               title=excluded.title,
               artist_name=excluded.artist_name,
@@ -963,6 +1022,7 @@ export default {
               cover_source=excluded.cover_source,
               cover_version=excluded.cover_version,
               cover_url=excluded.cover_url,
+              cover_updated_at=excluded.cover_updated_at,
               links_json=excluded.links_json,
               updated_at=datetime('now')`,
           )
@@ -976,6 +1036,7 @@ export default {
               storedCoverSource,
               storedCoverVersion,
               storedCoverUrl,
+              storedCoverUpdatedAt,
               linksJson,
             )
             .run();
@@ -1201,6 +1262,7 @@ export default {
           artist_name,
           release_date,
           cover_source,
+          cover_version,
           cover_url,
           links_json
         FROM smartlinks
@@ -1216,6 +1278,7 @@ export default {
           artist_name: string | null;
           release_date: string | null;
           cover_source: string | null;
+          cover_version: number | null;
           cover_url: string | null;
           links_json: string | null;
         }>();
@@ -1238,6 +1301,7 @@ export default {
         title: record.title ?? undefined,
         artist: record.artist_name ?? artistSlug,
         release_date: record.release_date ?? undefined,
+        cover_version: record.cover_version ?? undefined,
         cover_url: record.cover_url ?? undefined,
         cover_source: coverSource ?? undefined,
         links,
