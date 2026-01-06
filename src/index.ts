@@ -846,15 +846,15 @@ function escapeHtml(value: string): string {
 
 const THEME = {
   colors: {
-    background: "#050608",
-    surface: "#0e0f15",
-    surfaceMuted: "#151721",
-    accent: "#f5c32c",
-    textPrimary: "#f7f7f2",
-    textSecondary: "#c7c7c3",
-    textMuted: "#9d9ea6",
-    border: "#1f222c",
-    shadowTint: "rgba(245, 195, 44, 0.2)",
+    background: "#0b0e13",
+    surface: "#0f131a",
+    surfaceMuted: "#131a24",
+    accent: "#f5c842",
+    textPrimary: "#f4f5f8",
+    textSecondary: "#c8cbd2",
+    textMuted: "#8f95a3",
+    border: "#1b2330",
+    shadowTint: "rgba(7, 11, 17, 0.6)",
   },
   fonts: {
     body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -865,10 +865,10 @@ const THEME = {
     pill: "999px",
   },
   shadows: {
-    card: "0 28px 80px rgba(0, 0, 0, 0.6)",
-    cover: "0 22px 60px rgba(0, 0, 0, 0.55)",
-    button: "0 10px 30px rgba(245, 195, 44, 0.16)",
-    gridCard: "0 16px 44px rgba(0, 0, 0, 0.32)",
+    card: "0 18px 46px rgba(0, 0, 0, 0.45)",
+    cover: "0 12px 26px rgba(0, 0, 0, 0.35)",
+    button: "0 6px 18px rgba(245, 200, 66, 0.18)",
+    gridCard: "0 10px 28px rgba(0, 0, 0, 0.28)",
   },
 };
 
@@ -895,22 +895,13 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
     }
     .card {
       width: min(720px, 100%);
-      background: linear-gradient(160deg, ${THEME.colors.surface} 0%, ${THEME.colors.surfaceMuted} 100%);
+      background: ${THEME.colors.surface};
       border: 1px solid ${THEME.colors.border};
       border-radius: ${THEME.radii.card};
       box-shadow: ${THEME.shadows.card};
       padding: 2.5rem;
-      backdrop-filter: blur(6px);
       position: relative;
       overflow: hidden;
-    }
-    .card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 18% 12%, ${THEME.colors.shadowTint}, transparent 32%);
-      pointer-events: none;
-      opacity: 0.7;
     }
     .cover {
       width: 100%;
@@ -926,15 +917,15 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, rgba(245, 195, 44, 0.08), rgba(255, 255, 255, 0.02));
+      background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textSecondary};
       min-height: 280px;
       font-weight: 700;
       letter-spacing: 0.08em;
     }
     a { color: inherit; }
-    h1 { margin: 0 0 0.5rem; font-size: 2rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
-    p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.5; }
+    h1 { margin: 0 0 0.6rem; font-size: 2.35rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; font-weight: 800; }
+    p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.6; }
     .meta { margin-top: 0.25rem; color: ${THEME.colors.textMuted}; font-size: 1rem; }
     .meta strong { color: ${THEME.colors.textPrimary}; }
     .links { margin-top: 1.8rem; display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
@@ -954,31 +945,31 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
     }
     .link-btn:hover { transform: translateY(-2px); border-color: ${THEME.colors.accent}; box-shadow: 0 16px 36px ${THEME.colors.shadowTint}; background: ${THEME.colors.surfaceMuted}; }
-    .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 195, 44, 0.08); }
+    .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 200, 66, 0.12); }
     .small { margin-top: 2.2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
     .canonical-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
     .canonical-label { white-space: nowrap; }
     .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
     .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textPrimary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.9rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease; }
     .copy-btn:hover { transform: translateY(-1px); border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; }
-    .copy-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 195, 44, 0.08); }
+    .copy-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 200, 66, 0.12); }
     .copy-toast { min-width: 110px; color: ${THEME.colors.textPrimary}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; }
     .copy-toast.visible { opacity: 1; }
-    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.accent}; border-radius: 50%; box-shadow: 0 0 0 6px rgba(245, 195, 44, 0.12); }
+    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.textMuted}; border-radius: 50%; box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.04); }
     .header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
     .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; }
     .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px dotted ${THEME.colors.textMuted}; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .artist-hero { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.6rem; }
+    .artist-hero { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.8rem; }
     .release-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .release-card { display: flex; flex-direction: column; gap: 0.65rem; padding: 1rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.gridCard}; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease; cursor: pointer; }
-    .release-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px ${THEME.colors.shadowTint}; border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; }
-    .release-cover { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: linear-gradient(135deg, rgba(245, 195, 44, 0.08), rgba(255, 255, 255, 0.04)); box-shadow: ${THEME.shadows.cover}; }
+    .release-card { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; box-shadow: none; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: border-color 140ms ease, background 140ms ease; cursor: pointer; }
+    .release-card:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; }
+    .release-cover { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
     .release-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.06em; }
-    .release-title { font-size: 1.05rem; font-weight: 800; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
-    .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; font-size: 0.95rem; color: ${THEME.colors.textSecondary}; align-items: center; }
-    .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
-    .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-top: 0.2rem; }
+    .release-title { font-size: 1.1rem; font-weight: 800; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; align-items: center; padding-top: 0.1rem; }
+    .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
+    .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-top: 0.2rem; padding-top: 0.4rem; border-top: 1px solid ${THEME.colors.border}; }
     .copy-btn.copy-btn-small { padding: 0.35rem 0.8rem; font-size: 0.9rem; }
     .empty-state { padding: 1.4rem; border-radius: 14px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 640px) {
