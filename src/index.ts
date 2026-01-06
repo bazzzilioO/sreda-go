@@ -1192,12 +1192,14 @@ function htmlPage(
     .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0.75rem 0.85rem; border-radius: 14px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(24,24,24,0.8); width: 100%; min-width: 0; }
-    .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textPrimary}; border-radius: 12px; width: 100%; padding: 0.9rem 1rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 780; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 120ms ease; box-shadow: ${THEME.shadows.button}; }
-    .copy-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.82); color: ${THEME.colors.accent}; box-shadow: 0 12px 28px rgba(0,0,0,0.35); transform: translateY(-1px); }
-    .copy-btn:active { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.82); color: ${THEME.colors.accent}; box-shadow: 0 8px 18px rgba(0,0,0,0.3); transform: translateY(0); }
-    .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; text-align: center; width: 100%; }
-    .copy-toast.visible { opacity: 1; }
+    .canonical-row { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0; border-radius: 0; border: none; background: transparent; width: 100%; min-width: 0; margin-top: 0.45rem; }
+    .copy-btn { border: none; background: linear-gradient(135deg, ${THEME.colors.accent}, #fbbf24); color: #0b0b0b; border-radius: 14px; width: 100%; padding: 0.95rem 1.1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; cursor: pointer; font-weight: 820; letter-spacing: 0.01em; transition: background 140ms ease, color 140ms ease, box-shadow 160ms ease, transform 120ms ease; box-shadow: 0 12px 32px rgba(0,0,0,0.36), 0 0 0 1px rgba(245,158,11,0.22); }
+    .copy-btn:hover { background: linear-gradient(135deg, #fbbf24, ${THEME.colors.accent}); color: #0a0a0a; box-shadow: 0 14px 34px rgba(0,0,0,0.38), 0 0 0 1px rgba(245,158,11,0.28); transform: translateY(-1px); }
+    .copy-btn:active { background: linear-gradient(135deg, ${THEME.colors.accent}, ${THEME.colors.accent}); box-shadow: 0 10px 24px rgba(0,0,0,0.32), 0 0 0 1px rgba(245,158,11,0.32); transform: translateY(0); }
+    .copy-btn.copied { box-shadow: 0 10px 26px rgba(0,0,0,0.34), 0 0 0 1px rgba(245,158,11,0.38); }
+    .copy-btn:focus-visible { outline: 2px solid rgba(245,158,11,0.65); outline-offset: 3px; }
+    .copy-toast { min-width: 80px; color: ${THEME.colors.accent}; opacity: 0; transform: translateY(4px); transition: opacity 180ms ease, transform 180ms ease; font-weight: 760; font-size: 0.92rem; text-align: left; }
+    .copy-toast.visible { opacity: 1; transform: translateY(0); }
     .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.6rem; }
     .smartlink-item { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.05rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
@@ -1459,43 +1461,54 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       }
       <script>
         (function() {
-          document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
-            button.addEventListener('click', async (event) => {
-              event.stopPropagation();
-              const urlToCopy = button.getAttribute('data-url') || '';
-
-              async function copyText(text) {
-                if (!text) return false;
-                try {
-                  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-                    await navigator.clipboard.writeText(text);
-                    return true;
-                  }
-                  const textarea = document.createElement('textarea');
-                  textarea.value = text;
-                  textarea.setAttribute('readonly', '');
-                  textarea.style.position = 'fixed';
-                  textarea.style.top = '-9999px';
-                  document.body.appendChild(textarea);
-                  textarea.select();
-                  document.execCommand('copy');
-                  document.body.removeChild(textarea);
-                  return true;
-                } catch (error) {
-                  console.warn('clipboard copy failed', error);
-                  return false;
-                }
+          async function copyText(text) {
+            if (!text) return false;
+            try {
+              if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                await navigator.clipboard.writeText(text);
+                return true;
               }
+              const textarea = document.createElement('textarea');
+              textarea.value = text;
+              textarea.setAttribute('readonly', '');
+              textarea.style.position = 'fixed';
+              textarea.style.top = '-9999px';
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textarea);
+              return true;
+            } catch (error) {
+              console.warn('clipboard copy failed', error);
+              return false;
+            }
+          }
 
+          function attachCopyHandlers() {
+            document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
               const toast = button.parentElement?.querySelector('.copy-toast');
-              const ok = await copyText(urlToCopy);
-              if (toast) {
-                toast.textContent = ok ? 'Скопировано ✓' : 'Не удалось скопировать';
-                toast.classList.add('visible');
-                window.setTimeout(() => toast.classList.remove('visible'), ok ? 1400 : 1700);
-              }
+
+              button.addEventListener('click', async (event) => {
+                event.stopPropagation();
+                const urlToCopy = button.getAttribute('data-url') || '';
+                const ok = await copyText(urlToCopy);
+
+                if (toast) {
+                  toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+                  toast.classList.add('visible');
+                }
+
+                button.classList.toggle('copied', ok);
+
+                window.setTimeout(() => {
+                  button.classList.remove('copied');
+                  toast?.classList.remove('visible');
+                }, ok ? 1500 : 1800);
+              });
             });
-          });
+          }
+
+          attachCopyHandlers();
 
           document.querySelectorAll('.smartlink-item[data-href]').forEach((card) => {
             const href = card.getAttribute('data-href');
@@ -1603,7 +1616,7 @@ function renderSmartlink(
         </div>
         <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
         ${releaseDate ? `<div class="release-date">Дата релиза: ${escapeHtml(releaseDate)}</div>` : ""}
-        <div class="canonical-row" style="margin-top:1.1rem;">
+        <div class="canonical-row">
           <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку">Скопировать ссылку</button>
           <span class="copy-toast" role="status" aria-live="polite"></span>
         </div>
@@ -1611,44 +1624,55 @@ function renderSmartlink(
     </div>
     <script>
       (function() {
-        document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
-          button.addEventListener('click', async () => {
-            const urlToCopy = button.getAttribute('data-url') || '';
+        async function copyText(text) {
+          if (!text) return false;
 
-            async function copyText(text) {
-              if (!text) return false;
-
-              try {
-                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-                  await navigator.clipboard.writeText(text);
-                  return true;
-                }
-
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.setAttribute('readonly', '');
-                textarea.style.position = 'fixed';
-                textarea.style.top = '-9999px';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                return true;
-              } catch (error) {
-                console.warn('clipboard copy failed', error);
-                return false;
-              }
+          try {
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              await navigator.clipboard.writeText(text);
+              return true;
             }
 
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            return true;
+          } catch (error) {
+            console.warn('clipboard copy failed', error);
+            return false;
+          }
+        }
+
+        function attachCopyHandlers() {
+          document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
             const toast = button.parentElement?.querySelector('.copy-toast');
-            const ok = await copyText(urlToCopy);
-            if (toast) {
-              toast.textContent = ok ? 'Скопировано ✓' : 'Не удалось скопировать';
-              toast.classList.add('visible');
-              window.setTimeout(() => toast.classList.remove('visible'), ok ? 1400 : 1700);
-            }
+
+            button.addEventListener('click', async () => {
+              const urlToCopy = button.getAttribute('data-url') || '';
+              const ok = await copyText(urlToCopy);
+
+              if (toast) {
+                toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+                toast.classList.add('visible');
+              }
+
+              button.classList.toggle('copied', ok);
+
+              window.setTimeout(() => {
+                button.classList.remove('copied');
+                toast?.classList.remove('visible');
+              }, ok ? 1500 : 1800);
+            });
           });
-        });
+        }
+
+        attachCopyHandlers();
       })();
     </script>
   `;
