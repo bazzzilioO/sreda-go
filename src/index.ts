@@ -37,6 +37,11 @@ type UpsertRequest = {
   cover_url?: string;
   cover_version?: number;
   links?: Record<string, string>;
+  owner?: {
+    tg_user_id?: string | number | null;
+    username?: string | number | null;
+    display_name?: string | number | null;
+  } | null;
 };
 
 type LinkRecord = Record<string, string>;
@@ -741,6 +746,78 @@ const LINK_ORDER = [
   "other",
 ];
 
+async function ensureSchema(db: D1Database): Promise<void> {
+  const alterStatements = [
+    "ALTER TABLE smartlinks ADD COLUMN owner_tg_user_id TEXT",
+    "ALTER TABLE smartlinks ADD COLUMN owner_tg_username TEXT",
+    "ALTER TABLE smartlinks ADD COLUMN owner_display_name TEXT",
+  ];
+
+  for (const statement of alterStatements) {
+    try {
+      await db.prepare(statement).run();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/duplicate column name/i.test(message)) {
+        continue;
+      }
+
+      console.warn(`[schema] failed to apply migration: ${statement}`, error);
+      throw error;
+    }
+  }
+
+  try {
+    await db.prepare("CREATE INDEX IF NOT EXISTS idx_smartlinks_owner ON smartlinks(owner_tg_user_id)").run();
+  } catch (error) {
+    console.warn("[schema] failed to ensure idx_smartlinks_owner", error);
+    throw error;
+  }
+}
+
+function normalizeOwnerInput(
+  input: unknown,
+): { owner: { tg_user_id: string; username: string | null; display_name: string | null } | null; error: string | null } {
+  if (input === undefined || input === null) {
+    return { owner: null, error: null };
+  }
+
+  if (typeof input !== "object") {
+    return { owner: null, error: "owner_must_be_object" };
+  }
+
+  const candidate = input as { tg_user_id?: unknown; username?: unknown; display_name?: unknown };
+  const tgUserIdRaw = candidate.tg_user_id;
+
+  if (tgUserIdRaw === undefined || tgUserIdRaw === null) {
+    return { owner: null, error: "owner_tg_user_id_required" };
+  }
+
+  const tgUserId = String(tgUserIdRaw).trim();
+  if (!tgUserId) {
+    return { owner: null, error: "owner_tg_user_id_empty" };
+  }
+
+  const usernameRaw = candidate.username;
+  const displayNameRaw = candidate.display_name;
+
+  const username =
+    usernameRaw === undefined || usernameRaw === null ? null : String(usernameRaw).trim() || null;
+  const displayName =
+    displayNameRaw === undefined || displayNameRaw === null
+      ? null
+      : String(displayNameRaw).trim() || null;
+
+  return {
+    owner: {
+      tg_user_id: tgUserId,
+      username,
+      display_name: displayName,
+    },
+    error: null,
+  };
+}
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -975,6 +1052,8 @@ export default {
         return jsonResponse({ ok: false, error: "unauthorized" }, 401);
       }
 
+      await ensureSchema(env.DB);
+
       try {
         let payload: UpsertRequest;
         try {
@@ -996,6 +1075,7 @@ export default {
           links,
           slug,
           artist_slug,
+          owner,
         } = payload ?? {};
 
         const computedArtistSlug = buildSlug(
@@ -1017,6 +1097,7 @@ export default {
           ? normalizeCoverSourceInput(cover_source, "[upsert] cover_source")
           : null;
         const normalizedCoverUrl = coverUrlProvided ? resolveCoverUrl(cover_url) : null;
+        const { owner: normalizedOwner, error: ownerError } = normalizeOwnerInput(owner);
 
         if (normalizedCoverSource?.error) {
           return jsonResponse(
@@ -1025,15 +1106,34 @@ export default {
           );
         }
 
-        let action: "inserted" | "updated" = "inserted";
+        if (ownerError) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { owner: ownerError } },
+            400,
+          );
+        }
+
+        let action: "insert" | "update" = "insert";
         let storedCoverUrl: string | null = null;
         let storedCoverVersion = normalizeCoverVersionInput(cover_version);
         let storedCoverSource: string | null = normalizedCoverSource?.value ?? null;
         let storedCoverUpdatedAt: string | null = null;
+        let ownerSaved = false;
 
         try {
           const existingRecord = await env.DB.prepare(
-            `SELECT id, cover_source, cover_version, cover_url, cover_updated_at FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
+            `SELECT
+              id,
+              cover_source,
+              cover_version,
+              cover_url,
+              cover_updated_at,
+              owner_tg_user_id,
+              owner_tg_username,
+              owner_display_name
+            FROM smartlinks
+            WHERE artist_slug=?1 AND slug=?2
+            LIMIT 1`,
           )
             .bind(computedArtistSlug, computedSlug)
             .all<{
@@ -1042,9 +1142,14 @@ export default {
               cover_version: number | null;
               cover_url: string | null;
               cover_updated_at: string | null;
+              owner_tg_user_id: string | null;
+              owner_tg_username: string | null;
+              owner_display_name: string | null;
             }>();
 
           const existing = existingRecord.results?.[0];
+
+          ownerSaved = Boolean(normalizedOwner && !existing?.owner_tg_user_id);
 
           if (!coverSourceProvided) {
             storedCoverSource = existing?.cover_source ?? null;
@@ -1085,12 +1190,30 @@ export default {
 
           await env.DB.prepare(
             `INSERT INTO smartlinks (
-              id, artist_slug, slug, title, artist_name, release_date, cover_source, cover_version, cover_url, cover_updated_at, links_json, created_at, updated_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, datetime('now'), datetime('now'))
+              id,
+              artist_slug,
+              slug,
+              title,
+              artist_name,
+              release_date,
+              owner_tg_user_id,
+              owner_tg_username,
+              owner_display_name,
+              cover_source,
+              cover_version,
+              cover_url,
+              cover_updated_at,
+              links_json,
+              created_at,
+              updated_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, datetime('now'), datetime('now'))
             ON CONFLICT(artist_slug, slug) DO UPDATE SET
               title=excluded.title,
               artist_name=excluded.artist_name,
               release_date=excluded.release_date,
+              owner_tg_user_id=COALESCE(smartlinks.owner_tg_user_id, excluded.owner_tg_user_id),
+              owner_tg_username=COALESCE(smartlinks.owner_tg_username, excluded.owner_tg_username),
+              owner_display_name=COALESCE(smartlinks.owner_display_name, excluded.owner_display_name),
               cover_source=excluded.cover_source,
               cover_version=excluded.cover_version,
               cover_url=excluded.cover_url,
@@ -1105,6 +1228,9 @@ export default {
               title,
               artist_name ?? null,
               release_date ?? null,
+              normalizedOwner?.tg_user_id ?? null,
+              normalizedOwner?.username ?? null,
+              normalizedOwner?.display_name ?? null,
               storedCoverSource,
               storedCoverVersion,
               storedCoverUrl,
@@ -1113,7 +1239,7 @@ export default {
             )
             .run();
 
-          action = existing ? "updated" : "inserted";
+          action = existing ? "update" : "insert";
         } catch (error) {
           console.error("[upsert] db error", error);
           return jsonResponse(
@@ -1160,6 +1286,7 @@ export default {
           artist_slug: computedArtistSlug,
           slug: computedSlug,
           id: canonicalId,
+          owner_saved: ownerSaved,
         });
       } catch (err) {
         console.error("[upsert] error", err);
@@ -1173,6 +1300,8 @@ export default {
     if (request.method !== "GET") {
       return renderNotFound();
     }
+
+    await ensureSchema(env.DB);
 
     if (segments.length >= 3 && segments[0] === "api" && segments[1] === "cover") {
       if (segments.length === 3) {
