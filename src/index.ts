@@ -1084,8 +1084,8 @@ function htmlPage(
       z-index: 0;
     }
     .card > * { position: relative; z-index: 1; }
-    .smartlink-layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(320px, 420px); gap: 1.25rem; align-items: start; min-width: 0; }
-    .cover-frame { display: flex; justify-content: center; width: 100%; align-self: start; min-width: 0; padding: 0.1rem; }
+    .smartlink-layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(320px, 420px); gap: 1.25rem; align-items: stretch; min-width: 0; }
+    .cover-frame { display: flex; justify-content: center; align-items: flex-start; width: 100%; align-self: stretch; min-width: 0; }
     .cover {
       width: min(100%, 380px);
       max-width: 420px;
@@ -1165,7 +1165,7 @@ function htmlPage(
     .meta strong { color: ${THEME.colors.textPrimary}; }
     .meta-label { color: ${THEME.colors.textSecondary}; }
     .meta-divider { color: ${THEME.colors.textMuted}; }
-    .header { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; max-width: 420px; width: 100%; margin: 0 auto; }
+    .header { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; max-width: 420px; width: 100%; }
     .artist-line { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem; justify-content: flex-start; }
     .artist-line .meta-label { color: ${THEME.colors.textMuted}; }
     .release-date { color: ${THEME.colors.textMuted}; font-size: 0.9rem; margin-top: 0.4rem; text-align: left; opacity: 0.78; }
