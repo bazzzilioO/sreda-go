@@ -553,9 +553,59 @@ async function handleExternalCover(
   }
 }
 
+const RU_TO_LATIN_MAP: Record<string, string> = {
+  а: "a",
+  б: "b",
+  в: "v",
+  г: "g",
+  д: "d",
+  е: "e",
+  ё: "yo",
+  ж: "zh",
+  з: "z",
+  и: "i",
+  й: "y",
+  к: "k",
+  л: "l",
+  м: "m",
+  н: "n",
+  о: "o",
+  п: "p",
+  р: "r",
+  с: "s",
+  т: "t",
+  у: "u",
+  ф: "f",
+  х: "h",
+  ц: "c",
+  ч: "ch",
+  ш: "sh",
+  щ: "shch",
+  ъ: "",
+  ы: "y",
+  ь: "",
+  э: "e",
+  ю: "yu",
+  я: "ya",
+};
+
+function transliterate(value?: string | null): string {
+  if (!value) return "";
+
+  return value
+    .split("")
+    .map((char) => {
+      const lower = char.toLowerCase();
+      const mapped = RU_TO_LATIN_MAP[lower];
+      return mapped !== undefined ? mapped : char;
+    })
+    .join("");
+}
+
 function slugify(value?: string | null): string {
   if (!value) return "";
-  return value
+  const transliterated = transliterate(value);
+  return transliterated
     .toLowerCase()
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-")
@@ -564,13 +614,29 @@ function slugify(value?: string | null): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function buildSlug(value: string | undefined | null, id?: string | number): string | undefined {
+function buildSlug(
+  value: string | undefined | null,
+  id?: string | number,
+  { allowFallback = true }: { allowFallback?: boolean } = {},
+): string | undefined {
   const slug = slugify(value);
   if (slug) return slug;
-  if (id !== undefined && id !== null) {
+  if (allowFallback && id !== undefined && id !== null) {
     return `release-${id}`;
   }
   return undefined;
+}
+
+function deriveSlugsFromPayload(payload: UpsertRequest): { artistSlug?: string; releaseSlug?: string } {
+  const artistSource = payload.artist_slug ?? payload.artist_name ?? payload.artist;
+  const manualSlugProvided = payload.slug !== undefined && payload.slug !== null && String(payload.slug).trim();
+  const releaseSlug = manualSlugProvided
+    ? buildSlug(payload.slug, payload.id, { allowFallback: false })
+    : buildSlug(payload.title, payload.id);
+
+  const artistSlug = buildSlug(artistSource, payload.id);
+
+  return { artistSlug, releaseSlug };
 }
 
 function normalizeLinksInput(input: unknown, context: string): LinkRecord {
@@ -667,11 +733,7 @@ async function syncSmartlinkToWeb(
 
   const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
 
-  const artistSlug = buildSlug(
-    payload.artist_slug ?? payload.artist_name ?? payload.artist,
-    payload.id,
-  );
-  const slug = buildSlug(payload.slug ?? payload.title, payload.id);
+  const { artistSlug, releaseSlug: slug } = deriveSlugsFromPayload(payload);
 
   if (!payload.id || !artistSlug || !slug || !payload.title) {
     console.warn("smartlink sync skipped", payload.id, artistSlug, slug, payload.title);
@@ -873,6 +935,29 @@ function prettifySlug(value: string): string {
     .split(" ")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatDisplayDate(value?: string | null): string | null {
+  if (!value) return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+    return `${day}.${month}.${year}`;
+  }
+
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    const day = String(parsed.getDate()).padStart(2, "0");
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const year = parsed.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
+
+  return trimmed;
 }
 
 function renderMedia({
@@ -1103,13 +1188,11 @@ function htmlPage(
     .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; margin-top: 0.4rem; width: 100%; min-width: 0; }
-    .canonical-label { white-space: nowrap; color: ${THEME.colors.textMuted}; }
-    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.65rem; border-radius: 12px; background: rgba(30,30,30,0.72); border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; flex: 1 1 220px; }
-    .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.85rem; cursor: pointer; font-weight: 720; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease; box-shadow: ${THEME.shadows.button}; flex-shrink: 0; }
-    .copy-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.75); color: ${THEME.colors.accent}; box-shadow: 0 12px 28px rgba(0,0,0,0.35); }
-    .copy-btn:active { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.75); color: ${THEME.colors.accent}; box-shadow: 0 8px 18px rgba(0,0,0,0.3); }
-    .copy-btn.copy-btn-small { padding: 0.32rem 0.65rem; font-size: 0.9rem; }
+    .canonical-row { display: flex; align-items: center; gap: 0.65rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0.65rem 0.8rem; border-radius: 14px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(24,24,24,0.8); width: 100%; min-width: 0; }
+    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.65rem; border-radius: 12px; background: rgba(34,34,34,0.78); border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; flex: 1 1 220px; }
+    .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textPrimary}; border-radius: 12px; width: 42px; height: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 760; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 120ms ease; box-shadow: ${THEME.shadows.button}; flex-shrink: 0; }
+    .copy-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.82); color: ${THEME.colors.accent}; box-shadow: 0 12px 28px rgba(0,0,0,0.35); transform: translateY(-1px); }
+    .copy-btn:active { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.82); color: ${THEME.colors.accent}; box-shadow: 0 8px 18px rgba(0,0,0,0.3); transform: translateY(0); }
     .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; }
     .copy-toast.visible { opacity: 1; }
     .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.6rem; }
@@ -1122,11 +1205,11 @@ function htmlPage(
     .smartlink-content { display: flex; flex-direction: column; gap: 0.35rem; }
     .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
     .smartlink-title { font-size: 1.08rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
-    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.22rem 0.65rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.7); border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 750; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.35rem; }
-    .platform-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 4px rgba(245,158,11,0.1); }
-    .meta-row { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; align-items: center; color: ${THEME.colors.textSecondary};font-size: 0.92rem; }
+    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.55); border: 1px solid ${THEME.colors.borderSubtle}; color: ${THEME.colors.textSecondary}; font-weight: 740; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.3rem; }
+    .platform-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 3px rgba(245,158,11,0.08); }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; align-items: center; color: ${THEME.colors.textSecondary};font-size: 0.93rem; }
     .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.88rem; }
-    .slug-pill { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.12rem 0.5rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px dashed ${THEME.colors.border}; }
+    .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: ${THEME.colors.textFaint}; display: inline-block; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
@@ -1327,11 +1410,12 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         (coverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(record.slug)}` : null);
       const coverUrlWithVersion = buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
       const canonicalUrl = `${canonicalBase}/${artistSlug}/${record.slug}`;
-      const releaseDate = record.release_date
-        ? `<span class="pill pill-soft">${escapeHtml(record.release_date)}</span>`
-        : "";
-      const slugLabel = `<span class="slug-pill">/${escapeHtml(record.slug)}</span>`;
-      const metaPrimary = [releaseDate, slugLabel].filter(Boolean).join(" ");
+      const formattedReleaseDate = formatDisplayDate(record.release_date);
+      const formattedUpdatedAt = formatDisplayDate(record.updated_at);
+      const metaParts = [
+        formattedReleaseDate ? escapeHtml(formattedReleaseDate) : null,
+        formattedUpdatedAt ? `Обновлено ${escapeHtml(formattedUpdatedAt)}` : null,
+      ].filter(Boolean);
       const title = record.title ?? "Релиз";
 
       return `
@@ -1343,16 +1427,12 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 <div class="smartlink-title">${escapeHtml(title)}</div>
                 <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
               </div>
-              <div class="meta-row">${metaPrimary}</div>
-              <div class="meta-row subtle">${
-                record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : "Не обновлялся"
-              }</div>
+              <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
             </div>
           </a>
           <div class="canonical-row">
-            <span class="canonical-label">Канонический URL</span>
             <a class="canonical-url" href="${escapeHtml(canonicalUrl)}">${escapeHtml(canonicalUrl)}</a>
-            <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
+            <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
             <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </article>
@@ -1364,7 +1444,6 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
           <div class="artist-meta">
             <span>Все смартлинки в одном месте.</span>
-            <span class="slug-pill">/${escapeHtml(artistSlug)}</span>
           </div>
         </div>
         ${
@@ -1456,7 +1535,7 @@ function renderSmartlink(
 ): Response {
   const title = data.title ?? "Релиз";
   const artistName = data.artist_name?.trim() || data.artist?.trim() || prettifySlug(artistSlug);
-  const releaseDate = data.release_date;
+  const releaseDate = formatDisplayDate(data.release_date);
   const coverSource = data.cover_source ?? null;
   const coverUrl = resolveCoverUrl(data.cover_url);
   const coverVersion = normalizeCoverVersionInput(data.cover_version ?? null);
@@ -1513,14 +1592,12 @@ function renderSmartlink(
       <div class="header">
         <h1>${escapeHtml(title)}</h1>
         <div class="meta">
-          <span class="meta-label">Артист:</span>
           <strong>${artistLink}</strong>
-          ${releaseDate ? `<span class="meta-divider">•</span><span class="meta-label">${escapeHtml(releaseDate)}</span>` : ""}
+          ${releaseDate ? `<span class="meta-dot"></span><span>${escapeHtml(releaseDate)}</span>` : ""}
         </div>
         <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
         <div class="canonical-row" style="margin-top:1.1rem;">
-          <span class="canonical-label">Канонический URL</span>
-          <span class="canonical-url">${escapeHtml(canonicalUrl)}</span>
+          <a class="canonical-url" href="${escapeHtml(canonicalUrl)}">${escapeHtml(canonicalUrl)}</a>
           <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">⧉</button>
           <span class="copy-toast" role="status" aria-live="polite"></span>
         </div>
@@ -1631,11 +1708,14 @@ export default {
           owner,
         } = payload ?? {};
 
-        const computedArtistSlug = buildSlug(
-          artist_slug ?? artist_name ?? artist,
+        const { artistSlug: computedArtistSlug, releaseSlug: computedSlug } = deriveSlugsFromPayload({
           id,
-        );
-        const computedSlug = buildSlug(slug ?? title, id);
+          title,
+          artist_name,
+          artist,
+          artist_slug,
+          slug,
+        });
 
         if (!computedArtistSlug || !computedSlug || !title) {
           return jsonResponse({ ok: false, error: "bad_request" }, 400);
