@@ -1084,11 +1084,12 @@ function htmlPage(
       z-index: 0;
     }
     .card > * { position: relative; z-index: 1; }
-    .smartlink-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem; align-items: start; min-width: 0; }
-    .cover-frame { display: flex; justify-content: center; width: 100%; align-self: start; min-width: 0; }
+    .smartlink-layout { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(320px, 1fr); gap: 1.65rem; align-items: start; min-width: 0; }
+    .cover-frame { display: flex; justify-content: center; width: 100%; align-self: start; min-width: 0; padding: 0.25rem; }
     .cover {
       width: 100%;
-      max-width: 440px;
+      max-width: 400px;
+      max-height: 400px;
       aspect-ratio: 1 / 1;
       height: auto;
       border-radius: ${THEME.radii.cover};
@@ -1164,7 +1165,10 @@ function htmlPage(
     .meta strong { color: ${THEME.colors.textPrimary}; }
     .meta-label { color: ${THEME.colors.textSecondary}; }
     .meta-divider { color: ${THEME.colors.textMuted}; }
-    .header { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; }
+    .header { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+    .artist-line { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem; justify-content: flex-start; }
+    .artist-line .meta-label { color: ${THEME.colors.textMuted}; }
+    .release-date { color: ${THEME.colors.textMuted}; font-size: 0.92rem; margin-top: 0.3rem; text-align: left; }
     .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
     .links { margin-top: 1rem; display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
@@ -1188,12 +1192,11 @@ function htmlPage(
     .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; align-items: center; gap: 0.65rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0.65rem 0.8rem; border-radius: 14px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(24,24,24,0.8); width: 100%; min-width: 0; }
-    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.65rem; border-radius: 12px; background: rgba(34,34,34,0.78); border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); min-width: 0; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; flex: 1 1 220px; }
-    .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textPrimary}; border-radius: 12px; width: 42px; height: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 760; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 120ms ease; box-shadow: ${THEME.shadows.button}; flex-shrink: 0; }
+    .canonical-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0.75rem 0.85rem; border-radius: 14px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(24,24,24,0.8); width: 100%; min-width: 0; }
+    .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textPrimary}; border-radius: 12px; width: 100%; padding: 0.9rem 1rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 780; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 120ms ease; box-shadow: ${THEME.shadows.button}; }
     .copy-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.82); color: ${THEME.colors.accent}; box-shadow: 0 12px 28px rgba(0,0,0,0.35); transform: translateY(-1px); }
     .copy-btn:active { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.82); color: ${THEME.colors.accent}; box-shadow: 0 8px 18px rgba(0,0,0,0.3); transform: translateY(0); }
-    .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; }
+    .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; text-align: center; width: 100%; }
     .copy-toast.visible { opacity: 1; }
     .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.6rem; }
     .smartlink-item { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.05rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
@@ -1218,8 +1221,11 @@ function htmlPage(
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 768px) {
       .smartlink-layout { grid-template-columns: 1fr; justify-items: stretch; }
-      .smartlink-layout .header { text-align: center; width: 100%; }
+      .smartlink-layout .header { text-align: center; width: 100%; align-items: center; }
       .smartlink-layout .links { width: 100%; }
+      .artist-line { justify-content: center; }
+      .release-date { text-align: center; }
+      .canonical-row { align-items: center; }
       .links { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
@@ -1231,12 +1237,13 @@ function htmlPage(
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
       .links { grid-template-columns: 1fr; }
+      .copy-btn { width: 100%; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
       .card { padding: 1.25rem; width: calc(100% - 16px); }
       .smartlink-layout { gap: 1rem; }
-      .canonical-row { align-items: flex-start; gap: 0.5rem; }
+      .canonical-row { align-items: center; gap: 0.5rem; }
     }
   </style>
 </head>
@@ -1431,8 +1438,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             </div>
           </a>
           <div class="canonical-row">
-            <a class="canonical-url" href="${escapeHtml(canonicalUrl)}">${escapeHtml(canonicalUrl)}</a>
-            <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
+            <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Скопировать ссылку">Скопировать ссылку</button>
             <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </article>
@@ -1484,9 +1490,9 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
               const toast = button.parentElement?.querySelector('.copy-toast');
               const ok = await copyText(urlToCopy);
               if (toast) {
-                toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+                toast.textContent = ok ? 'Скопировано ✓' : 'Не удалось скопировать';
                 toast.classList.add('visible');
-                window.setTimeout(() => toast.classList.remove('visible'), ok ? 1300 : 1700);
+                window.setTimeout(() => toast.classList.remove('visible'), ok ? 1400 : 1700);
               }
             });
           });
@@ -1591,14 +1597,14 @@ function renderSmartlink(
       </div>
       <div class="header">
         <h1>${escapeHtml(title)}</h1>
-        <div class="meta">
-          <strong>${artistLink}</strong>
-          ${releaseDate ? `<span class="meta-dot"></span><span>${escapeHtml(releaseDate)}</span>` : ""}
+        <div class="artist-line">
+          <span class="meta-label">Артист:</span>
+          ${artistLink}
         </div>
         <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
+        ${releaseDate ? `<div class="release-date">Дата релиза: ${escapeHtml(releaseDate)}</div>` : ""}
         <div class="canonical-row" style="margin-top:1.1rem;">
-          <a class="canonical-url" href="${escapeHtml(canonicalUrl)}">${escapeHtml(canonicalUrl)}</a>
-          <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">⧉</button>
+          <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку">Скопировать ссылку</button>
           <span class="copy-toast" role="status" aria-live="polite"></span>
         </div>
       </div>
@@ -1637,9 +1643,9 @@ function renderSmartlink(
             const toast = button.parentElement?.querySelector('.copy-toast');
             const ok = await copyText(urlToCopy);
             if (toast) {
-              toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+              toast.textContent = ok ? 'Скопировано ✓' : 'Не удалось скопировать';
               toast.classList.add('visible');
-              window.setTimeout(() => toast.classList.remove('visible'), ok ? 1300 : 1700);
+              window.setTimeout(() => toast.classList.remove('visible'), ok ? 1400 : 1700);
             }
           });
         });
