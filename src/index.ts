@@ -219,6 +219,36 @@ function buildCoverUrlWithVersion(
   }
 }
 
+function resolvePreferredCoverUrl({
+  coverUrl,
+  coverSource,
+  artistSlug,
+  slug,
+  goIndexBase,
+  context,
+}: {
+  coverUrl?: string | null;
+  coverSource?: CoverSource | string | null;
+  artistSlug: string;
+  slug: string;
+  goIndexBase: string;
+  context: string;
+}): string | null {
+  const canonicalBase = goIndexBase.replace(/\/$/, "");
+  const parsedCoverSource =
+    typeof coverSource === "string" ? parseCoverSource(coverSource, context) : coverSource ?? null;
+
+  if (isTelegramCoverSource(parsedCoverSource)) {
+    return `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}`;
+  }
+
+  if (isExternalCoverSource(parsedCoverSource)) {
+    return resolveCoverUrl(parsedCoverSource.url) ?? null;
+  }
+
+  return resolveCoverUrl(coverUrl ?? null);
+}
+
 function extractTelegramFileId(
   coverUrl: string | undefined,
   coverSource: CoverSource | null,
@@ -259,6 +289,17 @@ function extractTelegramFileIdFromString(value: string | undefined, context: str
   return null;
 }
 
+function buildCoverCacheKey(request: Request, coverVersion: number | null | undefined): Request {
+  const url = new URL(request.url);
+  const normalizedVersion = normalizeCoverVersionInput(coverVersion ?? null);
+
+  if (normalizedVersion !== null) {
+    url.searchParams.set("v", String(normalizedVersion));
+  }
+
+  return new Request(url.toString(), request);
+}
+
 function isInternalCoverUrl(targetUrl: string, requestUrl: string): boolean {
   try {
     const resolvedTarget = new URL(targetUrl, requestUrl);
@@ -277,28 +318,28 @@ async function handleCoverProxy(
   artistSlug: string,
   slug: string,
 ): Promise<Response> {
-  const cacheKey = new Request(request.url, request);
-
-  const cached = await caches.default.match(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
   try {
     const query = await env.DB.prepare(
       `SELECT
         cover_source,
-        cover_url
+        cover_url,
+        cover_version
       FROM smartlinks
       WHERE artist_slug=?1 AND slug=?2
       LIMIT 1`,
     )
       .bind(artistSlug, slug)
-      .all<{ cover_source: string | null; cover_url: string | null }>();
+      .all<{ cover_source: string | null; cover_url: string | null; cover_version: number | null }>();
 
     const record = query.results?.[0];
     if (!record) {
       return new Response("Not found", { status: 404 });
+    }
+
+    const cacheKey = buildCoverCacheKey(request, record.cover_version);
+    const cached = await caches.default.match(cacheKey);
+    if (cached) {
+      return cached;
     }
 
     return resolveCoverResponse(request, env, record, cacheKey, `[cover ${artistSlug}/${slug}]`);
@@ -441,23 +482,22 @@ async function finalizeImageResponse(
 }
 
 async function handleCoverById(request: Request, env: Env, canonicalId: string): Promise<Response> {
-  const cacheKey = new Request(request.url, request);
-
-  const cached = await caches.default.match(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
   try {
     const query = await env.DB.prepare(
-      `SELECT cover_url, cover_source FROM smartlinks WHERE id=?1 LIMIT 1`,
+      `SELECT cover_url, cover_source, cover_version FROM smartlinks WHERE id=?1 LIMIT 1`,
     )
       .bind(canonicalId)
-      .all<{ cover_url: string | null; cover_source: string | null }>();
+      .all<{ cover_url: string | null; cover_source: string | null; cover_version: number | null }>();
 
     const record = query.results?.[0];
     if (!record) {
       return jsonResponse({ error: "not_found" }, 404);
+    }
+
+    const cacheKey = buildCoverCacheKey(request, record.cover_version);
+    const cached = await caches.default.match(cacheKey);
+    if (cached) {
+      return cached;
     }
 
     return resolveCoverResponse(request, env, record, cacheKey, `[api/cover ${canonicalId}]`);
@@ -473,23 +513,22 @@ async function handleCoverBySlug(
   artistSlug: string,
   slug: string,
 ): Promise<Response> {
-  const cacheKey = new Request(request.url, request);
-
-  const cached = await caches.default.match(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
   try {
     const query = await env.DB.prepare(
-      `SELECT cover_source, cover_url FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
+      `SELECT cover_source, cover_url, cover_version FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
     )
       .bind(artistSlug, slug)
-      .all<{ cover_source: string | null; cover_url: string | null }>();
+      .all<{ cover_source: string | null; cover_url: string | null; cover_version: number | null }>();
 
     const record = query.results?.[0];
     if (!record) {
       return new Response("Not found", { status: 404 });
+    }
+
+    const cacheKey = buildCoverCacheKey(request, record.cover_version);
+    const cached = await caches.default.match(cacheKey);
+    if (cached) {
+      return cached;
     }
 
     return resolveCoverResponse(request, env, record, cacheKey, `[api/cover ${artistSlug}/${slug}]`);
@@ -508,6 +547,10 @@ async function resolveCoverResponse(
 ): Promise<Response> {
   const coverSource = parseCoverSource(record.cover_source, `${context} cover_source`);
   const coverUrl = record.cover_url?.trim() || null;
+
+  if (!coverSource) {
+    return respondWithPlaceholderCover(cacheKey);
+  }
 
   if (isTelegramCoverSource(coverSource)) {
     const fileId = coverSource.file_id.trim();
@@ -978,13 +1021,14 @@ function buildDisplayCoverUrl({
   coverVersion?: number | null;
   context?: string;
 }): string {
-  const canonicalBase = goIndexBase.replace(/\/$/, "");
-  const parsedCoverSource =
-    typeof coverSource === "string" ? parseCoverSource(coverSource, context) : coverSource ?? null;
-
-  const resolvedCoverUrl =
-    resolveCoverUrl(coverUrl ?? null) ||
-    (parsedCoverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}` : null);
+  const resolvedCoverUrl = resolvePreferredCoverUrl({
+    coverUrl,
+    coverSource,
+    artistSlug,
+    slug,
+    goIndexBase,
+    context,
+  });
 
   const withVersion = buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion ?? null);
 
@@ -1449,11 +1493,19 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     const canonicalBase = goIndexBase.replace(/\/$/, "");
     const backgroundCover = items
       .map((item) => {
-        const coverSource = parseCoverSource(item.cover_source, `[artist ${artistSlug}/${item.slug}] cover_source bg`);
+        const coverSource = parseCoverSource(
+          item.cover_source,
+          `[artist ${artistSlug}/${item.slug}] cover_source bg`,
+        );
         const coverVersion = normalizeCoverVersionInput(item.cover_version ?? null);
-        const resolvedCoverUrl =
-          resolveCoverUrl(item.cover_url ?? null) ||
-          (coverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(item.slug)}` : null);
+        const resolvedCoverUrl = resolvePreferredCoverUrl({
+          coverUrl: item.cover_url,
+          coverSource,
+          artistSlug,
+          slug: item.slug,
+          goIndexBase,
+          context: `[artist ${artistSlug}/${item.slug}] cover_display bg`,
+        });
         return buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
       })
       .find((url) => Boolean(url));
@@ -2299,6 +2351,15 @@ export default {
         console.warn(`[render ${artistSlug}/${slug}]: no links to render`, record.links_json);
       }
 
+      const resolvedCoverUrl = resolvePreferredCoverUrl({
+        coverUrl: record.cover_url,
+        coverSource,
+        artistSlug,
+        slug,
+        goIndexBase,
+        context: `[render ${artistSlug}/${slug}] cover_source preferred`,
+      });
+
       const data: ApiSmartlink = {
         id: record.id,
         title: record.title ?? undefined,
@@ -2306,7 +2367,7 @@ export default {
         artist_name: record.artist_name ?? undefined,
         release_date: record.release_date ?? undefined,
         cover_version: record.cover_version ?? undefined,
-        cover_url: record.cover_url ?? undefined,
+        cover_url: resolvedCoverUrl ?? undefined,
         cover_source: coverSource ?? undefined,
         links,
       };
