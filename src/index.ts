@@ -919,6 +919,7 @@ function htmlPage(
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
+    html { height: 100%; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -926,7 +927,9 @@ function htmlPage(
       align-items: flex-start;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
       color: ${THEME.colors.textPrimary};
       font-family: ${THEME.fonts.body};
       padding: 2rem 1.25rem 2.75rem;
