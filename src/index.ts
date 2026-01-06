@@ -1025,6 +1025,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         cover_source,
         cover_version,
         links_json,
+        artist_name,
         updated_at
       FROM smartlinks
       WHERE artist_slug=?1
@@ -1040,10 +1041,13 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         cover_source: string | null;
         cover_version: number | null;
         links_json: string | null;
+        artist_name: string | null;
         updated_at: string | null;
       }>();
 
     const items = query.results ?? [];
+    const displayArtistName =
+      items.find((item) => item.artist_name?.trim())?.artist_name?.trim() || artistSlug;
     const canonicalBase = goIndexBase.replace(/\/$/, "");
 
     const cards = items.map((record) => {
@@ -1085,7 +1089,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     const body = `
       <div class="artist-hero">
         <span class="eyebrow"><span class="accent-dot"></span>Artist</span>
-        <h1>${escapeHtml(artistSlug)}</h1>
+        <h1>${escapeHtml(displayArtistName)}</h1>
+        <p class="meta">/${escapeHtml(artistSlug)}</p>
         <p class="meta">Все смартлинки артиста в одном месте.</p>
       </div>
       ${
@@ -1157,7 +1162,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       </script>
     `;
 
-    return new Response(htmlPage(body, { title: `${artistSlug} — SREDA` }), {
+    return new Response(htmlPage(body, { title: `${displayArtistName} — SREDA` }), {
       status: 200,
       headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
     });
