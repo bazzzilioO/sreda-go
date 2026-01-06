@@ -872,20 +872,20 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       margin: 0;
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       background: ${THEME.colors.background};
       color: ${THEME.colors.textPrimary};
       font-family: ${THEME.fonts.body};
-      padding: 1.5rem;
+      padding: 2rem 1.25rem;
     }
     .card {
-      width: min(720px, 100%);
+      width: min(960px, 100%);
       background: ${THEME.colors.surface};
       border: 1px solid ${THEME.colors.border};
-      border-radius: ${THEME.radii.card};
+      border-radius: 18px;
       box-shadow: ${THEME.shadows.card};
-      padding: 2.5rem;
+      padding: 1.75rem;
       position: relative;
       overflow: hidden;
     }
@@ -894,8 +894,9 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       height: auto;
       border-radius: ${THEME.radii.cover};
       border: 1px solid ${THEME.colors.border};
+      background: ${THEME.colors.surfaceMuted};
       box-shadow: ${THEME.shadows.cover};
-      margin-bottom: 1.8rem;
+      margin-bottom: 1.4rem;
       display: block;
       object-fit: cover;
     }
@@ -905,68 +906,71 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       justify-content: center;
       background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textSecondary};
-      min-height: 280px;
+      min-height: 260px;
       font-weight: 700;
       letter-spacing: 0.08em;
     }
-    a { color: inherit; }
-    h1 { margin: 0 0 0.6rem; font-size: 2.35rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; font-weight: 800; }
-    p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.6; }
-    .meta { margin-top: 0.25rem; color: ${THEME.colors.textMuted}; font-size: 1rem; }
+    a { color: inherit; text-decoration: none; }
+    h1 { margin: 0; font-size: 1.9rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; font-weight: 800; }
+    p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.5; }
+    .meta { color: ${THEME.colors.textSecondary}; font-size: 0.95rem; }
     .meta strong { color: ${THEME.colors.textPrimary}; }
-    .links { margin-top: 1.8rem; display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.textMuted}; border-radius: 50%; }
+    .header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.2rem; }
+    .artist-link { color: ${THEME.colors.accent}; text-decoration: none; border-bottom: 1px dotted transparent; transition: color 120ms ease, border-color 120ms ease; }
+    .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
+    .links { margin-top: 1.5rem; display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
     .link-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.9rem 1.05rem;
-      border-radius: 14px;
+      padding: 0.85rem 1.05rem;
+      border-radius: 12px;
       border: 1px solid ${THEME.colors.border};
-      background: ${THEME.colors.surface};
+      background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textPrimary};
       font-weight: 700;
-      text-decoration: none;
       letter-spacing: 0.01em;
       box-shadow: ${THEME.shadows.button};
       transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
     }
-    .link-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
-    .link-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
-    .small { margin-top: 2.2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
-    .canonical-label { white-space: nowrap; }
-    .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; }
-    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textPrimary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.9rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
+    .link-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; color: ${THEME.colors.accent}; }
+    .link-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; color: ${THEME.colors.accent}; }
+    .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
+    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; }
+    .canonical-label { white-space: nowrap; color: ${THEME.colors.textMuted}; }
+    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; border-radius: 10px; background: ${THEME.colors.surfaceMuted}; border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.4rem 0.75rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
     .copy-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
     .copy-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
-    .copy-toast { min-width: 110px; color: ${THEME.colors.textPrimary}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; }
+    .copy-btn.copy-btn-small { padding: 0.32rem 0.65rem; font-size: 0.9rem; }
+    .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; }
     .copy-toast.visible { opacity: 1; }
-    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.textMuted}; border-radius: 50%; }
-    .header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
-    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .artist-link { color: ${THEME.colors.accent}; text-decoration: none; border-bottom: 1px dotted ${THEME.colors.accent}; }
-    .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .artist-hero { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.8rem; }
-    .release-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .release-card { display: flex; flex-direction: column; gap: 0.9rem; padding: 1.05rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; box-shadow: none; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: border-color 140ms ease, background 140ms ease; cursor: pointer; }
-    .release-card:hover { border-color: ${THEME.colors.textSecondary}; background: ${THEME.colors.surface}; }
-    .release-cover { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
-    .release-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.06em; }
-    .release-head { display: flex; flex-direction: column; gap: 0.45rem; }
-    .release-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
-    .release-title { font-size: 1.2rem; font-weight: 850; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; line-height: 1.25; }
-    .links-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.55rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; color: ${THEME.colors.textSecondary}; font-size: 0.85rem; font-weight: 800; border: 1px solid ${THEME.colors.border}; min-width: 2.2rem; text-align: center; }
-    .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.65rem; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; align-items: center; padding-top: 0.1rem; }
-    .release-slug { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.08rem 0.35rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; }
+    .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; }
+    .smartlink-item { display: grid; grid-template-columns: auto 1fr; gap: 0.85rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; }
+    .smartlink-cover { width: 78px; height: 78px; object-fit: cover; border-radius: 10px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
+    .smartlink-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.04em; font-size: 0.85rem; }
+    .smartlink-content { display: flex; flex-direction: column; gap: 0.4rem; }
+    .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+    .smartlink-title { font-size: 1.05rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.2rem 0.55rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 750; font-size: 0.85rem; min-width: 2rem; text-align: center; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.92rem; }
+    .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.88rem; }
+    .slug-pill { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.12rem 0.5rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
-    .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 0.1rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; }
-    .copy-btn.copy-btn-small { padding: 0.3rem 0.65rem; font-size: 0.9rem; background: transparent; border-color: ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; }
-    .empty-state { padding: 1.4rem; border-radius: 14px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
+    .artist-header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+    .artist-name { color: ${THEME.colors.accent}; font-size: 1.65rem; font-weight: 850; letter-spacing: 0.01em; }
+    .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; }
+    .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 640px) {
-      body { padding: 1.1rem; }
-      .card { padding: 1.8rem; }
-      h1 { font-size: 1.6rem; }
+      body { padding: 1.25rem; }
+      .card { padding: 1.4rem; }
+      h1 { font-size: 1.5rem; }
+      .smartlink-item { grid-template-columns: 1fr; }
+      .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
+      .smartlink-title-row { align-items: flex-start; }
       .links { grid-template-columns: 1fr; }
     }
   </style>
@@ -1054,28 +1058,29 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       const releaseDate = record.release_date
         ? `<span class="pill pill-soft">${escapeHtml(record.release_date)}</span>`
         : "";
-      const linksLabel = `<span class="links-badge">${linkCount}</span>`;
-      const slugLabel = `<span class="release-slug">/${escapeHtml(record.slug)}</span>`;
-      const meta = [releaseDate, slugLabel].filter(Boolean).join(" ");
+      const slugLabel = `<span class="slug-pill">/${escapeHtml(record.slug)}</span>`;
+      const metaPrimary = [releaseDate, slugLabel].filter(Boolean).join(" ");
       const title = record.title ?? "Релиз";
 
       return `
-        <div class="release-card" data-url="${escapeHtml(canonicalUrl)}" role="link" tabindex="0">
+        <div class="smartlink-item">
           ${
             coverUrlWithVersion
-              ? `<img class="release-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
-              : `<div class="release-cover placeholder">NO COVER</div>`
+              ? `<img class="smartlink-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
+              : `<div class="smartlink-cover placeholder">NO COVER</div>`
           }
-          <div class="release-head">
-            <div class="release-title-row">
-              <h2 class="release-title">${escapeHtml(title)}</h2>
-              ${linksLabel}
+          <div class="smartlink-content">
+            <div class="smartlink-title-row">
+              <a class="smartlink-title" href="${escapeHtml(canonicalUrl)}">${escapeHtml(title)}</a>
+              <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
             </div>
-            <div class="release-meta">${meta}</div>
-          </div>
-          <div class="release-actions">
-            <span class="meta">${record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : ""}</span>
-            <div style="display:flex; align-items:center; gap:0.4rem;">
+            <div class="meta-row">${metaPrimary}</div>
+            <div class="meta-row subtle">${
+              record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : "Не обновлялся"
+            }</div>
+            <div class="canonical-row">
+              <span class="canonical-label">Канонический URL</span>
+              <span class="canonical-url">${escapeHtml(canonicalUrl)}</span>
               <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
               <span class="copy-toast" role="status" aria-live="polite"></span>
             </div>
@@ -1085,43 +1090,20 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     });
 
     const body = `
-      <div class="artist-hero">
-        <span class="eyebrow"><span class="accent-dot"></span>Artist</span>
-        <h1>${escapeHtml(displayArtistName)}</h1>
-        <p class="meta">/${escapeHtml(artistSlug)}</p>
-        <p class="meta">Все смартлинки артиста в одном месте.</p>
+      <div class="artist-header">
+        <span class="eyebrow"><span class="accent-dot"></span>Смартлинки артиста</span>
+        <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+        <p class="artist-meta">artist_slug: /${escapeHtml(artistSlug)}</p>
       </div>
       ${
         cards.length
-          ? `<div class="release-grid">${cards.join("\n")}</div>`
+          ? `<div class="smartlink-list">${cards.join("\n")}</div>`
           : `<div class="empty-state">Для артиста пока нет смартлинков.</div>`
       }
       <script>
         (function() {
-          document.querySelectorAll('.release-card[data-url]').forEach((card) => {
-            const url = card.getAttribute('data-url');
-            if (!url) return;
-
-            function go() {
-              window.location.href = url;
-            }
-
-            card.addEventListener('click', (event) => {
-              if ((event.target instanceof HTMLElement) && event.target.closest('button')) return;
-              go();
-            });
-
-            card.addEventListener('keypress', (event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                go();
-              }
-            });
-          });
-
           document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
-            button.addEventListener('click', async (event) => {
-              event.stopPropagation();
+            button.addEventListener('click', async () => {
               const urlToCopy = button.getAttribute('data-url') || '';
 
               async function copyText(text) {
@@ -1178,7 +1160,7 @@ function renderSmartlink(
   smartlinkId?: string,
 ): Response {
   const title = data.title ?? "Релиз";
-  const artist = data.artist ?? artistSlug;
+  const artistName = data.artist_name?.trim() || data.artist?.trim() || artistSlug;
   const releaseDate = data.release_date;
   const coverSource = data.cover_source ?? null;
   const coverUrl = resolveCoverUrl(data.cover_url);
@@ -1219,7 +1201,7 @@ function renderSmartlink(
 
   const canonicalBase = goIndexBase.replace(/\/$/, "");
   const canonicalUrl = `${canonicalBase}/${artistSlug}/${slug}`;
-  const artistLink = `<a class="artist-link" href="/artist/${encodeURIComponent(artistSlug)}">${escapeHtml(artist)}</a>`;
+  const artistLink = `<a class="artist-link" href="/artist/${encodeURIComponent(artistSlug)}">${escapeHtml(artistName)}</a>`;
 
   const linkButtons = orderedEntries
     .map(([platform, url]) => {
@@ -1240,64 +1222,57 @@ function renderSmartlink(
       <p class="meta">Артист: <strong>${artistLink}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
     </div>
     <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
-    <p class="small canonical-row">
-      <span class="canonical-label">Канонический URL:</span>
-      <span class="tag canonical-url">${escapeHtml(canonicalUrl)}</span>
-      <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">Скопировать</button>
+    <div class="canonical-row" style="margin-top:1.1rem;">
+      <span class="canonical-label">Канонический URL</span>
+      <span class="canonical-url">${escapeHtml(canonicalUrl)}</span>
+      <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">⧉</button>
       <span class="copy-toast" role="status" aria-live="polite"></span>
-    </p>
+    </div>
     <script>
       (function() {
-        const copyButton = document.querySelector('.copy-btn[data-url]');
-        const toast = document.querySelector('.copy-toast');
-        if (!copyButton || !toast) return;
+        document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const urlToCopy = button.getAttribute('data-url') || '';
 
-        let hideTimer = null;
+            async function copyText(text) {
+              if (!text) return false;
 
-        async function copyText(text) {
-          if (!text) return false;
+              try {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                  await navigator.clipboard.writeText(text);
+                  return true;
+                }
 
-          try {
-            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-              await navigator.clipboard.writeText(text);
-              return true;
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'fixed';
+                textarea.style.top = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                return true;
+              } catch (error) {
+                console.warn('clipboard copy failed', error);
+                return false;
+              }
             }
 
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.setAttribute('readonly', '');
-            textarea.style.position = 'fixed';
-            textarea.style.top = '-9999px';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            return true;
-          } catch (error) {
-            console.warn('clipboard copy failed', error);
-            return false;
-          }
-        }
-
-        copyButton.addEventListener('click', async () => {
-          const urlToCopy = copyButton.getAttribute('data-url') || '';
-          const ok = await copyText(urlToCopy);
-          toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
-          toast.classList.add('visible');
-
-          if (hideTimer) {
-            clearTimeout(hideTimer);
-          }
-
-          hideTimer = window.setTimeout(() => {
-            toast.classList.remove('visible');
-          }, ok ? 1500 : 1800);
+            const toast = button.parentElement?.querySelector('.copy-toast');
+            const ok = await copyText(urlToCopy);
+            if (toast) {
+              toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+              toast.classList.add('visible');
+              window.setTimeout(() => toast.classList.remove('visible'), ok ? 1300 : 1700);
+            }
+          });
         });
       })();
     </script>
   `;
 
-  return new Response(htmlPage(body, { title: `${title} — ${artist}` }), {
+  return new Response(htmlPage(body, { title: `${title} — ${artistName}` }), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
