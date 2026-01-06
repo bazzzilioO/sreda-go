@@ -340,7 +340,7 @@ async function handleTelegramFileRequest(
 
     if (!fileInfoResponse.ok) {
       console.warn("[telegram cover] getFile request failed", fileInfoResponse.status);
-      return jsonResponse({ error: "telegram_getFile_failed", status: fileInfoResponse.status }, 502);
+      return respondWithPlaceholderCover(cacheKey);
     }
 
     const fileInfo = (await fileInfoResponse.json()) as {
@@ -352,7 +352,7 @@ async function handleTelegramFileRequest(
     const filePath = fileInfo?.result?.file_path;
     if (!fileInfo?.ok || !filePath) {
       console.warn("[telegram cover] getFile response invalid", fileInfo);
-      return jsonResponse({ error: "telegram_file_not_found" }, 502);
+      return respondWithPlaceholderCover(cacheKey);
     }
 
     const fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
@@ -360,18 +360,44 @@ async function handleTelegramFileRequest(
 
     if (!fileResponse.ok || !fileResponse.body) {
       console.warn("[telegram cover] file fetch failed", fileResponse.status);
-      return jsonResponse({
-        error: "telegram_file_fetch_failed",
-        status: fileResponse.status,
-      }, fileResponse.status === 404 ? 404 : 502);
+      if (fileResponse.status === 404) {
+        return respondWithPlaceholderCover(cacheKey);
+      }
+
+      return jsonResponse(
+        {
+          error: "telegram_file_fetch_failed",
+          status: fileResponse.status,
+        },
+        fileResponse.status === 404 ? 404 : 502,
+      );
     }
 
     const fallbackEtag = `W/"tg-${fileId}-${filePath}"`;
     return finalizeImageResponse(fileResponse, cacheKey, fallbackEtag);
   } catch (error) {
     console.error("[telegram cover] fetch error", error);
-    return jsonResponse({ error: "telegram_fetch_error" }, 502);
+    return respondWithPlaceholderCover(cacheKey);
   }
+}
+
+async function respondWithPlaceholderCover(cacheKey?: Request): Promise<Response> {
+  const headers = new Headers({
+    "Content-Type": "image/svg+xml",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    ETag: 'W/"cover-placeholder-v1"',
+  });
+
+  const placeholder = new Response(COVER_PLACEHOLDER_SVG, {
+    status: 200,
+    headers,
+  });
+
+  if (cacheKey) {
+    await caches.default.put(cacheKey, placeholder.clone());
+  }
+
+  return placeholder;
 }
 
 async function finalizeImageResponse(
@@ -683,6 +709,27 @@ async function syncSmartlinkToWeb(
 }
 
 const CACHE_HEADERS = { "Cache-Control": "public, max-age=60" } as const;
+const COVER_PLACEHOLDER_SVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="160" x2="1080" y2="1040" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b2a44" />
+      <stop offset="1" stop-color="#0d111a" />
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1200" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5dc9f8" stop-opacity="0.2" />
+      <stop offset="1" stop-color="#f3b266" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" rx="140" fill="url(#bg)" />
+  <rect x="90" y="90" width="1020" height="1020" rx="120" fill="url(#glow)" opacity="0.8" />
+  <rect x="140" y="140" width="920" height="920" rx="110" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="6" />
+  <circle cx="320" cy="360" r="70" fill="#5dc9f8" fill-opacity="0.55" />
+  <circle cx="880" cy="820" r="110" fill="#f3b266" fill-opacity="0.45" />
+  <circle cx="760" cy="380" r="90" fill="#bb87ff" fill-opacity="0.35" />
+  <text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="96" font-weight="700" fill="#e6e9ef">SREDA</text>
+  <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="32" font-weight="500" fill="#cfd7ea" opacity="0.88">cover unavailable</text>
+</svg>`;
 const LINK_ORDER = [
   "telegram",
   "spotify",
