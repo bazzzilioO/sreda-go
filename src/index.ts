@@ -8,7 +8,8 @@ interface Env {
 }
 
 type TelegramCoverSource = { type: "telegram"; file_id: string };
-type CoverSource = TelegramCoverSource | string;
+type ExternalCoverSource = { type: "external"; url: string };
+type CoverSource = TelegramCoverSource | ExternalCoverSource | string;
 type NormalizedCoverSourceResult = { value: string | null; error: boolean };
 
 const TELEGRAM_FILE_ID_PATTERN = /^[A-Za-z0-9_:-]+$/;
@@ -78,6 +79,19 @@ function normalizeCoverSourceInput(input: unknown, context: string): NormalizedC
       return { value: null, error: true };
     }
 
+    if (candidate.type === "external") {
+      const url = candidate.url;
+      if (typeof url === "string" && url.trim()) {
+        return {
+          value: JSON.stringify({ type: "external", url: url.trim() }),
+          error: false,
+        };
+      }
+
+      console.warn(`${context}: missing external url`, input);
+      return { value: null, error: true };
+    }
+
     console.warn(`${context}: unsupported cover_source object`, input);
     return { value: null, error: true };
   }
@@ -100,6 +114,16 @@ function parseCoverSource(raw: string | null, context: string): CoverSource | nu
     ) {
       return { type: "telegram", file_id: (parsed as { file_id: string }).file_id.trim() };
     }
+
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      (parsed as { type?: unknown }).type === "external" &&
+      typeof (parsed as { url?: unknown }).url === "string" &&
+      (parsed as { url: string }).url.trim()
+    ) {
+      return { type: "external", url: (parsed as { url: string }).url.trim() };
+    }
   } catch (error) {
     console.warn(`${context}: cover_source parse error`, error, raw);
   }
@@ -113,6 +137,15 @@ function isTelegramCoverSource(source: CoverSource | null): source is TelegramCo
     typeof source === "object" &&
     (source as { type?: unknown }).type === "telegram" &&
     typeof (source as { file_id?: unknown }).file_id === "string"
+  );
+}
+
+function isExternalCoverSource(source: CoverSource | null): source is ExternalCoverSource {
+  return (
+    Boolean(source) &&
+    typeof source === "object" &&
+    (source as { type?: unknown }).type === "external" &&
+    typeof (source as { url?: unknown }).url === "string"
   );
 }
 
@@ -210,35 +243,7 @@ async function handleCoverProxy(
       return new Response("Not found", { status: 404 });
     }
 
-    const coverSource = parseCoverSource(
-      record.cover_source,
-      `[cover ${artistSlug}/${slug}] cover_source`,
-    );
-
-    const coverUrl = record.cover_url?.trim() || null;
-
-    const telegramFileId = extractTelegramFileId(
-      coverUrl && !isInternalCoverUrl(coverUrl, request.url) ? coverUrl : undefined,
-      coverSource,
-      `[_cover ${artistSlug}/${slug}]`,
-    );
-
-    if (telegramFileId) {
-      return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
-    }
-
-    if (coverUrl) {
-      try {
-        const redirectUrl = new URL(coverUrl, request.url).toString();
-        if (redirectUrl !== request.url) {
-          return Response.redirect(redirectUrl, 302);
-        }
-      } catch (error) {
-        console.warn(`[_cover ${artistSlug}/${slug}] invalid cover_url`, coverUrl, error);
-      }
-    }
-
-    return new Response("Not found", { status: 404 });
+    return resolveCoverResponse(request, env, record, cacheKey, `[cover ${artistSlug}/${slug}]`);
   } catch (error) {
     console.error("[cover] db error", error);
     return new Response("Failed to load cover", { status: 500 });
@@ -309,37 +314,46 @@ async function handleTelegramFileRequest(
       }, fileResponse.status === 404 ? 404 : 502);
     }
 
-    const headers = new Headers();
-    const contentType = fileResponse.headers.get("content-type") ?? "image/jpeg";
-    headers.set("Content-Type", contentType);
-    headers.set("Cache-Control", "public, max-age=3600, s-maxage=86400");
-
-    const contentLength = fileResponse.headers.get("content-length");
-    if (contentLength) {
-      headers.set("Content-Length", contentLength);
-    }
-
-    const etag = fileResponse.headers.get("etag");
-    if (etag) {
-      headers.set("ETag", etag);
-    }
-
-    headers.delete("set-cookie");
-
-    const proxied = new Response(fileResponse.body, {
-      status: 200,
-      headers,
-    });
-
-    if (cacheKey) {
-      await caches.default.put(cacheKey, proxied.clone());
-    }
-
-    return proxied;
+    const fallbackEtag = `W/"tg-${fileId}-${filePath}"`;
+    return finalizeImageResponse(fileResponse, cacheKey, fallbackEtag);
   } catch (error) {
     console.error("[telegram cover] fetch error", error);
     return jsonResponse({ error: "telegram_fetch_error" }, 502);
   }
+}
+
+async function finalizeImageResponse(
+  fileResponse: Response,
+  cacheKey?: Request,
+  fallbackEtag?: string,
+): Promise<Response> {
+  const headers = new Headers();
+  const contentType = fileResponse.headers.get("content-type") ?? "image/jpeg";
+  headers.set("Content-Type", contentType);
+  headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+  const contentLength = fileResponse.headers.get("content-length");
+  if (contentLength) {
+    headers.set("Content-Length", contentLength);
+  }
+
+  const etag = fileResponse.headers.get("etag") ?? fallbackEtag;
+  if (etag) {
+    headers.set("ETag", etag);
+  }
+
+  headers.delete("set-cookie");
+
+  const proxied = new Response(fileResponse.body, {
+    status: 200,
+    headers,
+  });
+
+  if (cacheKey) {
+    await caches.default.put(cacheKey, proxied.clone());
+  }
+
+  return proxied;
 }
 
 async function handleCoverById(request: Request, env: Env, canonicalId: string): Promise<Response> {
@@ -362,39 +376,96 @@ async function handleCoverById(request: Request, env: Env, canonicalId: string):
       return jsonResponse({ error: "not_found" }, 404);
     }
 
-    const coverSource = parseCoverSource(record.cover_source, `[api/cover ${canonicalId}] cover_source`);
-    const coverUrl = record.cover_url?.trim() || null;
-
-    const telegramFileId = extractTelegramFileId(
-      coverUrl && !isInternalCoverUrl(coverUrl, request.url) ? coverUrl : undefined,
-      coverSource,
-      `[api/cover ${canonicalId}]`,
-    );
-
-    if (telegramFileId) {
-      if (!validateTelegramFileId(telegramFileId)) {
-        console.warn(`[api/cover ${canonicalId}] invalid telegram file_id`);
-        return jsonResponse({ error: "invalid_cover" }, 404);
-      }
-
-      return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
-    }
-
-    if (coverUrl) {
-      try {
-        const redirectUrl = new URL(coverUrl, request.url).toString();
-        if (redirectUrl !== request.url) {
-          return Response.redirect(redirectUrl, 302);
-        }
-      } catch (error) {
-        console.warn(`[api/cover ${canonicalId}] invalid cover_url`, coverUrl, error);
-      }
-    }
-
-    return jsonResponse({ error: "cover_missing" }, 404);
+    return resolveCoverResponse(request, env, record, cacheKey, `[api/cover ${canonicalId}]`);
   } catch (error) {
     console.error("[api/cover] db error", error);
     return jsonResponse({ error: "server_error" }, 500);
+  }
+}
+
+async function handleCoverBySlug(
+  request: Request,
+  env: Env,
+  artistSlug: string,
+  slug: string,
+): Promise<Response> {
+  const cacheKey = new Request(request.url, request);
+
+  const cached = await caches.default.match(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const query = await env.DB.prepare(
+      `SELECT cover_source, cover_url FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
+    )
+      .bind(artistSlug, slug)
+      .all<{ cover_source: string | null; cover_url: string | null }>();
+
+    const record = query.results?.[0];
+    if (!record) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    return resolveCoverResponse(request, env, record, cacheKey, `[api/cover ${artistSlug}/${slug}]`);
+  } catch (error) {
+    console.error("[api/cover] db error", error);
+    return new Response("Failed to load cover", { status: 500 });
+  }
+}
+
+async function resolveCoverResponse(
+  request: Request,
+  env: Env,
+  record: { cover_source: string | null; cover_url: string | null },
+  cacheKey: Request,
+  context: string,
+): Promise<Response> {
+  const coverSource = parseCoverSource(record.cover_source, `${context} cover_source`);
+  const coverUrl = record.cover_url?.trim() || null;
+
+  if (isTelegramCoverSource(coverSource)) {
+    const fileId = coverSource.file_id.trim();
+    if (!validateTelegramFileId(fileId)) {
+      console.warn(`${context}: invalid telegram file_id`, coverSource.file_id);
+      return new Response("Invalid cover", { status: 404 });
+    }
+
+    return handleTelegramFileRequest(request, env, fileId, cacheKey);
+  }
+
+  const externalUrl =
+    (isExternalCoverSource(coverSource) && coverSource.url) ||
+    (coverUrl && !isInternalCoverUrl(coverUrl, request.url) ? coverUrl : null);
+
+  if (externalUrl && !isInternalCoverUrl(externalUrl, request.url)) {
+    return handleExternalCover(request, externalUrl, cacheKey, context);
+  }
+
+  return new Response("Not found", { status: 404 });
+}
+
+async function handleExternalCover(
+  request: Request,
+  targetUrl: string,
+  cacheKey: Request,
+  context: string,
+): Promise<Response> {
+  try {
+    const resolvedUrl = new URL(targetUrl, request.url).toString();
+    const fileResponse = await fetch(resolvedUrl);
+
+    if (!fileResponse.ok || !fileResponse.body) {
+      console.warn(`[cover external] fetch failed ${context}`, resolvedUrl, fileResponse.status);
+      return new Response("Failed to load cover", { status: fileResponse.status === 404 ? 404 : 502 });
+    }
+
+    const fallbackEtag = `W/"external-${resolvedUrl}"`;
+    return finalizeImageResponse(fileResponse, cacheKey, fallbackEtag);
+  } catch (error) {
+    console.warn(`[cover external] invalid url ${context}`, targetUrl, error);
+    return new Response("Invalid cover url", { status: 400 });
   }
 }
 
@@ -979,9 +1050,7 @@ export default {
       if (segments.length === 4) {
         const artistSlug = decodeURIComponent(segments[2]);
         const slug = decodeURIComponent(segments[3]);
-        const canonicalId = `${artistSlug}:${slug}`;
-
-        return handleCoverById(request, env, canonicalId);
+        return handleCoverBySlug(request, env, artistSlug, slug);
       }
     }
 
