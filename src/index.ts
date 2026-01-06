@@ -716,24 +716,11 @@ async function syncSmartlinkToWeb(
 const CACHE_HEADERS = { "Cache-Control": "public, max-age=60" } as const;
 const COVER_PLACEHOLDER_SVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="120" y1="160" x2="1080" y2="1040" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1b2a44" />
-      <stop offset="1" stop-color="#0d111a" />
-    </linearGradient>
-    <linearGradient id="glow" x1="0" y1="0" x2="1200" y2="1200" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#5dc9f8" stop-opacity="0.2" />
-      <stop offset="1" stop-color="#f3b266" stop-opacity="0.15" />
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="1200" rx="140" fill="url(#bg)" />
-  <rect x="90" y="90" width="1020" height="1020" rx="120" fill="url(#glow)" opacity="0.8" />
-  <rect x="140" y="140" width="920" height="920" rx="110" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="6" />
-  <circle cx="320" cy="360" r="70" fill="#5dc9f8" fill-opacity="0.55" />
-  <circle cx="880" cy="820" r="110" fill="#f3b266" fill-opacity="0.45" />
-  <circle cx="760" cy="380" r="90" fill="#bb87ff" fill-opacity="0.35" />
-  <text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="96" font-weight="700" fill="#e6e9ef">SREDA</text>
-  <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="32" font-weight="500" fill="#cfd7ea" opacity="0.88">cover unavailable</text>
+  <rect width="1200" height="1200" rx="140" fill="#1E1E1E" />
+  <rect x="120" y="120" width="960" height="960" rx="100" fill="#262626" stroke="#262626" stroke-width="8" />
+  <rect x="220" y="220" width="760" height="760" rx="80" fill="#1E1E1E" stroke="#262626" stroke-width="6" />
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="96" font-weight="700" fill="#FFFFFF">SREDA</text>
+  <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="32" font-weight="500" fill="#D9D9D9">cover unavailable</text>
 </svg>`;
 const LINK_ORDER = [
   "telegram",
@@ -846,15 +833,14 @@ function escapeHtml(value: string): string {
 
 const THEME = {
   colors: {
-    background: "#0b0e13",
-    surface: "#0f131a",
-    surfaceMuted: "#131a24",
-    accent: "#f5c842",
-    textPrimary: "#f4f5f8",
-    textSecondary: "#c8cbd2",
-    textMuted: "#8f95a3",
-    border: "#1b2330",
-    shadowTint: "rgba(7, 11, 17, 0.6)",
+    background: "#000000",
+    surface: "#1E1E1E",
+    surfaceMuted: "#262626",
+    accent: "#F59E0B",
+    textPrimary: "#FFFFFF",
+    textSecondary: "#D9D9D9",
+    textMuted: "#D9D9D9",
+    border: "#262626",
   },
   fonts: {
     body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -865,10 +851,10 @@ const THEME = {
     pill: "999px",
   },
   shadows: {
-    card: "0 18px 46px rgba(0, 0, 0, 0.45)",
-    cover: "0 12px 26px rgba(0, 0, 0, 0.35)",
-    button: "0 6px 18px rgba(245, 200, 66, 0.18)",
-    gridCard: "0 10px 28px rgba(0, 0, 0, 0.28)",
+    card: "none",
+    cover: "none",
+    button: "none",
+    gridCard: "none",
   },
 };
 
@@ -942,38 +928,38 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       text-decoration: none;
       letter-spacing: 0.01em;
       box-shadow: ${THEME.shadows.button};
-      transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
     }
-    .link-btn:hover { transform: translateY(-2px); border-color: ${THEME.colors.accent}; box-shadow: 0 16px 36px ${THEME.colors.shadowTint}; background: ${THEME.colors.surfaceMuted}; }
-    .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 200, 66, 0.12); }
+    .link-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
+    .link-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
     .small { margin-top: 2.2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
     .canonical-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
     .canonical-label { white-space: nowrap; }
-    .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
-    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textPrimary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.9rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease; }
-    .copy-btn:hover { transform: translateY(-1px); border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; }
-    .copy-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 200, 66, 0.12); }
+    .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; }
+    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textPrimary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.9rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
+    .copy-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
+    .copy-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
     .copy-toast { min-width: 110px; color: ${THEME.colors.textPrimary}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; }
     .copy-toast.visible { opacity: 1; }
-    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.textMuted}; border-radius: 50%; box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.04); }
+    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.textMuted}; border-radius: 50%; }
     .header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
     .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px dotted ${THEME.colors.textMuted}; }
+    .artist-link { color: ${THEME.colors.accent}; text-decoration: none; border-bottom: 1px dotted ${THEME.colors.accent}; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
     .artist-hero { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.8rem; }
     .release-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .release-card { display: flex; flex-direction: column; gap: 0.9rem; padding: 1.05rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; box-shadow: none; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: border-color 140ms ease, background 140ms ease, transform 140ms ease; cursor: pointer; }
-    .release-card:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; }
+    .release-card { display: flex; flex-direction: column; gap: 0.9rem; padding: 1.05rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; box-shadow: none; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: border-color 140ms ease, background 140ms ease; cursor: pointer; }
+    .release-card:hover { border-color: ${THEME.colors.textSecondary}; background: ${THEME.colors.surface}; }
     .release-cover { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
     .release-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.06em; }
     .release-head { display: flex; flex-direction: column; gap: 0.45rem; }
     .release-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
     .release-title { font-size: 1.2rem; font-weight: 850; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; line-height: 1.25; }
-    .links-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(245, 200, 66, 0.14); color: ${THEME.colors.textPrimary}; font-size: 0.85rem; font-weight: 800; border: 1px solid ${THEME.colors.border}; min-width: 2.2rem; text-align: center; }
+    .links-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.55rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; color: ${THEME.colors.textSecondary}; font-size: 0.85rem; font-weight: 800; border: 1px solid ${THEME.colors.border}; min-width: 2.2rem; text-align: center; }
     .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.65rem; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; align-items: center; padding-top: 0.1rem; }
-    .release-slug { color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.02em; padding: 0.08rem 0.35rem; border-radius: ${THEME.radii.pill}; background: rgba(255,255,255,0.04); }
+    .release-slug { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.08rem 0.35rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
-    .pill-soft { background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
+    .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 0.1rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; }
     .copy-btn.copy-btn-small { padding: 0.3rem 0.65rem; font-size: 0.9rem; background: transparent; border-color: ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; }
     .empty-state { padding: 1.4rem; border-radius: 14px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
