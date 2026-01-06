@@ -1316,6 +1316,65 @@ export default {
       }
     }
 
+    if (segments.length === 2 && segments[0] === "api" && segments[1] === "my") {
+      const apiKey = env.SMARTLINK_API_KEY;
+      if (!apiKey) {
+        return jsonResponse({ ok: false, error: "server_error" }, 500);
+      }
+
+      const providedKey = request.headers.get("X-API-Key");
+      if (providedKey !== apiKey) {
+        return jsonResponse({ ok: false, error: "unauthorized" }, 401);
+      }
+
+      const rawTgUserId = url.searchParams.get("tg_user_id");
+      const normalizedTgUserId = rawTgUserId?.trim();
+
+      if (!normalizedTgUserId) {
+        return jsonResponse({ ok: false, error: "bad_request", details: "missing_tg_user_id" }, 400);
+      }
+
+      try {
+        const query = await env.DB.prepare(
+          `SELECT
+            id,
+            artist_slug,
+            slug,
+            title,
+            artist_name,
+            release_date,
+            cover_url,
+            updated_at
+          FROM smartlinks
+          WHERE owner_tg_user_id = ?1
+          ORDER BY updated_at DESC
+          LIMIT 200`)
+          .bind(String(normalizedTgUserId))
+          .all<{
+            id: string;
+            artist_slug: string;
+            slug: string;
+            title: string | null;
+            artist_name: string | null;
+            release_date: string | null;
+            cover_url: string | null;
+            updated_at: string | null;
+          }>();
+
+        const items = query.results ?? [];
+
+        return jsonResponse({
+          ok: true,
+          tg_user_id: String(normalizedTgUserId),
+          items,
+          count: items.length,
+        });
+      } catch (error) {
+        console.error("[api/my] db error", error);
+        return jsonResponse({ ok: false, error: "db_error" }, 500);
+      }
+    }
+
     if (normalizedPath === "/health") {
       return new Response("OK: sreda-go | GIT-LIVE", {
         status: 200,
