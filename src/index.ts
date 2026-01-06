@@ -17,6 +17,7 @@ const TELEGRAM_FILE_ID_PATTERN = /^[A-Za-z0-9_:-]+$/;
 type ApiSmartlink = {
   id?: string;
   artist?: string;
+  artist_name?: string;
   title?: string;
   release_date?: string;
   links?: Record<string, string>;
@@ -838,9 +839,9 @@ const THEME = {
     surfaceMuted: "#262626",
     accent: "#F59E0B",
     textPrimary: "#FFFFFF",
-    textSecondary: "#D9D9D9",
-    textMuted: "#D9D9D9",
-    border: "#262626",
+    textSecondary: "rgba(255,255,255,0.5)",
+    textMuted: "rgba(255,255,255,0.25)",
+    border: "rgba(255,255,255,0.1)",
   },
   fonts: {
     body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -874,29 +875,34 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      background: ${THEME.colors.background};
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 26%),
+        radial-gradient(circle at 80% 0%, rgba(255,255,255,0.035), transparent 32%),
+        ${THEME.colors.background};
       color: ${THEME.colors.textPrimary};
       font-family: ${THEME.fonts.body};
       padding: 2rem 1.25rem;
     }
     .card {
-      width: min(960px, 100%);
+      width: min(820px, 100%);
       background: ${THEME.colors.surface};
       border: 1px solid ${THEME.colors.border};
       border-radius: 18px;
       box-shadow: ${THEME.shadows.card};
-      padding: 1.75rem;
+      padding: 1.6rem;
       position: relative;
       overflow: hidden;
     }
+    .smartlink-layout { display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start; }
+    .cover-frame { display: flex; justify-content: center; width: 100%; }
     .cover {
-      width: 100%;
+      width: clamp(280px, 42vw, 420px);
+      max-width: 92vw;
+      aspect-ratio: 1 / 1;
       height: auto;
       border-radius: ${THEME.radii.cover};
       border: 1px solid ${THEME.colors.border};
       background: ${THEME.colors.surfaceMuted};
       box-shadow: ${THEME.shadows.cover};
-      margin-bottom: 1.4rem;
       display: block;
       object-fit: cover;
     }
@@ -905,69 +911,78 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       align-items: center;
       justify-content: center;
       background: ${THEME.colors.surfaceMuted};
-      color: ${THEME.colors.textSecondary};
-      min-height: 260px;
+      color: ${THEME.colors.textMuted};
       font-weight: 700;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
     a { color: inherit; text-decoration: none; }
-    h1 { margin: 0; font-size: 1.9rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; font-weight: 800; }
+    h1 { margin: 0; font-size: 2rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; font-weight: 820; }
     p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.5; }
-    .meta { color: ${THEME.colors.textSecondary}; font-size: 0.95rem; }
+    .meta { color: ${THEME.colors.textSecondary}; font-size: 0.98rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
     .meta strong { color: ${THEME.colors.textPrimary}; }
-    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.textMuted}; border-radius: 50%; }
-    .header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.2rem; }
-    .artist-link { color: ${THEME.colors.accent}; text-decoration: none; border-bottom: 1px dotted transparent; transition: color 120ms ease, border-color 120ms ease; }
+    .meta-label { color: ${THEME.colors.textSecondary}; }
+    .meta-divider { color: ${THEME.colors.textMuted}; }
+    .header { display: flex; flex-direction: column; gap: 0.55rem; }
+    .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .links { margin-top: 1.5rem; display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .links { margin-top: 1rem; display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
     .link-btn {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 0.85rem 1.05rem;
-      border-radius: 12px;
+      justify-content: space-between;
+      gap: 0.6rem;
+      padding: 0.95rem 1.05rem;
+      border-radius: 14px;
       border: 1px solid ${THEME.colors.border};
       background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textPrimary};
-      font-weight: 700;
+      font-weight: 720;
       letter-spacing: 0.01em;
       box-shadow: ${THEME.shadows.button};
-      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease, transform 120ms ease;
     }
-    .link-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; color: ${THEME.colors.accent}; }
-    .link-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; color: ${THEME.colors.accent}; }
+    .link-btn::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; opacity: 0.85; box-shadow: 0 0 0 4px rgba(245,158,11,0.08); }
+    .link-btn:hover { border-color: ${THEME.colors.accent}; background: #2f2f2f; color: ${THEME.colors.textPrimary}; transform: translateY(-1px); }
+    .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; }
+    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; margin-top: 1.2rem; }
     .canonical-label { white-space: nowrap; color: ${THEME.colors.textMuted}; }
-    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; border-radius: 10px; background: ${THEME.colors.surfaceMuted}; border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
-    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.4rem 0.75rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
+    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.65rem; border-radius: 10px; background: ${THEME.colors.surfaceMuted}; border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.85rem; cursor: pointer; font-weight: 720; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
     .copy-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
     .copy-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
     .copy-btn.copy-btn-small { padding: 0.32rem 0.65rem; font-size: 0.9rem; }
     .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; }
     .copy-toast.visible { opacity: 1; }
-    .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; }
-    .smartlink-item { display: grid; grid-template-columns: auto 1fr; gap: 0.85rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; }
+    .smartlink-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.25rem; }
+    .smartlink-item { display: grid; grid-template-columns: auto 1fr; gap: 0.85rem; padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease; }
+    .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
+    .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: #2a2a2a; transform: translateY(-1px); }
     .smartlink-cover { width: 78px; height: 78px; object-fit: cover; border-radius: 10px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
-    .smartlink-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.04em; font-size: 0.85rem; }
-    .smartlink-content { display: flex; flex-direction: column; gap: 0.4rem; }
+    .smartlink-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.04em; font-size: 0.85rem; text-transform: uppercase; }
+    .smartlink-content { display: flex; flex-direction: column; gap: 0.35rem; }
     .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
-    .smartlink-title { font-size: 1.05rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
-    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.2rem 0.55rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 750; font-size: 0.85rem; min-width: 2rem; text-align: center; }
-    .meta-row { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.92rem; }
+    .smartlink-title { font-size: 1.08rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 750; font-size: 0.82rem; min-width: 2rem; text-align: center; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; align-items: center; color: ${THEME.colors.textSecondary};font-size: 0.92rem; }
     .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.88rem; }
-    .slug-pill { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.12rem 0.5rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; }
+    .slug-pill { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.12rem 0.5rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px dashed ${THEME.colors.border}; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
-    .artist-header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
-    .artist-name { color: ${THEME.colors.accent}; font-size: 1.65rem; font-weight: 850; letter-spacing: 0.01em; }
-    .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; }
+    .artist-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.8rem; font-weight: 850; letter-spacing: 0.015em; }
+    .artist-slug { color: ${THEME.colors.textMuted}; font-size: 0.95rem; }
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
+    @media (max-width: 768px) {
+      .smartlink-layout { grid-template-columns: 1fr; justify-items: center; }
+      .header { text-align: center; }
+    }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
       .card { padding: 1.4rem; }
       h1 { font-size: 1.5rem; }
+      .cover { width: min(92vw, 420px); }
       .smartlink-item { grid-template-columns: 1fr; }
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
@@ -1063,7 +1078,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       const title = record.title ?? "Релиз";
 
       return `
-        <div class="smartlink-item">
+        <div class="smartlink-item" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
           ${
             coverUrlWithVersion
               ? `<img class="smartlink-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
@@ -1071,7 +1086,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           }
           <div class="smartlink-content">
             <div class="smartlink-title-row">
-              <a class="smartlink-title" href="${escapeHtml(canonicalUrl)}">${escapeHtml(title)}</a>
+              <div class="smartlink-title">${escapeHtml(title)}</div>
               <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
             </div>
             <div class="meta-row">${metaPrimary}</div>
@@ -1091,9 +1106,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
 
     const body = `
       <div class="artist-header">
-        <span class="eyebrow"><span class="accent-dot"></span>Смартлинки артиста</span>
         <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-        <p class="artist-meta">artist_slug: /${escapeHtml(artistSlug)}</p>
+        <div class="artist-slug">/${escapeHtml(artistSlug)}</div>
       </div>
       ${
         cards.length
@@ -1103,7 +1117,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       <script>
         (function() {
           document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
-            button.addEventListener('click', async () => {
+            button.addEventListener('click', async (event) => {
+              event.stopPropagation();
               const urlToCopy = button.getAttribute('data-url') || '';
 
               async function copyText(text) {
@@ -1135,6 +1150,27 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
                 toast.classList.add('visible');
                 window.setTimeout(() => toast.classList.remove('visible'), ok ? 1300 : 1700);
+              }
+            });
+          });
+
+          document.querySelectorAll('.smartlink-item[data-href]').forEach((card) => {
+            const href = card.getAttribute('data-href');
+            if (!href) return;
+
+            const navigate = () => {
+              window.location.href = href;
+            };
+
+            card.addEventListener('click', (event) => {
+              if ((event.target as HTMLElement).closest('button')) return;
+              navigate();
+            });
+
+            card.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigate();
               }
             });
           });
@@ -1211,22 +1247,29 @@ function renderSmartlink(
     .join("\n");
 
   const body = `
-    ${
-      coverUrlWithVersion
-        ? `<img class="cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
-        : `<div class="cover cover-placeholder">NO COVER</div>`
-    }
-    <div class="header">
-      <span class="eyebrow"><span class="accent-dot"></span>Smartlink</span>
-      <h1>${escapeHtml(title)}</h1>
-      <p class="meta">Артист: <strong>${artistLink}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
-    </div>
-    <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
-    <div class="canonical-row" style="margin-top:1.1rem;">
-      <span class="canonical-label">Канонический URL</span>
-      <span class="canonical-url">${escapeHtml(canonicalUrl)}</span>
-      <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">⧉</button>
-      <span class="copy-toast" role="status" aria-live="polite"></span>
+    <div class="smartlink-layout">
+      <div class="cover-frame">
+        ${
+          coverUrlWithVersion
+            ? `<img class="cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
+            : `<div class="cover cover-placeholder">NO COVER</div>`
+        }
+      </div>
+      <div class="header">
+        <h1>${escapeHtml(title)}</h1>
+        <div class="meta">
+          <span class="meta-label">Артист:</span>
+          <strong>${artistLink}</strong>
+          ${releaseDate ? `<span class="meta-divider">•</span><span class="meta-label">${escapeHtml(releaseDate)}</span>` : ""}
+        </div>
+        <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
+        <div class="canonical-row" style="margin-top:1.1rem;">
+          <span class="canonical-label">Канонический URL</span>
+          <span class="canonical-url">${escapeHtml(canonicalUrl)}</span>
+          <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">⧉</button>
+          <span class="copy-toast" role="status" aria-live="polite"></span>
+        </div>
+      </div>
     </div>
     <script>
       (function() {
@@ -1822,6 +1865,7 @@ export default {
         id: record.id,
         title: record.title ?? undefined,
         artist: record.artist_name ?? artistSlug,
+        artist_name: record.artist_name ?? undefined,
         release_date: record.release_date ?? undefined,
         cover_version: record.cover_version ?? undefined,
         cover_url: record.cover_url ?? undefined,
