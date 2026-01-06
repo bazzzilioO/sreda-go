@@ -835,13 +835,18 @@ function escapeHtml(value: string): string {
 const THEME = {
   colors: {
     background: "#000000",
-    surface: "#1E1E1E",
-    surfaceMuted: "#262626",
+    gradient:
+      "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), transparent 32%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.04), transparent 36%), linear-gradient(145deg, #0d0d0f 0%, #111112 40%, #0b0b0b 100%)",
+    surface: "rgba(38,38,38,0.62)",
+    surfaceStrong: "rgba(30,30,30,0.8)",
+    surfaceMuted: "rgba(28,28,28,0.65)",
     accent: "#F59E0B",
     textPrimary: "#FFFFFF",
-    textSecondary: "rgba(255,255,255,0.5)",
-    textMuted: "rgba(255,255,255,0.25)",
+    textSecondary: "rgba(255,255,255,0.7)",
+    textMuted: "rgba(255,255,255,0.38)",
+    textFaint: "rgba(255,255,255,0.2)",
     border: "rgba(255,255,255,0.1)",
+    borderSubtle: "rgba(255,255,255,0.08)",
   },
   fonts: {
     body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -850,16 +855,33 @@ const THEME = {
     card: "22px",
     cover: "18px",
     pill: "999px",
+    glass: "20px",
   },
   shadows: {
-    card: "none",
-    cover: "none",
-    button: "none",
-    gridCard: "none",
+    card: "0 18px 48px rgba(0,0,0,0.4)",
+    cover: "0 12px 26px rgba(0,0,0,0.45)",
+    button: "0 8px 20px rgba(0,0,0,0.3)",
+    gridCard: "0 10px 28px rgba(0,0,0,0.28)",
   },
 };
 
-function htmlPage(body: string, { title = "SREDA go" } = {}): string {
+function prettifySlug(value: string): string {
+  const normalized = value.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!normalized) return value;
+
+  return normalized
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function htmlPage(
+  body: string,
+  { title = "SREDA go", backgroundImage }: { title?: string; backgroundImage?: string | null } = {},
+): string {
+  const backgroundStyle = backgroundImage
+    ? `--page-bg-image: url('${escapeHtml(backgroundImage)}'); --page-bg-opacity: 0.32;`
+    : "--page-bg-image: none; --page-bg-opacity: 0;";
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -875,33 +897,85 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 26%),
-        radial-gradient(circle at 80% 0%, rgba(255,255,255,0.035), transparent 32%),
-        ${THEME.colors.background};
+      position: relative;
+      overflow: hidden;
       color: ${THEME.colors.textPrimary};
       font-family: ${THEME.fonts.body};
-      padding: 2rem 1.25rem;
+      padding: 2rem 1.25rem 2.75rem;
+      background: ${THEME.colors.background};
+      isolation: isolate;
+    }
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+    }
+    body::before {
+      background: ${THEME.colors.gradient};
+      opacity: 0.92;
+    }
+    body::after {
+      background-image: var(--page-bg-image);
+      background-size: cover;
+      background-position: center;
+      filter: blur(32px) saturate(1.08);
+      opacity: var(--page-bg-opacity, 0);
+      transform: scale(1.04);
+    }
+    .noise-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+      z-index: -1;
+      opacity: 0.5;
+      mix-blend-mode: soft-light;
     }
     .card {
       width: min(820px, 100%);
       background: ${THEME.colors.surface};
-      border: 1px solid ${THEME.colors.border};
-      border-radius: 18px;
+      border: 1px solid ${THEME.colors.borderSubtle};
+      border-radius: ${THEME.radii.glass};
       box-shadow: ${THEME.shadows.card};
-      padding: 1.6rem;
+      padding: 1.8rem;
       position: relative;
       overflow: hidden;
+      backdrop-filter: blur(20px) saturate(1.1);
+      -webkit-backdrop-filter: blur(20px) saturate(1.1);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      isolation: isolate;
     }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 22%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      mix-blend-mode: soft-light;
+      z-index: 0;
+    }
+    .card > * { position: relative; z-index: 1; }
     .smartlink-layout { display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start; }
     .cover-frame { display: flex; justify-content: center; width: 100%; }
     .cover {
-      width: clamp(280px, 42vw, 420px);
-      max-width: 92vw;
+      width: clamp(320px, 48vw, 580px);
+      max-width: min(92vw, 620px);
       aspect-ratio: 1 / 1;
       height: auto;
       border-radius: ${THEME.radii.cover};
-      border: 1px solid ${THEME.colors.border};
-      background: ${THEME.colors.surfaceMuted};
+      border: 1px solid ${THEME.colors.borderSubtle};
+      background: ${THEME.colors.surfaceStrong};
       box-shadow: ${THEME.shadows.cover};
       display: block;
       object-fit: cover;
@@ -933,46 +1007,48 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       justify-content: space-between;
       gap: 0.6rem;
       padding: 0.95rem 1.05rem;
-      border-radius: 14px;
-      border: 1px solid ${THEME.colors.border};
+      border-radius: 16px;
+      border: 1px solid ${THEME.colors.borderSubtle};
       background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textPrimary};
       font-weight: 720;
       letter-spacing: 0.01em;
       box-shadow: ${THEME.shadows.button};
-      transition: border-color 140ms ease, background 140ms ease, color 140ms ease, transform 120ms ease;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease, transform 120ms ease, box-shadow 160ms ease;
     }
     .link-btn::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; opacity: 0.85; box-shadow: 0 0 0 4px rgba(245,158,11,0.08); }
-    .link-btn:hover { border-color: ${THEME.colors.accent}; background: #2f2f2f; color: ${THEME.colors.textPrimary}; transform: translateY(-1px); }
+    .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
     .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; margin-top: 1.2rem; }
     .canonical-label { white-space: nowrap; color: ${THEME.colors.textMuted}; }
-    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.65rem; border-radius: 10px; background: ${THEME.colors.surfaceMuted}; border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
-    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.85rem; cursor: pointer; font-weight: 720; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
-    .copy-btn:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
-    .copy-btn:active { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.accent}; }
+    .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.65rem; border-radius: 12px; background: rgba(30,30,30,0.72); border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); }
+    .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.85rem; cursor: pointer; font-weight: 720; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease; box-shadow: ${THEME.shadows.button}; }
+    .copy-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.75); color: ${THEME.colors.accent}; box-shadow: 0 12px 28px rgba(0,0,0,0.35); }
+    .copy-btn:active { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.75); color: ${THEME.colors.accent}; box-shadow: 0 8px 18px rgba(0,0,0,0.3); }
     .copy-btn.copy-btn-small { padding: 0.32rem 0.65rem; font-size: 0.9rem; }
     .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; }
     .copy-toast.visible { opacity: 1; }
-    .smartlink-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.25rem; }
-    .smartlink-item { display: grid; grid-template-columns: auto 1fr; gap: 0.85rem; padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease; }
+    .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.6rem; }
+    .smartlink-item { display: grid; grid-template-columns: auto 1fr; gap: 0.95rem; padding: 1rem 1.05rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
-    .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: #2a2a2a; transform: translateY(-1px); }
-    .smartlink-cover { width: 78px; height: 78px; object-fit: cover; border-radius: 10px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
+    .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: rgba(38,38,38,0.82); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
+    .smartlink-item:active { transform: translateY(0); }
+    .smartlink-cover { width: 84px; height: 84px; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
     .smartlink-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.04em; font-size: 0.85rem; text-transform: uppercase; }
     .smartlink-content { display: flex; flex-direction: column; gap: 0.35rem; }
     .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
     .smartlink-title { font-size: 1.08rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
-    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 750; font-size: 0.82rem; min-width: 2rem; text-align: center; }
+    .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.22rem 0.65rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.7); border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 750; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.35rem; }
+    .platform-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 4px rgba(245,158,11,0.1); }
     .meta-row { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; align-items: center; color: ${THEME.colors.textSecondary};font-size: 0.92rem; }
     .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.88rem; }
     .slug-pill { color: ${THEME.colors.textSecondary}; font-weight: 700; letter-spacing: 0.02em; padding: 0.12rem 0.5rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px dashed ${THEME.colors.border}; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
-    .artist-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
-    .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.8rem; font-weight: 850; letter-spacing: 0.015em; }
-    .artist-slug { color: ${THEME.colors.textMuted}; font-size: 0.95rem; }
+    .artist-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
+    .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.96rem; display: inline-flex; align-items: center; gap: 0.4rem; }
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 768px) {
       .smartlink-layout { grid-template-columns: 1fr; justify-items: center; }
@@ -990,7 +1066,8 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
     }
   </style>
 </head>
-<body>
+<body style="${backgroundStyle}">
+  <div class="noise-layer"></div>
   <main class="card">
     ${body}
   </main>
@@ -1057,8 +1134,18 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
 
     const items = query.results ?? [];
     const displayArtistName =
-      items.find((item) => item.artist_name?.trim())?.artist_name?.trim() || artistSlug;
+      items.find((item) => item.artist_name?.trim())?.artist_name?.trim() || prettifySlug(artistSlug);
     const canonicalBase = goIndexBase.replace(/\/$/, "");
+    const backgroundCover = items
+      .map((item) => {
+        const coverSource = parseCoverSource(item.cover_source, `[artist ${artistSlug}/${item.slug}] cover_source bg`);
+        const coverVersion = normalizeCoverVersionInput(item.cover_version ?? null);
+        const resolvedCoverUrl =
+          resolveCoverUrl(item.cover_url ?? null) ||
+          (coverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(item.slug)}` : null);
+        return buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
+      })
+      .find((url) => Boolean(url));
 
     const cards = items.map((record) => {
       const links = parseLinksFromJson(record.links_json, `[artist ${artistSlug}/${record.slug}] links`);
@@ -1107,7 +1194,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     const body = `
       <div class="artist-header">
         <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-        <div class="artist-slug">/${escapeHtml(artistSlug)}</div>
+        <div class="artist-meta">/${escapeHtml(artistSlug)}</div>
       </div>
       ${
         cards.length
@@ -1178,7 +1265,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       </script>
     `;
 
-    return new Response(htmlPage(body, { title: `${displayArtistName} — SREDA` }), {
+    return new Response(htmlPage(body, { title: `${displayArtistName} — SREDA`, backgroundImage: backgroundCover || null }), {
       status: 200,
       headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
     });
@@ -1196,7 +1283,7 @@ function renderSmartlink(
   smartlinkId?: string,
 ): Response {
   const title = data.title ?? "Релиз";
-  const artistName = data.artist_name?.trim() || data.artist?.trim() || artistSlug;
+  const artistName = data.artist_name?.trim() || data.artist?.trim() || prettifySlug(artistSlug);
   const releaseDate = data.release_date;
   const coverSource = data.cover_source ?? null;
   const coverUrl = resolveCoverUrl(data.cover_url);
@@ -1237,7 +1324,7 @@ function renderSmartlink(
 
   const canonicalBase = goIndexBase.replace(/\/$/, "");
   const canonicalUrl = `${canonicalBase}/${artistSlug}/${slug}`;
-  const artistLink = `<a class="artist-link" href="/artist/${encodeURIComponent(artistSlug)}">${escapeHtml(artistName)}</a>`;
+  const artistLink = `<a class="artist-link" href="/${encodeURIComponent(artistSlug)}">${escapeHtml(artistName)}</a>`;
 
   const linkButtons = orderedEntries
     .map(([platform, url]) => {
@@ -1315,7 +1402,7 @@ function renderSmartlink(
     </script>
   `;
 
-  return new Response(htmlPage(body, { title: `${title} — ${artistName}` }), {
+  return new Response(htmlPage(body, { title: `${title} — ${artistName}`, backgroundImage: coverUrlWithVersion }), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
