@@ -966,11 +966,11 @@ function htmlPage(
       z-index: 0;
     }
     .card > * { position: relative; z-index: 1; }
-    .smartlink-layout { display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start; }
-    .cover-frame { display: flex; justify-content: center; width: 100%; }
+    .smartlink-layout { display: grid; grid-template-columns: minmax(240px, 0.95fr) 1.05fr; gap: 1.5rem; align-items: start; }
+    .cover-frame { display: flex; justify-content: center; width: 100%; align-self: start; }
     .cover {
-      width: clamp(320px, 48vw, 580px);
-      max-width: min(92vw, 620px);
+      width: clamp(280px, 38vw, 440px);
+      max-width: 100%;
       aspect-ratio: 1 / 1;
       height: auto;
       border-radius: ${THEME.radii.cover};
@@ -1020,7 +1020,7 @@ function htmlPage(
     .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; margin-top: 1.2rem; }
+    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; margin-top: 0.4rem; }
     .canonical-label { white-space: nowrap; color: ${THEME.colors.textMuted}; }
     .canonical-url { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.65rem; border-radius: 12px; background: rgba(30,30,30,0.72); border: 1px dashed ${THEME.colors.border}; color: ${THEME.colors.textPrimary}; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); }
     .copy-btn { border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surfaceStrong}; color: ${THEME.colors.textSecondary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.85rem; cursor: pointer; font-weight: 720; letter-spacing: 0.01em; transition: border-color 140ms ease, background 140ms ease, color 140ms ease, box-shadow 140ms ease; box-shadow: ${THEME.shadows.button}; }
@@ -1030,10 +1030,11 @@ function htmlPage(
     .copy-toast { min-width: 110px; color: ${THEME.colors.accent}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; font-size: 0.9rem; }
     .copy-toast.visible { opacity: 1; }
     .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.6rem; }
-    .smartlink-item { display: grid; grid-template-columns: auto 1fr; gap: 0.95rem; padding: 1rem 1.05rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
+    .smartlink-item { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.05rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
     .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: rgba(38,38,38,0.82); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
     .smartlink-item:active { transform: translateY(0); }
+    .smartlink-main { display: grid; grid-template-columns: auto 1fr; gap: 0.95rem; align-items: center; color: inherit; text-decoration: none; }
     .smartlink-cover { width: 84px; height: 84px; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
     .smartlink-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.04em; font-size: 0.85rem; text-transform: uppercase; }
     .smartlink-content { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -1052,14 +1053,15 @@ function htmlPage(
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 768px) {
       .smartlink-layout { grid-template-columns: 1fr; justify-items: center; }
-      .header { text-align: center; }
+      .smartlink-layout .header { text-align: center; width: 100%; }
+      .smartlink-layout .links { width: 100%; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
       .card { padding: 1.4rem; }
       h1 { font-size: 1.5rem; }
       .cover { width: min(92vw, 420px); }
-      .smartlink-item { grid-template-columns: 1fr; }
+      .smartlink-main { grid-template-columns: 1fr; }
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
       .links { grid-template-columns: 1fr; }
@@ -1165,39 +1167,44 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       const title = record.title ?? "Релиз";
 
       return `
-        <div class="smartlink-item" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
-          ${
-            coverUrlWithVersion
-              ? `<img class="smartlink-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
-              : `<div class="smartlink-cover placeholder">NO COVER</div>`
-          }
-          <div class="smartlink-content">
-            <div class="smartlink-title-row">
-              <div class="smartlink-title">${escapeHtml(title)}</div>
-              <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
+        <article class="smartlink-item" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
+          <a class="smartlink-main" href="${escapeHtml(canonicalUrl)}">
+            ${
+              coverUrlWithVersion
+                ? `<img class="smartlink-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
+                : `<div class="smartlink-cover placeholder">NO COVER</div>`
+            }
+            <div class="smartlink-content">
+              <div class="smartlink-title-row">
+                <div class="smartlink-title">${escapeHtml(title)}</div>
+                <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
+              </div>
+              <div class="meta-row">${metaPrimary}</div>
+              <div class="meta-row subtle">${
+                record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : "Не обновлялся"
+              }</div>
             </div>
-            <div class="meta-row">${metaPrimary}</div>
-            <div class="meta-row subtle">${
-              record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : "Не обновлялся"
-            }</div>
-            <div class="canonical-row">
-              <span class="canonical-label">Канонический URL</span>
-              <span class="canonical-url">${escapeHtml(canonicalUrl)}</span>
-              <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
-              <span class="copy-toast" role="status" aria-live="polite"></span>
-            </div>
+          </a>
+          <div class="canonical-row">
+            <span class="canonical-label">Канонический URL</span>
+            <a class="canonical-url" href="${escapeHtml(canonicalUrl)}">${escapeHtml(canonicalUrl)}</a>
+            <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
+            <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
-        </div>
+        </article>
       `;
     });
 
-    const body = `
-      <div class="artist-header">
-        <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-        <div class="artist-meta">/${escapeHtml(artistSlug)}</div>
-      </div>
-      ${
-        cards.length
+      const body = `
+        <div class="artist-header">
+          <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+          <div class="artist-meta">
+            <span>Все смартлинки в одном месте.</span>
+            <span class="slug-pill">/${escapeHtml(artistSlug)}</span>
+          </div>
+        </div>
+        ${
+          cards.length
           ? `<div class="smartlink-list">${cards.join("\n")}</div>`
           : `<div class="empty-state">Для артиста пока нет смартлинков.</div>`
       }
@@ -1250,7 +1257,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             };
 
             card.addEventListener('click', (event) => {
-              if ((event.target as HTMLElement).closest('button')) return;
+              const target = event.target as HTMLElement | null;
+              if (target?.closest('button') || target?.closest('a')) return;
               navigate();
             });
 
@@ -1324,7 +1332,7 @@ function renderSmartlink(
 
   const canonicalBase = goIndexBase.replace(/\/$/, "");
   const canonicalUrl = `${canonicalBase}/${artistSlug}/${slug}`;
-  const artistLink = `<a class="artist-link" href="/${encodeURIComponent(artistSlug)}">${escapeHtml(artistName)}</a>`;
+  const artistLink = `<a class="artist-link" href="/artist/${encodeURIComponent(artistSlug)}">${escapeHtml(artistName)}</a>`;
 
   const linkButtons = orderedEntries
     .map(([platform, url]) => {
@@ -1896,6 +1904,17 @@ export default {
 
     if (segments.length === 0) {
       return renderHome();
+    }
+
+    if (segments.length === 1) {
+      const candidate = segments[0];
+      const reserved = new Set(["artist", "api", "cover", "_cover", "debug"]);
+
+      if (!reserved.has(candidate)) {
+        const target = `/artist/${encodeURIComponent(candidate)}`;
+        const redirectUrl = new URL(target, url.origin);
+        return Response.redirect(redirectUrl.toString(), 302);
+      }
     }
 
     if (segments.length !== 2) {
