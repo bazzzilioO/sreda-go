@@ -961,16 +961,21 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
     .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px dotted ${THEME.colors.textMuted}; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
     .artist-hero { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.8rem; }
-    .release-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .release-card { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; box-shadow: none; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: border-color 140ms ease, background 140ms ease; cursor: pointer; }
+    .release-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .release-card { display: flex; flex-direction: column; gap: 0.9rem; padding: 1.05rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; box-shadow: none; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: border-color 140ms ease, background 140ms ease, transform 140ms ease; cursor: pointer; }
     .release-card:hover { border-color: ${THEME.colors.accent}; background: ${THEME.colors.surface}; }
     .release-cover { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
     .release-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.06em; }
-    .release-title { font-size: 1.1rem; font-weight: 800; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
-    .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; align-items: center; padding-top: 0.1rem; }
+    .release-head { display: flex; flex-direction: column; gap: 0.45rem; }
+    .release-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
+    .release-title { font-size: 1.2rem; font-weight: 850; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; line-height: 1.25; }
+    .links-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(245, 200, 66, 0.14); color: ${THEME.colors.textPrimary}; font-size: 0.85rem; font-weight: 800; border: 1px solid ${THEME.colors.border}; min-width: 2.2rem; text-align: center; }
+    .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.65rem; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; align-items: center; padding-top: 0.1rem; }
+    .release-slug { color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.02em; padding: 0.08rem 0.35rem; border-radius: ${THEME.radii.pill}; background: rgba(255,255,255,0.04); }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
-    .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-top: 0.2rem; padding-top: 0.4rem; border-top: 1px solid ${THEME.colors.border}; }
-    .copy-btn.copy-btn-small { padding: 0.35rem 0.8rem; font-size: 0.9rem; }
+    .pill-soft { background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
+    .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 0.1rem; padding-top: 0.6rem; border-top: 1px solid ${THEME.colors.border}; }
+    .copy-btn.copy-btn-small { padding: 0.3rem 0.65rem; font-size: 0.9rem; background: transparent; border-color: ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; }
     .empty-state { padding: 1.4rem; border-radius: 14px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 640px) {
       body { padding: 1.1rem; }
@@ -1060,10 +1065,12 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         (coverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(record.slug)}` : null);
       const coverUrlWithVersion = buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
       const canonicalUrl = `${canonicalBase}/${artistSlug}/${record.slug}`;
-      const releaseDate = record.release_date ? `<span class="pill">${escapeHtml(record.release_date)}</span>` : "";
-      const linksLabel = `<span class="pill">${linkCount} ссыл${linkCount === 1 ? "ка" : linkCount >= 2 && linkCount <= 4 ? "ки" : "ок"}</span>`;
-      const slugLabel = `<span class="pill">/${escapeHtml(record.slug)}</span>`;
-      const meta = [releaseDate, linksLabel, slugLabel].filter(Boolean).join(" ");
+      const releaseDate = record.release_date
+        ? `<span class="pill pill-soft">${escapeHtml(record.release_date)}</span>`
+        : "";
+      const linksLabel = `<span class="links-badge">${linkCount}</span>`;
+      const slugLabel = `<span class="release-slug">/${escapeHtml(record.slug)}</span>`;
+      const meta = [releaseDate, slugLabel].filter(Boolean).join(" ");
       const title = record.title ?? "Релиз";
 
       return `
@@ -1073,12 +1080,17 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
               ? `<img class="release-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
               : `<div class="release-cover placeholder">NO COVER</div>`
           }
-          <h2 class="release-title">${escapeHtml(title)}</h2>
-          <div class="release-meta">${meta}</div>
+          <div class="release-head">
+            <div class="release-title-row">
+              <h2 class="release-title">${escapeHtml(title)}</h2>
+              ${linksLabel}
+            </div>
+            <div class="release-meta">${meta}</div>
+          </div>
           <div class="release-actions">
             <span class="meta">${record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : ""}</span>
             <div style="display:flex; align-items:center; gap:0.4rem;">
-              <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}">Copy</button>
+              <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Copy link">⧉</button>
               <span class="copy-toast" role="status" aria-live="polite"></span>
             </div>
           </div>
