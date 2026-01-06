@@ -844,6 +844,33 @@ function escapeHtml(value: string): string {
   });
 }
 
+const THEME = {
+  colors: {
+    background: "#050608",
+    surface: "#0e0f15",
+    surfaceMuted: "#151721",
+    accent: "#f5c32c",
+    textPrimary: "#f7f7f2",
+    textSecondary: "#c7c7c3",
+    textMuted: "#9d9ea6",
+    border: "#1f222c",
+    shadowTint: "rgba(245, 195, 44, 0.2)",
+  },
+  fonts: {
+    body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  },
+  radii: {
+    card: "22px",
+    cover: "18px",
+    pill: "999px",
+  },
+  shadows: {
+    card: "0 28px 80px rgba(0, 0, 0, 0.6)",
+    cover: "0 22px 60px rgba(0, 0, 0, 0.55)",
+    button: "0 10px 30px rgba(245, 195, 44, 0.16)",
+  },
+};
+
 function htmlPage(body: string, { title = "SREDA go" } = {}): string {
   return `<!DOCTYPE html>
 <html lang="ru">
@@ -860,27 +887,37 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 20% 20%, #142033 0%, #0b0f1a 45%, #080b12 100%);
-      color: #e6e9ef;
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: ${THEME.colors.background};
+      color: ${THEME.colors.textPrimary};
+      font-family: ${THEME.fonts.body};
       padding: 1.5rem;
     }
     .card {
-      width: min(640px, 100%);
-      background: rgba(16, 24, 40, 0.72);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      width: min(720px, 100%);
+      background: linear-gradient(160deg, ${THEME.colors.surface} 0%, ${THEME.colors.surfaceMuted} 100%);
+      border: 1px solid ${THEME.colors.border};
+      border-radius: ${THEME.radii.card};
+      box-shadow: ${THEME.shadows.card};
       padding: 2.5rem;
       backdrop-filter: blur(6px);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 18% 12%, ${THEME.colors.shadowTint}, transparent 32%);
+      pointer-events: none;
+      opacity: 0.7;
     }
     .cover {
       width: 100%;
       height: auto;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-      margin-bottom: 1.5rem;
+      border-radius: ${THEME.radii.cover};
+      border: 1px solid ${THEME.colors.border};
+      box-shadow: ${THEME.shadows.cover};
+      margin-bottom: 1.8rem;
       display: block;
       object-fit: cover;
     }
@@ -888,34 +925,46 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-      color: #cfd7ea;
+      background: linear-gradient(135deg, rgba(245, 195, 44, 0.08), rgba(255, 255, 255, 0.02));
+      color: ${THEME.colors.textSecondary};
       min-height: 280px;
       font-weight: 700;
       letter-spacing: 0.08em;
     }
     a { color: inherit; }
-    h1 { margin: 0 0 0.5rem; font-size: 2rem; letter-spacing: 0.01em; color: #f4f6fb; }
-    p { margin: 0; color: #c8d0e2; }
-    .meta { margin-top: 0.5rem; color: #b9c1d6; }
-    .meta strong { color: #f3b266; }
-    .links { margin-top: 1.5rem; display: grid; gap: 0.75rem; }
+    h1 { margin: 0 0 0.5rem; font-size: 2rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.5; }
+    .meta { margin-top: 0.25rem; color: ${THEME.colors.textMuted}; font-size: 1rem; }
+    .meta strong { color: ${THEME.colors.textPrimary}; }
+    .links { margin-top: 1.8rem; display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
     .link-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.9rem 1.2rem;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.06);
-      color: #e6e9ef;
+      padding: 0.9rem 1.05rem;
+      border-radius: 14px;
+      border: 1px solid ${THEME.colors.border};
+      background: ${THEME.colors.surface};
+      color: ${THEME.colors.textPrimary};
       font-weight: 700;
       text-decoration: none;
-      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+      letter-spacing: 0.01em;
+      box-shadow: ${THEME.shadows.button};
+      transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
     }
-    .link-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.16); box-shadow: 0 18px 30px rgba(0,0,0,0.35); }
-    .small { margin-top: 2rem; font-size: 0.95rem; color: #98a4bd; }
-    .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem; color: #cfd7ea; }
+    .link-btn:hover { transform: translateY(-2px); border-color: ${THEME.colors.accent}; box-shadow: 0 16px 36px ${THEME.colors.shadowTint}; background: ${THEME.colors.surfaceMuted}; }
+    .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 195, 44, 0.08); }
+    .small { margin-top: 2.2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
+    .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+    .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.accent}; border-radius: 50%; box-shadow: 0 0 0 6px rgba(245, 195, 44, 0.12); }
+    .header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    @media (max-width: 640px) {
+      body { padding: 1.1rem; }
+      .card { padding: 1.8rem; }
+      h1 { font-size: 1.6rem; }
+      .links { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1011,8 +1060,11 @@ function renderSmartlink(
         ? `<img class="cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
         : `<div class="cover cover-placeholder">NO COVER</div>`
     }
-    <h1>${escapeHtml(title)}</h1>
-    <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
+    <div class="header">
+      <span class="eyebrow"><span class="accent-dot"></span>Smartlink</span>
+      <h1>${escapeHtml(title)}</h1>
+      <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
+    </div>
     <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
     <p class="small">Канонический URL: <span class="tag">go.sreda.pw/${escapeHtml(artistSlug)}/${escapeHtml(slug)}</span></p>
   `;
