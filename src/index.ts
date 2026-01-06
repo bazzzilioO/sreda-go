@@ -527,7 +527,7 @@ async function resolveCoverResponse(
     return handleExternalCover(request, externalUrl, cacheKey, context);
   }
 
-  return new Response("Not found", { status: 404 });
+  return respondWithPlaceholderCover(cacheKey);
 }
 
 async function handleExternalCover(
@@ -785,6 +785,7 @@ const COVER_PLACEHOLDER_SVG = `<?xml version="1.0" encoding="UTF-8"?>
   <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="96" font-weight="700" fill="#FFFFFF">SREDA</text>
   <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="32" font-weight="500" fill="#D9D9D9">cover unavailable</text>
 </svg>`;
+const COVER_PLACEHOLDER_DATA_URL = `data:image/svg+xml,${encodeURIComponent(COVER_PLACEHOLDER_SVG)}`;
 const LINK_ORDER = [
   "telegram",
   "spotify",
@@ -958,6 +959,36 @@ function formatDisplayDate(value?: string | null): string | null {
   }
 
   return trimmed;
+}
+
+function buildDisplayCoverUrl({
+  coverUrl,
+  coverSource,
+  artistSlug,
+  slug,
+  goIndexBase,
+  coverVersion,
+  context = "[cover_display]",
+}: {
+  coverUrl?: string | null;
+  coverSource?: CoverSource | string | null;
+  artistSlug: string;
+  slug: string;
+  goIndexBase: string;
+  coverVersion?: number | null;
+  context?: string;
+}): string {
+  const canonicalBase = goIndexBase.replace(/\/$/, "");
+  const parsedCoverSource =
+    typeof coverSource === "string" ? parseCoverSource(coverSource, context) : coverSource ?? null;
+
+  const resolvedCoverUrl =
+    resolveCoverUrl(coverUrl ?? null) ||
+    (parsedCoverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}` : null);
+
+  const withVersion = buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion ?? null);
+
+  return withVersion ?? COVER_PLACEHOLDER_DATA_URL;
 }
 
 function renderMedia({
@@ -1430,12 +1461,17 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     const cards = items.map((record) => {
       const links = parseLinksFromJson(record.links_json, `[artist ${artistSlug}/${record.slug}] links`);
       const linkCount = Object.keys(links).length;
-      const coverSource = parseCoverSource(record.cover_source, `[artist ${artistSlug}/${record.slug}] cover_source`);
-      const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
-      const resolvedCoverUrl =
-        resolveCoverUrl(record.cover_url ?? null) ||
-        (coverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(record.slug)}` : null);
-      const coverUrlWithVersion = buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
+        const coverSource = parseCoverSource(record.cover_source, `[artist ${artistSlug}/${record.slug}] cover_source`);
+        const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
+        const coverUrlWithVersion = buildDisplayCoverUrl({
+          coverUrl: record.cover_url,
+          coverSource,
+          artistSlug,
+          slug: record.slug,
+          goIndexBase,
+          coverVersion,
+          context: `[artist ${artistSlug}/${record.slug}] cover_display`,
+        });
       const canonicalUrl = `${canonicalBase}/${artistSlug}/${record.slug}`;
       const formattedReleaseDate = formatDisplayDate(record.release_date);
       const formattedUpdatedAt = formatDisplayDate(record.updated_at);
@@ -1573,15 +1609,21 @@ function renderSmartlink(
   const title = data.title ?? "Релиз";
   const artistName = data.artist_name?.trim() || data.artist?.trim() || prettifySlug(artistSlug);
   const releaseDate = formatDisplayDate(data.release_date);
-  const coverSource = data.cover_source ?? null;
-  const coverUrl = resolveCoverUrl(data.cover_url);
   const coverVersion = normalizeCoverVersionInput(data.cover_version ?? null);
-  const coverUrlWithVersion = buildCoverUrlWithVersion(coverUrl, coverVersion);
+  const coverUrlWithVersion = buildDisplayCoverUrl({
+    coverUrl: data.cover_url ?? null,
+    coverSource: data.cover_source ?? null,
+    artistSlug,
+    slug,
+    goIndexBase,
+    coverVersion,
+    context: `[render ${artistSlug}/${slug}] cover_source`,
+  });
 
-  if (!coverUrlWithVersion) {
+  if (coverUrlWithVersion === COVER_PLACEHOLDER_DATA_URL) {
     console.warn(`[render ${artistSlug}/${slug}]: missing cover, using placeholder`, {
       cover_url: data.cover_url ?? null,
-      cover_source: coverSource,
+      cover_source: data.cover_source ?? null,
     });
   }
 
@@ -1859,10 +1901,8 @@ export default {
             storedCoverUrl = normalizedCoverUrl;
           } else if (existingCoverUrl) {
             storedCoverUrl = existingCoverUrl;
-          } else if (storedCoverSource) {
-            storedCoverUrl = defaultCoverUrl;
           } else {
-            storedCoverUrl = null;
+            storedCoverUrl = defaultCoverUrl;
           }
 
           const coverChanged =
