@@ -1084,8 +1084,9 @@ function htmlPage(
       z-index: 0;
     }
     .card > * { position: relative; z-index: 1; }
-    .smartlink-layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(320px, 420px); gap: 1.25rem; align-items: stretch; min-width: 0; }
-    .cover-frame { display: flex; justify-content: center; align-items: flex-start; width: 100%; align-self: stretch; min-width: 0; }
+    .release-grid { display: grid; grid-template-columns: minmax(300px, 360px) minmax(420px, 520px); gap: 1.35rem; align-items: start; justify-content: center; min-width: 0; }
+    .cover-wrap { display: flex; justify-content: center; align-items: flex-start; width: 100%; align-self: stretch; min-width: 0; }
+    .content-wrap { display: flex; flex-direction: column; gap: 0.75rem; width: min(520px, 100%); max-width: 520px; min-width: 0; }
     .cover {
       width: min(100%, 380px);
       max-width: 420px;
@@ -1152,7 +1153,7 @@ function htmlPage(
     .media--error .media__skeleton { opacity: 0; visibility: hidden; }
     .media[data-has-src="false"] .media__skeleton { opacity: 0; visibility: hidden; }
     .media[data-has-src="false"] .media__fallback { opacity: 1; visibility: visible; }
-    .smartlink-layout .media__fallback { font-size: 0.98rem; }
+    .release-grid .media__fallback { font-size: 0.98rem; }
     @keyframes shimmer {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
@@ -1165,14 +1166,15 @@ function htmlPage(
     .meta strong { color: ${THEME.colors.textPrimary}; }
     .meta-label { color: ${THEME.colors.textSecondary}; }
     .meta-divider { color: ${THEME.colors.textMuted}; }
-    .header { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; max-width: 420px; width: 100%; }
+    .header { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; width: 100%; }
     .artist-line { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem; justify-content: flex-start; }
     .artist-line .meta-label { color: ${THEME.colors.textMuted}; }
-    .release-date { color: ${THEME.colors.textMuted}; font-size: 0.9rem; margin-top: 0.4rem; text-align: left; opacity: 0.78; }
+    .release-date { color: ${THEME.colors.textMuted}; font-size: 0.9rem; margin: 0; text-align: left; opacity: 0.78; }
     .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .links { margin-top: 0.6rem; display: grid; gap: 0.65rem; grid-template-columns: 1fr; max-width: 520px; width: 100%; }
-    .links.links--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
+    .links-grid { margin-top: 0.5rem; display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+    .links-grid.links-grid--single { grid-template-columns: 1fr; }
+    .links-grid .link-btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
     .link-btn {
       display: inline-flex;
       align-items: center;
@@ -1194,7 +1196,7 @@ function htmlPage(
     .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.34); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0; border-radius: 0; border: none; background: transparent; width: 100%; min-width: 0; margin-top: 0.65rem; max-width: 520px; }
+    .canonical-row { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0; border-radius: 0; border: none; background: transparent; width: 100%; min-width: 0; margin-top: 1rem; }
     .copy-btn { border: none; background: linear-gradient(125deg, rgba(245,158,11,0.95), rgba(251,191,36,0.92)); color: #0b0b0b; border-radius: 12px; width: 100%; padding: 0.7rem 0.95rem; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; font-weight: 790; letter-spacing: 0.005em; transition: background 140ms ease, color 140ms ease, box-shadow 150ms ease, transform 120ms ease; box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18); }
     .copy-btn:hover { background: linear-gradient(125deg, rgba(251,191,36,0.98), rgba(245,158,11,0.95)); color: #0a0a0a; box-shadow: 0 12px 26px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,158,11,0.22); transform: translateY(-1px); }
     .copy-btn:active { background: linear-gradient(125deg, rgba(245,158,11,0.98), rgba(245,158,11,0.95)); box-shadow: 0 8px 18px rgba(0,0,0,0.26), 0 0 0 1px rgba(245,158,11,0.26); transform: translateY(0); }
@@ -1232,15 +1234,17 @@ function htmlPage(
     @media (max-width: 1024px) {
       .smartlink-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
     }
+    @media (max-width: 1100px) {
+      .links-grid { grid-template-columns: 1fr; }
+    }
     @media (max-width: 768px) {
-      .smartlink-layout { grid-template-columns: 1fr; justify-items: stretch; }
-      .smartlink-layout .header { text-align: center; width: 100%; align-items: center; }
-      .smartlink-layout .links { width: 100%; }
+      .release-grid { grid-template-columns: 1fr; justify-items: stretch; }
+      .release-grid .header { text-align: center; width: 100%; align-items: center; }
+      .release-grid .links-grid { width: 100%; }
       .artist-line { justify-content: center; }
       .release-date { text-align: center; }
       .canonical-row { align-items: center; }
-      .links { grid-template-columns: 1fr; max-width: 100%; }
-      .links.links--grid { grid-template-columns: 1fr; }
+      .links-grid { grid-template-columns: 1fr; }
       .smartlink-footer { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
@@ -1251,21 +1255,21 @@ function htmlPage(
       .smartlink-main { grid-template-columns: 1fr; }
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
-      .links { grid-template-columns: 1fr; }
+      .links-grid { grid-template-columns: 1fr; }
       .smartlink-list { grid-template-columns: 1fr; }
       .copy-btn { width: 100%; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
       .card { padding: 1.25rem; width: calc(100% - 16px); }
-      .smartlink-layout { gap: 1rem; }
+      .release-grid { gap: 1rem; }
       .canonical-row { align-items: center; gap: 0.5rem; }
     }
   </style>
 </head>
 <body style="${backgroundStyle}" ${backgroundAttribute}>
   <div class="noise-layer"></div>
-  <main class="card">
+  <main class="card release-card">
     ${body}
   </main>
   <script>
@@ -1617,25 +1621,27 @@ function renderSmartlink(
       return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
     })
     .join("\n");
-  const linksClassName = linkCount >= 2 ? "links links--grid" : "links";
+  const linksClassName = linkCount >= 2 ? "links-grid" : "links-grid links-grid--single";
 
   const body = `
-    <div class="smartlink-layout">
-      <div class="cover-frame">
+    <div class="release-grid">
+      <div class="cover-wrap">
         ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "cover" })}
       </div>
-      <div class="header">
-        <h1>${escapeHtml(title)}</h1>
-        <div class="artist-line">
-          <span class="meta-label">Артист:</span>
-          ${artistLink}
+      <div class="content-wrap">
+        <div class="header">
+          <h1>${escapeHtml(title)}</h1>
+          <div class="artist-line">
+            <span class="meta-label">Артист:</span>
+            ${artistLink}
+          </div>
+          ${releaseDate ? `<div class="meta-row subtle release-date"><span class="meta-label">Дата релиза:</span><span>${escapeHtml(releaseDate)}</span></div>` : ""}
         </div>
         <div class="${linksClassName}">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
         <div class="canonical-row">
           <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку">Скопировать ссылку</button>
           <span class="copy-toast" role="status" aria-live="polite"></span>
         </div>
-        ${releaseDate ? `<div class="release-date">Дата релиза: ${escapeHtml(releaseDate)}</div>` : ""}
       </div>
     </div>
     <script>
