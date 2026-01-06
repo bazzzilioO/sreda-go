@@ -868,6 +868,7 @@ const THEME = {
     card: "0 28px 80px rgba(0, 0, 0, 0.6)",
     cover: "0 22px 60px rgba(0, 0, 0, 0.55)",
     button: "0 10px 30px rgba(245, 195, 44, 0.16)",
+    gridCard: "0 16px 44px rgba(0, 0, 0, 0.32)",
   },
 };
 
@@ -966,6 +967,20 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
     .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.accent}; border-radius: 50%; box-shadow: 0 0 0 6px rgba(245, 195, 44, 0.12); }
     .header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
     .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px dotted ${THEME.colors.textMuted}; }
+    .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
+    .artist-hero { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.6rem; }
+    .release-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .release-card { display: flex; flex-direction: column; gap: 0.65rem; padding: 1rem; border-radius: 18px; border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.gridCard}; text-decoration: none; color: inherit; position: relative; overflow: hidden; transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease; cursor: pointer; }
+    .release-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px ${THEME.colors.shadowTint}; border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; }
+    .release-cover { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.border}; background: linear-gradient(135deg, rgba(245, 195, 44, 0.08), rgba(255, 255, 255, 0.04)); box-shadow: ${THEME.shadows.cover}; }
+    .release-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.06em; }
+    .release-title { font-size: 1.05rem; font-weight: 800; margin: 0; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    .release-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; font-size: 0.95rem; color: ${THEME.colors.textSecondary}; align-items: center; }
+    .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
+    .release-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-top: 0.2rem; }
+    .copy-btn.copy-btn-small { padding: 0.35rem 0.8rem; font-size: 0.9rem; }
+    .empty-state { padding: 1.4rem; border-radius: 14px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     @media (max-width: 640px) {
       body { padding: 1.1rem; }
       .card { padding: 1.8rem; }
@@ -1006,6 +1021,159 @@ function renderError(): Response {
     status: 502,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
+}
+
+async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: string): Promise<Response> {
+  try {
+    const query = await env.DB.prepare(
+      `SELECT
+        title,
+        release_date,
+        slug,
+        cover_url,
+        cover_source,
+        cover_version,
+        links_json,
+        updated_at
+      FROM smartlinks
+      WHERE artist_slug=?1
+      ORDER BY updated_at DESC
+      LIMIT 400`,
+    )
+      .bind(artistSlug)
+      .all<{
+        title: string | null;
+        release_date: string | null;
+        slug: string;
+        cover_url: string | null;
+        cover_source: string | null;
+        cover_version: number | null;
+        links_json: string | null;
+        updated_at: string | null;
+      }>();
+
+    const items = query.results ?? [];
+    const canonicalBase = goIndexBase.replace(/\/$/, "");
+
+    const cards = items.map((record) => {
+      const links = parseLinksFromJson(record.links_json, `[artist ${artistSlug}/${record.slug}] links`);
+      const linkCount = Object.keys(links).length;
+      const coverSource = parseCoverSource(record.cover_source, `[artist ${artistSlug}/${record.slug}] cover_source`);
+      const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
+      const resolvedCoverUrl =
+        resolveCoverUrl(record.cover_url ?? null) ||
+        (coverSource ? `${canonicalBase}/api/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(record.slug)}` : null);
+      const coverUrlWithVersion = buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
+      const canonicalUrl = `${canonicalBase}/${artistSlug}/${record.slug}`;
+      const releaseDate = record.release_date ? `<span class="pill">${escapeHtml(record.release_date)}</span>` : "";
+      const linksLabel = `<span class="pill">${linkCount} ссыл${linkCount === 1 ? "ка" : linkCount >= 2 && linkCount <= 4 ? "ки" : "ок"}</span>`;
+      const slugLabel = `<span class="pill">/${escapeHtml(record.slug)}</span>`;
+      const meta = [releaseDate, linksLabel, slugLabel].filter(Boolean).join(" ");
+      const title = record.title ?? "Релиз";
+
+      return `
+        <div class="release-card" data-url="${escapeHtml(canonicalUrl)}" role="link" tabindex="0">
+          ${
+            coverUrlWithVersion
+              ? `<img class="release-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
+              : `<div class="release-cover placeholder">NO COVER</div>`
+          }
+          <h2 class="release-title">${escapeHtml(title)}</h2>
+          <div class="release-meta">${meta}</div>
+          <div class="release-actions">
+            <span class="meta">${record.updated_at ? `Обновлено ${escapeHtml(record.updated_at)}` : ""}</span>
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <button class="copy-btn copy-btn-small" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}">Copy</button>
+              <span class="copy-toast" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    const body = `
+      <div class="artist-hero">
+        <span class="eyebrow"><span class="accent-dot"></span>Artist</span>
+        <h1>${escapeHtml(artistSlug)}</h1>
+        <p class="meta">Все смартлинки артиста в одном месте.</p>
+      </div>
+      ${
+        cards.length
+          ? `<div class="release-grid">${cards.join("\n")}</div>`
+          : `<div class="empty-state">Для артиста пока нет смартлинков.</div>`
+      }
+      <script>
+        (function() {
+          document.querySelectorAll('.release-card[data-url]').forEach((card) => {
+            const url = card.getAttribute('data-url');
+            if (!url) return;
+
+            function go() {
+              window.location.href = url;
+            }
+
+            card.addEventListener('click', (event) => {
+              if ((event.target instanceof HTMLElement) && event.target.closest('button')) return;
+              go();
+            });
+
+            card.addEventListener('keypress', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                go();
+              }
+            });
+          });
+
+          document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
+            button.addEventListener('click', async (event) => {
+              event.stopPropagation();
+              const urlToCopy = button.getAttribute('data-url') || '';
+
+              async function copyText(text) {
+                if (!text) return false;
+                try {
+                  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                  }
+                  const textarea = document.createElement('textarea');
+                  textarea.value = text;
+                  textarea.setAttribute('readonly', '');
+                  textarea.style.position = 'fixed';
+                  textarea.style.top = '-9999px';
+                  document.body.appendChild(textarea);
+                  textarea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textarea);
+                  return true;
+                } catch (error) {
+                  console.warn('clipboard copy failed', error);
+                  return false;
+                }
+              }
+
+              const toast = button.parentElement?.querySelector('.copy-toast');
+              const ok = await copyText(urlToCopy);
+              if (toast) {
+                toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+                toast.classList.add('visible');
+                window.setTimeout(() => toast.classList.remove('visible'), ok ? 1300 : 1700);
+              }
+            });
+          });
+        })();
+      </script>
+    `;
+
+    return new Response(htmlPage(body, { title: `${artistSlug} — SREDA` }), {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+    });
+  } catch (error) {
+    console.error("[artist] db error", error);
+    return renderError();
+  }
 }
 
 function renderSmartlink(
@@ -1057,6 +1225,7 @@ function renderSmartlink(
 
   const canonicalBase = goIndexBase.replace(/\/$/, "");
   const canonicalUrl = `${canonicalBase}/${artistSlug}/${slug}`;
+  const artistLink = `<a class="artist-link" href="/artist/${encodeURIComponent(artistSlug)}">${escapeHtml(artist)}</a>`;
 
   const linkButtons = orderedEntries
     .map(([platform, url]) => {
@@ -1074,7 +1243,7 @@ function renderSmartlink(
     <div class="header">
       <span class="eyebrow"><span class="accent-dot"></span>Smartlink</span>
       <h1>${escapeHtml(title)}</h1>
-      <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
+      <p class="meta">Артист: <strong>${artistLink}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
     </div>
     <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
     <p class="small canonical-row">
@@ -1420,6 +1589,8 @@ export default {
 
     await ensureSchema(env.DB);
 
+    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+
     if (segments.length >= 3 && segments[0] === "api" && segments[1] === "cover") {
       if (segments.length === 3) {
         const canonicalId = decodeURIComponent(segments[2]);
@@ -1619,6 +1790,11 @@ export default {
       return handleCoverProxy(request, env, artistSlug, slug);
     }
 
+    if (segments.length === 2 && segments[0] === "artist") {
+      const artistSlug = decodeURIComponent(segments[1]);
+      return renderArtistPage(artistSlug, env, goIndexBase);
+    }
+
     if (segments.length === 0) {
       return renderHome();
     }
@@ -1628,7 +1804,6 @@ export default {
     }
 
     const [artistSlug, slug] = segments.map((segment) => decodeURIComponent(segment));
-    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
 
     try {
       const query = await env.DB.prepare(
