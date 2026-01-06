@@ -875,13 +875,41 @@ function prettifySlug(value: string): string {
     .join(" ");
 }
 
+function renderMedia({
+  src,
+  alt,
+  className,
+  fallbackLabel = "NO COVER",
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+  fallbackLabel?: string;
+}): string {
+  const classes = ["media", className?.trim() || ""].filter(Boolean).join(" ");
+  const imageMarkup = src
+    ? `<img class="media__img is-loading" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async" />`
+    : "";
+
+  const fallbackAttribute = src ? "" : 'data-has-src="false"';
+
+  return `
+    <div class="${classes}" ${fallbackAttribute}>
+      <div class="media__skeleton" aria-hidden="true"></div>
+      <div class="media__fallback" role="img" aria-label="${escapeHtml(fallbackLabel)}">${escapeHtml(fallbackLabel)}</div>
+      ${imageMarkup}
+    </div>
+  `;
+}
+
 function htmlPage(
   body: string,
   { title = "SREDA go", backgroundImage }: { title?: string; backgroundImage?: string | null } = {},
 ): string {
   const backgroundStyle = backgroundImage
-    ? `--page-bg-image: url('${escapeHtml(backgroundImage)}'); --page-bg-opacity: 0.32;`
+    ? "--page-bg-image: none; --page-bg-opacity: 0.32;"
     : "--page-bg-image: none; --page-bg-opacity: 0;";
+  const backgroundAttribute = backgroundImage ? `data-bg-image="${escapeHtml(backgroundImage)}"` : "";
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -922,9 +950,11 @@ function htmlPage(
       background-size: cover;
       background-position: center;
       filter: blur(32px) saturate(1.08);
-      opacity: var(--page-bg-opacity, 0);
+      opacity: 0;
       transform: scale(1.04);
+      transition: opacity 260ms ease;
     }
+    body.bg-ready::after { opacity: var(--page-bg-opacity, 0); }
     .noise-layer {
       position: fixed;
       inset: 0;
@@ -978,18 +1008,67 @@ function htmlPage(
       background: ${THEME.colors.surfaceStrong};
       box-shadow: ${THEME.shadows.cover};
       display: block;
-      object-fit: cover;
+      overflow: hidden;
+      position: relative;
     }
-    .cover-placeholder {
+    .media {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      overflow: hidden;
+      background: ${THEME.colors.surfaceMuted};
+      isolation: isolate;
+    }
+    .media__img,
+    .media__skeleton,
+    .media__fallback {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+    }
+    .media__img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      filter: blur(10px);
+      transition: opacity 260ms ease, filter 320ms ease;
+      background: transparent;
+    }
+    .media__skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    .media__fallback {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: ${THEME.colors.surfaceMuted};
+      background: ${THEME.colors.surfaceStrong};
       color: ${THEME.colors.textMuted};
-      font-weight: 700;
+      font-weight: 760;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 180ms ease;
     }
+    .media--ready .media__img { opacity: 1; filter: blur(0); }
+    .media--ready .media__skeleton { opacity: 0; visibility: hidden; }
+    .media--error .media__fallback { opacity: 1; visibility: visible; }
+    .media--error .media__skeleton { opacity: 0; visibility: hidden; }
+    .media[data-has-src="false"] .media__skeleton { opacity: 0; visibility: hidden; }
+    .media[data-has-src="false"] .media__fallback { opacity: 1; visibility: visible; }
+    .smartlink-layout .media__fallback { font-size: 0.98rem; }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .reduce-motion .media__skeleton { animation: none; background-position: center; }
     a { color: inherit; text-decoration: none; }
     h1 { margin: 0; font-size: 2rem; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; font-weight: 820; }
     p { margin: 0; color: ${THEME.colors.textSecondary}; line-height: 1.5; }
@@ -1035,8 +1114,7 @@ function htmlPage(
     .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: rgba(38,38,38,0.82); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
     .smartlink-item:active { transform: translateY(0); }
     .smartlink-main { display: grid; grid-template-columns: auto 1fr; gap: 0.95rem; align-items: center; color: inherit; text-decoration: none; }
-    .smartlink-cover { width: 84px; height: 84px; object-fit: cover; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; }
-    .smartlink-cover.placeholder { display: flex; align-items: center; justify-content: center; color: ${THEME.colors.textMuted}; font-weight: 700; letter-spacing: 0.04em; font-size: 0.85rem; text-transform: uppercase; }
+    .smartlink-cover { width: 84px; height: 84px; aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; overflow: hidden; position: relative; }
     .smartlink-content { display: flex; flex-direction: column; gap: 0.35rem; }
     .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
     .smartlink-title { font-size: 1.08rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
@@ -1068,11 +1146,86 @@ function htmlPage(
     }
   </style>
 </head>
-<body style="${backgroundStyle}">
+<body style="${backgroundStyle}" ${backgroundAttribute}>
   <div class="noise-layer"></div>
   <main class="card">
     ${body}
   </main>
+  <script>
+    (function() {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (prefersReducedMotion.matches) {
+        document.documentElement.classList.add('reduce-motion');
+      }
+
+      function revealImage(media) {
+        media.classList.add('media--ready');
+        media.classList.remove('media--loading');
+        const img = media.querySelector('.media__img');
+        if (img) {
+          img.classList.remove('is-loading');
+        }
+      }
+
+      function showFallback(media) {
+        media.classList.add('media--error');
+        media.classList.remove('media--loading');
+        const img = media.querySelector('.media__img');
+        if (img) {
+          img.classList.remove('is-loading');
+        }
+      }
+
+      document.querySelectorAll('.media').forEach((media) => {
+        const img = media.querySelector('img.media__img');
+        if (!img || !img.getAttribute('src')) {
+          showFallback(media);
+          return;
+        }
+
+        media.classList.add('media--loading');
+
+        const handleLoad = async () => {
+          try {
+            if (img.decode) {
+              await img.decode();
+            }
+          } catch (error) {
+            console.warn('image decode skipped', error);
+          }
+          revealImage(media);
+        };
+
+        const handleError = () => {
+          showFallback(media);
+        };
+
+        if (img.complete) {
+          if (img.naturalWidth > 0) {
+            handleLoad();
+          } else {
+            handleError();
+          }
+        } else {
+          img.addEventListener('load', handleLoad, { once: true });
+          img.addEventListener('error', handleError, { once: true });
+        }
+      });
+
+      const bgImage = document.body.getAttribute('data-bg-image');
+      if (bgImage) {
+        const loader = new Image();
+        loader.onload = () => {
+          document.body.style.setProperty('--page-bg-image', `url("${bgImage.replace(/"/g, '\\"')}")`);
+          document.body.classList.add('bg-ready');
+        };
+        loader.onerror = () => {
+          document.body.style.setProperty('--page-bg-opacity', '0');
+        };
+        loader.src = bgImage;
+      }
+    })();
+  </script>
 </body>
 </html>`;
 }
@@ -1169,11 +1322,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       return `
         <article class="smartlink-item" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
           <a class="smartlink-main" href="${escapeHtml(canonicalUrl)}">
-            ${
-              coverUrlWithVersion
-                ? `<img class="smartlink-cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
-                : `<div class="smartlink-cover placeholder">NO COVER</div>`
-            }
+            ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "smartlink-cover" })}
             <div class="smartlink-content">
               <div class="smartlink-title-row">
                 <div class="smartlink-title">${escapeHtml(title)}</div>
@@ -1344,11 +1493,7 @@ function renderSmartlink(
   const body = `
     <div class="smartlink-layout">
       <div class="cover-frame">
-        ${
-          coverUrlWithVersion
-            ? `<img class="cover" src="${escapeHtml(coverUrlWithVersion)}" alt="${escapeHtml(title)}" loading="lazy" />`
-            : `<div class="cover cover-placeholder">NO COVER</div>`
-        }
+        ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "cover" })}
       </div>
       <div class="header">
         <h1>${escapeHtml(title)}</h1>
