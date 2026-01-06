@@ -72,11 +72,11 @@ function normalizeCoverSourceInput(input: unknown, context: string): NormalizedC
         }
 
         console.warn(`${context}: invalid telegram file_id`, candidate.file_id);
-        return { value: null, error: true };
+        return { value: null, error: false };
       }
 
       console.warn(`${context}: missing telegram file_id`, input);
-      return { value: null, error: true };
+      return { value: null, error: false };
     }
 
     if (candidate.type === "external") {
@@ -89,15 +89,15 @@ function normalizeCoverSourceInput(input: unknown, context: string): NormalizedC
       }
 
       console.warn(`${context}: missing external url`, input);
-      return { value: null, error: true };
+      return { value: null, error: false };
     }
 
     console.warn(`${context}: unsupported cover_source object`, input);
-    return { value: null, error: true };
+    return { value: null, error: false };
   }
 
   console.warn(`${context}: unsupported cover_source type`, input);
-  return { value: null, error: true };
+  return { value: null, error: false };
 }
 
 function parseCoverSource(raw: string | null, context: string): CoverSource | null {
