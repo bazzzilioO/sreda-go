@@ -21,6 +21,7 @@ type ApiSmartlink = {
   links?: Record<string, string>;
   cover_url?: string;
   cover_source?: CoverSource;
+  cover_version?: number;
 };
 
 type UpsertRequest = {
@@ -33,23 +34,18 @@ type UpsertRequest = {
   release_date?: string;
   cover_source?: unknown;
   cover_url?: string;
+  cover_version?: number;
   links?: Record<string, string>;
 };
 
 type LinkRecord = Record<string, string>;
 
-function normalizeCoverUrlInput(input: unknown, context: string): string | null {
-  if (input === undefined || input === null) {
-    return null;
-  }
+function normalizeCoverVersionInput(input: unknown): number | null {
+  if (typeof input !== "number" || !Number.isFinite(input)) return null;
 
-  if (typeof input === "string") {
-    const trimmed = input.trim();
-    return trimmed || null;
-  }
+  const normalized = Math.trunc(input);
 
-  console.warn(`${context}: unsupported cover_url type`, input);
-  return null;
+  return normalized >= 1 ? normalized : 1;
 }
 
 function normalizeCoverSourceInput(input: unknown, context: string): NormalizedCoverSourceResult {
@@ -124,23 +120,12 @@ function validateTelegramFileId(fileId: string): boolean {
   return Boolean(fileId) && fileId.length <= 256 && TELEGRAM_FILE_ID_PATTERN.test(fileId);
 }
 
-function resolveCoverUrl(
-  coverUrl: string | undefined,
-  coverSource: CoverSource | null,
-  artistSlug: string,
-  slug: string,
-  smartlinkId?: string,
-): string | null {
-  const targetId = smartlinkId || `${artistSlug}:${slug}`;
-  const telegramFileId = extractTelegramFileId(coverUrl, coverSource, `[cover ${artistSlug}/${slug}]`);
+function resolveCoverUrl(coverUrl?: string | null): string | null {
+  if (!coverUrl) return null;
 
-  if (telegramFileId) {
-    return `/api/cover/${encodeURIComponent(targetId)}`;
-  }
+  const trimmed = coverUrl.trim();
 
-  if (coverUrl) return coverUrl.trim();
-
-  return null;
+  return trimmed || null;
 }
 
 function extractTelegramFileId(
@@ -183,14 +168,25 @@ function extractTelegramFileIdFromString(value: string | undefined, context: str
   return null;
 }
 
+function isInternalCoverUrl(targetUrl: string, requestUrl: string): boolean {
+  try {
+    const resolvedTarget = new URL(targetUrl, requestUrl);
+    const requestOrigin = new URL(requestUrl).origin;
+
+    return resolvedTarget.origin === requestOrigin && resolvedTarget.pathname.startsWith("/api/cover");
+  } catch (error) {
+    console.warn("[cover] failed to inspect cover_url", targetUrl, error);
+    return false;
+  }
+}
+
 async function handleCoverProxy(
   request: Request,
   env: Env,
   artistSlug: string,
   slug: string,
 ): Promise<Response> {
-  const cacheKeyUrl = new URL(`/cover/${encodeURIComponent(artistSlug)}/${encodeURIComponent(slug)}`, request.url);
-  const cacheKey = new Request(cacheKeyUrl.toString(), request);
+  const cacheKey = new Request(request.url, request);
 
   const cached = await caches.default.match(cacheKey);
   if (cached) {
@@ -218,20 +214,31 @@ async function handleCoverProxy(
       record.cover_source,
       `[cover ${artistSlug}/${slug}] cover_source`,
     );
+
+    const coverUrl = record.cover_url?.trim() || null;
+
     const telegramFileId = extractTelegramFileId(
-      record.cover_url ?? undefined,
+      coverUrl && !isInternalCoverUrl(coverUrl, request.url) ? coverUrl : undefined,
       coverSource,
       `[_cover ${artistSlug}/${slug}]`,
     );
 
-    if (!telegramFileId) {
-      if (record.cover_url) {
-        return Response.redirect(record.cover_url, 302);
-      }
-      return new Response("Not found", { status: 404 });
+    if (telegramFileId) {
+      return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
     }
 
-    return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
+    if (coverUrl) {
+      try {
+        const redirectUrl = new URL(coverUrl, request.url).toString();
+        if (redirectUrl !== request.url) {
+          return Response.redirect(redirectUrl, 302);
+        }
+      } catch (error) {
+        console.warn(`[_cover ${artistSlug}/${slug}] invalid cover_url`, coverUrl, error);
+      }
+    }
+
+    return new Response("Not found", { status: 404 });
   } catch (error) {
     console.error("[cover] db error", error);
     return new Response("Failed to load cover", { status: 500 });
@@ -336,8 +343,7 @@ async function handleTelegramFileRequest(
 }
 
 async function handleCoverById(request: Request, env: Env, canonicalId: string): Promise<Response> {
-  const cacheKeyUrl = new URL(`/api/cover/${encodeURIComponent(canonicalId)}`, request.url);
-  const cacheKey = new Request(cacheKeyUrl.toString(), request);
+  const cacheKey = new Request(request.url, request);
 
   const cached = await caches.default.match(cacheKey);
   if (cached) {
@@ -357,22 +363,35 @@ async function handleCoverById(request: Request, env: Env, canonicalId: string):
     }
 
     const coverSource = parseCoverSource(record.cover_source, `[api/cover ${canonicalId}] cover_source`);
+    const coverUrl = record.cover_url?.trim() || null;
+
     const telegramFileId = extractTelegramFileId(
-      record.cover_url ?? undefined,
+      coverUrl && !isInternalCoverUrl(coverUrl, request.url) ? coverUrl : undefined,
       coverSource,
       `[api/cover ${canonicalId}]`,
     );
 
-    if (!telegramFileId) {
-      return jsonResponse({ error: "cover_missing" }, 404);
+    if (telegramFileId) {
+      if (!validateTelegramFileId(telegramFileId)) {
+        console.warn(`[api/cover ${canonicalId}] invalid telegram file_id`);
+        return jsonResponse({ error: "invalid_cover" }, 404);
+      }
+
+      return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
     }
 
-    if (!validateTelegramFileId(telegramFileId)) {
-      console.warn(`[api/cover ${canonicalId}] invalid telegram file_id`);
-      return jsonResponse({ error: "invalid_cover" }, 404);
+    if (coverUrl) {
+      try {
+        const redirectUrl = new URL(coverUrl, request.url).toString();
+        if (redirectUrl !== request.url) {
+          return Response.redirect(redirectUrl, 302);
+        }
+      } catch (error) {
+        console.warn(`[api/cover ${canonicalId}] invalid cover_url`, coverUrl, error);
+      }
     }
 
-    return handleTelegramFileRequest(request, env, telegramFileId, cacheKey);
+    return jsonResponse({ error: "cover_missing" }, 404);
   } catch (error) {
     console.error("[api/cover] db error", error);
     return jsonResponse({ error: "server_error" }, 500);
@@ -513,6 +532,7 @@ async function syncSmartlinkToWeb(
     release_date: payload.release_date,
     cover_source: payload.cover_source,
     cover_url: payload.cover_url,
+    cover_version: payload.cover_version,
     links: payload.links,
   };
 
@@ -695,7 +715,7 @@ function renderSmartlink(
   const artist = data.artist ?? artistSlug;
   const releaseDate = data.release_date;
   const coverSource = data.cover_source ?? null;
-  const coverUrl = resolveCoverUrl(data.cover_url, coverSource, artistSlug, slug, smartlinkId);
+  const coverUrl = resolveCoverUrl(data.cover_url);
 
   if (!coverUrl) {
     console.warn(`[render ${artistSlug}/${slug}]: missing cover, using placeholder`, {
@@ -799,7 +819,7 @@ export default {
           artist,
           release_date,
           cover_source,
-          cover_url,
+          cover_version,
           links,
           slug,
           artist_slug,
@@ -818,10 +838,12 @@ export default {
         const canonicalId = `${computedArtistSlug}:${computedSlug}`;
         const normalizedLinks = normalizeLinksInput(links, "[upsert] links");
         const linksJson = JSON.stringify(normalizedLinks);
-        const normalizedCoverUrl = normalizeCoverUrlInput(cover_url, "[upsert] cover_url");
-        const normalizedCoverSource = normalizeCoverSourceInput(cover_source, "[upsert] cover_source");
+        const coverSourceProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_source");
+        const normalizedCoverSource = coverSourceProvided
+          ? normalizeCoverSourceInput(cover_source, "[upsert] cover_source")
+          : null;
 
-        if (normalizedCoverSource.error) {
+        if (normalizedCoverSource?.error) {
           return jsonResponse(
             { ok: false, error: "bad_request", details: "invalid_cover_source" },
             400,
@@ -829,23 +851,46 @@ export default {
         }
 
         let action: "inserted" | "updated" = "inserted";
+        let storedCoverUrl: string | null = null;
+        let storedCoverVersion = normalizeCoverVersionInput(cover_version);
+        let storedCoverSource: string | null = normalizedCoverSource?.value ?? null;
 
         try {
           const existingRecord = await env.DB.prepare(
-            `SELECT id FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
+            `SELECT id, cover_source, cover_version FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`,
           )
             .bind(computedArtistSlug, computedSlug)
-            .all<{ id: string }>();
+            .all<{ id: string; cover_source: string | null; cover_version: number | null }>();
+
+          const existing = existingRecord.results?.[0];
+
+          if (!coverSourceProvided) {
+            storedCoverSource = existing?.cover_source ?? null;
+          }
+
+          const baseCoverVersion = existing?.cover_version ?? 1;
+          if (storedCoverVersion !== null) {
+            storedCoverVersion = Math.max(1, storedCoverVersion);
+          } else if (coverSourceProvided) {
+            storedCoverVersion = existing ? baseCoverVersion + 1 : 1;
+          } else {
+            storedCoverVersion = baseCoverVersion;
+          }
+
+          const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+
+          storedCoverUrl = `${goIndexBase}/api/cover/${encodeURIComponent(computedArtistSlug)}/${encodeURIComponent(computedSlug)}?v=${storedCoverVersion}`;
 
           await env.DB.prepare(
             `INSERT INTO smartlinks (
-              id, artist_slug, slug, title, artist_name, release_date, cover_source, cover_url, links_json, created_at, updated_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, datetime('now'), datetime('now'))
+              id, artist_slug, slug, title, artist_name, release_date, cover_source, cover_version, cover_url, links_json, created_at, updated_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, datetime('now'), datetime('now'))
             ON CONFLICT(artist_slug, slug) DO UPDATE SET
               title=excluded.title,
               artist_name=excluded.artist_name,
               release_date=excluded.release_date,
               cover_source=excluded.cover_source,
+              cover_version=excluded.cover_version,
               cover_url=excluded.cover_url,
               links_json=excluded.links_json,
               updated_at=datetime('now')`,
@@ -857,13 +902,14 @@ export default {
               title,
               artist_name ?? null,
               release_date ?? null,
-              normalizedCoverSource.value ?? null,
-              normalizedCoverUrl ?? null,
+              storedCoverSource,
+              storedCoverVersion,
+              storedCoverUrl,
               linksJson,
             )
             .run();
 
-          action = existingRecord.results?.[0] ? "updated" : "inserted";
+          action = existing ? "updated" : "inserted";
         } catch (error) {
           console.error("[upsert] db error", error);
           return jsonResponse(
@@ -886,8 +932,9 @@ export default {
                 artist_name,
                 title,
                 release_date,
-                cover_source: normalizedCoverSource.value ?? undefined,
-                cover_url: normalizedCoverUrl ?? undefined,
+                cover_source: storedCoverSource ?? undefined,
+                cover_url: storedCoverUrl ?? undefined,
+                cover_version: storedCoverVersion,
                 links: normalizedLinks,
               },
               env,
@@ -923,9 +970,19 @@ export default {
       return renderNotFound();
     }
 
-    if (segments.length === 3 && segments[0] === "api" && segments[1] === "cover") {
-      const canonicalId = decodeURIComponent(segments[2]);
-      return handleCoverById(request, env, canonicalId);
+    if (segments.length >= 3 && segments[0] === "api" && segments[1] === "cover") {
+      if (segments.length === 3) {
+        const canonicalId = decodeURIComponent(segments[2]);
+        return handleCoverById(request, env, canonicalId);
+      }
+
+      if (segments.length === 4) {
+        const artistSlug = decodeURIComponent(segments[2]);
+        const slug = decodeURIComponent(segments[3]);
+        const canonicalId = `${artistSlug}:${slug}`;
+
+        return handleCoverById(request, env, canonicalId);
+      }
     }
 
     if (normalizedPath === "/health") {

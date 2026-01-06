@@ -59,10 +59,11 @@ curl -X POST \
 Тело запроса: `id`, `artist_slug`, `slug`, `title` — обязательные поля. Остальные поля (`artist_name`, `release_date`, `cover_source`, `links`) опциональны.
 
 ### Формат данных
-- Таблица D1 `smartlinks` хранит строки с колонками: `id` (строковый идентификатор), `artist_slug`, `slug`, `title`, `artist_name`, `release_date`, `cover_source`, `links_json`, `created_at`, `updated_at`.
+- Таблица D1 `smartlinks` хранит строки с колонками: `id` (строковый идентификатор), `artist_slug`, `slug`, `title`, `artist_name`, `release_date`, `cover_source`, `cover_version`, `cover_url`, `links_json`, `created_at`, `updated_at`.
 - `links_json` — **TEXT** с JSON-объектом `Record<string, string>` (например `{ "spotify": "https://..." }`).
 - `cover_source` может содержать JSON вида `{ "type": "telegram", "file_id": "..." }` для обложек, загруженных в Telegram.
 - Обработчик `upsert` принимает поле `links` в гибком формате: объект, массив объектов/пар или строку с JSON. Строка, не являющаяся JSON, сохраняется как `{"other": "<строка>"}`. Перед записью всегда выполняется нормализация, чтобы в БД оставалась строка JSON.
+- При обновлении/создании `cover_url` всегда пересчитывается как `https://go.sreda.pw/api/cover/{artist_slug}/{slug}?v={cover_version}`. Если в запросе есть `cover_source`, то `cover_version` увеличивается на `+1` (или берётся числовое `cover_version` из запроса). Веб рендерит обложку только через `cover_url`.
 - Чтение (`GET /:artist/:slug`) всегда парсит `links_json` безопасно и логирует проблемы (пустые значения, некорректный JSON), поэтому кнопки рендерятся, если в `links_json` есть хотя бы один URL.
 
 ### Обложка для ручных смартлинков
