@@ -955,7 +955,14 @@ function htmlPage(body: string, { title = "SREDA go" } = {}): string {
     .link-btn:hover { transform: translateY(-2px); border-color: ${THEME.colors.accent}; box-shadow: 0 16px 36px ${THEME.colors.shadowTint}; background: ${THEME.colors.surfaceMuted}; }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 195, 44, 0.08); }
     .small { margin-top: 2.2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
+    .canonical-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+    .canonical-label { white-space: nowrap; }
     .tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surfaceMuted}; border: 1px solid ${THEME.colors.border}; font-size: 0.9rem; color: ${THEME.colors.textSecondary}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+    .copy-btn { border: 1px solid ${THEME.colors.border}; background: ${THEME.colors.surface}; color: ${THEME.colors.textPrimary}; border-radius: ${THEME.radii.pill}; padding: 0.45rem 0.9rem; cursor: pointer; font-weight: 700; letter-spacing: 0.01em; transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease; }
+    .copy-btn:hover { transform: translateY(-1px); border-color: ${THEME.colors.accent}; background: ${THEME.colors.surfaceMuted}; }
+    .copy-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; background: rgba(245, 195, 44, 0.08); }
+    .copy-toast { min-width: 110px; color: ${THEME.colors.textPrimary}; opacity: 0; transition: opacity 180ms ease; font-weight: 700; }
+    .copy-toast.visible { opacity: 1; }
     .accent-dot { width: 0.5rem; height: 0.5rem; background: ${THEME.colors.accent}; border-radius: 50%; box-shadow: 0 0 0 6px rgba(245, 195, 44, 0.12); }
     .header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
     .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; color: ${THEME.colors.textMuted}; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; }
@@ -1005,6 +1012,7 @@ function renderSmartlink(
   artistSlug: string,
   slug: string,
   data: ApiSmartlink,
+  goIndexBase: string,
   smartlinkId?: string,
 ): Response {
   const title = data.title ?? "Релиз";
@@ -1047,6 +1055,9 @@ function renderSmartlink(
     orderedEntries.push(["other", otherUrl]);
   }
 
+  const canonicalBase = goIndexBase.replace(/\/$/, "");
+  const canonicalUrl = `${canonicalBase}/${artistSlug}/${slug}`;
+
   const linkButtons = orderedEntries
     .map(([platform, url]) => {
       const label = platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -1066,7 +1077,61 @@ function renderSmartlink(
       <p class="meta">Артист: <strong>${escapeHtml(artist)}</strong>${releaseDate ? ` • ${escapeHtml(releaseDate)}` : ""}</p>
     </div>
     <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
-    <p class="small">Канонический URL: <span class="tag">go.sreda.pw/${escapeHtml(artistSlug)}/${escapeHtml(slug)}</span></p>
+    <p class="small canonical-row">
+      <span class="canonical-label">Канонический URL:</span>
+      <span class="tag canonical-url">${escapeHtml(canonicalUrl)}</span>
+      <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать канонический URL">Скопировать</button>
+      <span class="copy-toast" role="status" aria-live="polite"></span>
+    </p>
+    <script>
+      (function() {
+        const copyButton = document.querySelector('.copy-btn[data-url]');
+        const toast = document.querySelector('.copy-toast');
+        if (!copyButton || !toast) return;
+
+        let hideTimer = null;
+
+        async function copyText(text) {
+          if (!text) return false;
+
+          try {
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              await navigator.clipboard.writeText(text);
+              return true;
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            return true;
+          } catch (error) {
+            console.warn('clipboard copy failed', error);
+            return false;
+          }
+        }
+
+        copyButton.addEventListener('click', async () => {
+          const urlToCopy = copyButton.getAttribute('data-url') || '';
+          const ok = await copyText(urlToCopy);
+          toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+          toast.classList.add('visible');
+
+          if (hideTimer) {
+            clearTimeout(hideTimer);
+          }
+
+          hideTimer = window.setTimeout(() => {
+            toast.classList.remove('visible');
+          }, ok ? 1500 : 1800);
+        });
+      })();
+    </script>
   `;
 
   return new Response(htmlPage(body, { title: `${title} — ${artist}` }), {
@@ -1563,6 +1628,7 @@ export default {
     }
 
     const [artistSlug, slug] = segments.map((segment) => decodeURIComponent(segment));
+    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
 
     try {
       const query = await env.DB.prepare(
@@ -1619,7 +1685,7 @@ export default {
         links,
       };
 
-      return renderSmartlink(artistSlug, slug, data, record.id);
+      return renderSmartlink(artistSlug, slug, data, goIndexBase, record.id);
     } catch (error) {
       console.error("smartlink fetch error", error);
       return renderError();
