@@ -1219,7 +1219,11 @@ function htmlPage(
       if (bgImage) {
         const loader = new Image();
         loader.onload = () => {
-          document.body.style.setProperty('--page-bg-image', `url("${bgImage.replace(/"/g, '\\"')}")`);
+          // не использовать backticks внутри HTML template literal, ломает сборку
+          document.body.style.setProperty(
+            '--page-bg-image',
+            'url("' + bgImage.replace(/"/g, '\\"') + '")',
+          );
           document.body.classList.add('bg-ready');
         };
         loader.onerror = () => {
