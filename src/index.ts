@@ -157,8 +157,33 @@ function resolveCoverUrl(coverUrl?: string | null): string | null {
   if (!coverUrl) return null;
 
   const trimmed = coverUrl.trim();
+  if (!trimmed) return null;
 
-  return trimmed || null;
+  try {
+    const url = new URL(trimmed, "https://placeholder.local");
+    url.searchParams.delete("v");
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      return url.toString();
+    }
+
+    const search = url.searchParams.toString();
+    const query = search ? `?${search}` : "";
+    return `${url.pathname || "/"}${query}${url.hash}`;
+  } catch (error) {
+    console.warn("[cover] resolveCoverUrl failed to normalize, falling back", error);
+    const withoutVersion = trimmed.replace(/([?&])v=\d+(&|$)/, (match, prefix, suffix) => {
+      if (prefix === "?" && suffix) return "?";
+      if (prefix === "?" && !suffix) return "";
+      if (prefix === "&" && suffix) return suffix;
+      return "";
+    });
+
+    return withoutVersion
+      .replace(/&&+/g, "&")
+      .replace(/\?&/, "?")
+      .replace(/[?&]$/, "");
+  }
 }
 
 function buildCoverUrlWithVersion(
