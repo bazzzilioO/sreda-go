@@ -1058,7 +1058,7 @@ function htmlPage(
       border: 1px solid ${THEME.colors.borderSubtle};
       border-radius: ${THEME.radii.glass};
       box-shadow: ${THEME.shadows.card};
-      padding: 1.8rem;
+      padding: 1.5rem;
       position: relative;
       overflow: hidden;
       backdrop-filter: blur(20px) saturate(1.1);
@@ -1084,12 +1084,12 @@ function htmlPage(
       z-index: 0;
     }
     .card > * { position: relative; z-index: 1; }
-    .smartlink-layout { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(320px, 1fr); gap: 1.65rem; align-items: start; min-width: 0; }
+    .smartlink-layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr); gap: 1.35rem; align-items: start; min-width: 0; }
     .cover-frame { display: flex; justify-content: center; width: 100%; align-self: start; min-width: 0; padding: 0.25rem; }
     .cover {
-      width: 100%;
-      max-width: 400px;
-      max-height: 400px;
+      width: min(100%, 380px);
+      max-width: 420px;
+      max-height: 420px;
       aspect-ratio: 1 / 1;
       height: auto;
       border-radius: ${THEME.radii.cover};
@@ -1171,56 +1171,67 @@ function htmlPage(
     .release-date { color: ${THEME.colors.textMuted}; font-size: 0.92rem; margin-top: 0.3rem; text-align: left; }
     .artist-link { color: ${THEME.colors.textPrimary}; text-decoration: none; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .artist-link:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .links { margin-top: 1rem; display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .links { margin-top: 0.75rem; display: grid; gap: 0.75rem; grid-template-columns: 1fr; max-width: 520px; width: 100%; }
+    .links.links--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
     .link-btn {
       display: inline-flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.6rem;
-      padding: 0.95rem 1.05rem;
+      gap: 0.55rem;
+      padding: 0.75rem 0.95rem;
+      min-height: 46px;
       width: 100%;
-      border-radius: 16px;
+      border-radius: 14px;
       border: 1px solid ${THEME.colors.borderSubtle};
       background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textPrimary};
-      font-weight: 720;
+      font-weight: 760;
       letter-spacing: 0.01em;
-      box-shadow: ${THEME.shadows.button};
+      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
       transition: border-color 140ms ease, background 140ms ease, color 140ms ease, transform 120ms ease, box-shadow 160ms ease;
     }
-    .link-btn::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; opacity: 0.85; box-shadow: 0 0 0 4px rgba(245,158,11,0.08); }
-    .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+    .link-btn::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: ${THEME.colors.accent}; opacity: 0.9; box-shadow: 0 0 0 3px rgba(245,158,11,0.09); }
+    .link-btn:hover { border-color: ${THEME.colors.accent}; background: rgba(46,46,46,0.8); color: ${THEME.colors.textPrimary}; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.34); }
     .link-btn:active { transform: translateY(0); border-color: ${THEME.colors.accent}; }
     .small { margin-top: 2rem; font-size: 0.95rem; color: ${THEME.colors.textMuted}; }
-    .canonical-row { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0; border-radius: 0; border: none; background: transparent; width: 100%; min-width: 0; margin-top: 0.45rem; }
-    .copy-btn { border: none; background: linear-gradient(135deg, ${THEME.colors.accent}, #fbbf24); color: #0b0b0b; border-radius: 14px; width: 100%; padding: 0.95rem 1.1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; cursor: pointer; font-weight: 820; letter-spacing: 0.01em; transition: background 140ms ease, color 140ms ease, box-shadow 160ms ease, transform 120ms ease; box-shadow: 0 12px 32px rgba(0,0,0,0.36), 0 0 0 1px rgba(245,158,11,0.22); }
-    .copy-btn:hover { background: linear-gradient(135deg, #fbbf24, ${THEME.colors.accent}); color: #0a0a0a; box-shadow: 0 14px 34px rgba(0,0,0,0.38), 0 0 0 1px rgba(245,158,11,0.28); transform: translateY(-1px); }
-    .copy-btn:active { background: linear-gradient(135deg, ${THEME.colors.accent}, ${THEME.colors.accent}); box-shadow: 0 10px 24px rgba(0,0,0,0.32), 0 0 0 1px rgba(245,158,11,0.32); transform: translateY(0); }
-    .copy-btn.copied { box-shadow: 0 10px 26px rgba(0,0,0,0.34), 0 0 0 1px rgba(245,158,11,0.38); }
+    .canonical-row { display: flex; flex-direction: column; align-items: stretch; gap: 0.25rem; color: ${THEME.colors.textSecondary}; font-size: 0.95rem; padding: 0; border-radius: 0; border: none; background: transparent; width: 100%; min-width: 0; margin-top: 0.45rem; max-width: 520px; }
+    .copy-btn { border: none; background: linear-gradient(135deg, ${THEME.colors.accent}, #fbbf24); color: #0b0b0b; border-radius: 14px; width: 100%; padding: 0.78rem 0.95rem; min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; cursor: pointer; font-weight: 820; letter-spacing: 0.01em; transition: background 140ms ease, color 140ms ease, box-shadow 160ms ease, transform 120ms ease; box-shadow: 0 10px 26px rgba(0,0,0,0.32), 0 0 0 1px rgba(245,158,11,0.2); }
+    .copy-btn:hover { background: linear-gradient(135deg, #fbbf24, ${THEME.colors.accent}); color: #0a0a0a; box-shadow: 0 12px 28px rgba(0,0,0,0.34), 0 0 0 1px rgba(245,158,11,0.26); transform: translateY(-1px); }
+    .copy-btn:active { background: linear-gradient(135deg, ${THEME.colors.accent}, ${THEME.colors.accent}); box-shadow: 0 8px 20px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.28); transform: translateY(0); }
+    .copy-btn.copied { box-shadow: 0 8px 22px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,158,11,0.34); }
     .copy-btn:focus-visible { outline: 2px solid rgba(245,158,11,0.65); outline-offset: 3px; }
     .copy-toast { min-width: 80px; color: ${THEME.colors.accent}; opacity: 0; transform: translateY(4px); transition: opacity 180ms ease, transform 180ms ease; font-weight: 760; font-size: 0.92rem; text-align: left; }
     .copy-toast.visible { opacity: 1; transform: translateY(0); }
-    .smartlink-list { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.6rem; }
-    .smartlink-item { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.05rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
+    .smartlink-footer .copy-toast { grid-column: 1 / -1; font-size: 0.85rem; }
+    .smartlink-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.6rem; align-items: stretch; }
+    .smartlink-item { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.95rem 1rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
     .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: rgba(38,38,38,0.82); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
     .smartlink-item:active { transform: translateY(0); }
-    .smartlink-main { display: grid; grid-template-columns: auto 1fr; gap: 0.95rem; align-items: center; color: inherit; text-decoration: none; }
-    .smartlink-cover { width: 84px; height: 84px; aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; overflow: hidden; position: relative; }
-    .smartlink-content { display: flex; flex-direction: column; gap: 0.35rem; }
-    .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
-    .smartlink-title { font-size: 1.08rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    .smartlink-main { display: grid; grid-template-columns: auto 1fr; gap: 0.85rem; align-items: center; color: inherit; text-decoration: none; }
+    .smartlink-cover { width: 76px; height: 76px; aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; overflow: hidden; position: relative; }
+    .smartlink-content { display: flex; flex-direction: column; gap: 0.25rem; }
+    .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .smartlink-title { font-size: 1.02rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
     .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.55); border: 1px solid ${THEME.colors.borderSubtle}; color: ${THEME.colors.textSecondary}; font-weight: 740; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.3rem; }
     .platform-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 3px rgba(245,158,11,0.08); }
-    .meta-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; align-items: center; color: ${THEME.colors.textSecondary};font-size: 0.93rem; }
-    .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.88rem; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.65rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.9rem; }
+    .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.86rem; }
     .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: ${THEME.colors.textFaint}; display: inline-block; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
-    .artist-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .artist-header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
     .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
-    .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.96rem; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .smartlink-footer { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.5rem; }
+    .copy-btn--ghost { background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; box-shadow: none; border: 1px solid ${THEME.colors.borderSubtle}; padding: 0.5rem 0.65rem; min-height: 0; font-size: 0.92rem; font-weight: 760; width: auto; }
+    .copy-btn--ghost:hover { background: rgba(255,255,255,0.08); color: ${THEME.colors.textPrimary}; box-shadow: 0 8px 18px rgba(0,0,0,0.26); }
+    .copy-btn--ghost:active { background: rgba(255,255,255,0.06); box-shadow: none; }
+    .copy-btn--ghost::before { content: "⧉"; font-size: 0.9rem; }
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
+    @media (max-width: 1024px) {
+      .smartlink-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    }
     @media (max-width: 768px) {
       .smartlink-layout { grid-template-columns: 1fr; justify-items: stretch; }
       .smartlink-layout .header { text-align: center; width: 100%; align-items: center; }
@@ -1228,7 +1239,9 @@ function htmlPage(
       .artist-line { justify-content: center; }
       .release-date { text-align: center; }
       .canonical-row { align-items: center; }
-      .links { grid-template-columns: 1fr; }
+      .links { grid-template-columns: 1fr; max-width: 100%; }
+      .links.links--grid { grid-template-columns: 1fr; }
+      .smartlink-footer { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
@@ -1239,6 +1252,7 @@ function htmlPage(
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
       .links { grid-template-columns: 1fr; }
+      .smartlink-list { grid-template-columns: 1fr; }
       .copy-btn { width: 100%; }
     }
     @media (max-width: 480px) {
@@ -1436,11 +1450,11 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 <div class="smartlink-title">${escapeHtml(title)}</div>
                 <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
               </div>
-              <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
             </div>
           </a>
-          <div class="canonical-row">
-            <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Скопировать ссылку">Скопировать ссылку</button>
+          <div class="smartlink-footer">
+            <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
+            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Скопировать ссылку">Копировать</button>
             <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </article>
@@ -1592,6 +1606,7 @@ function renderSmartlink(
     orderedEntries.push(["other", otherUrl]);
   }
 
+  const linkCount = orderedEntries.length;
   const canonicalBase = goIndexBase.replace(/\/$/, "");
   const canonicalUrl = `${canonicalBase}/${artistSlug}/${slug}`;
   const artistLink = `<a class="artist-link" href="/artist/${encodeURIComponent(artistSlug)}">${escapeHtml(artistName)}</a>`;
@@ -1602,6 +1617,7 @@ function renderSmartlink(
       return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
     })
     .join("\n");
+  const linksClassName = linkCount >= 4 ? "links links--grid" : "links";
 
   const body = `
     <div class="smartlink-layout">
@@ -1614,7 +1630,7 @@ function renderSmartlink(
           <span class="meta-label">Артист:</span>
           ${artistLink}
         </div>
-        <div class="links">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
+        <div class="${linksClassName}">${linkButtons || "<span class=\"meta\">Ссылок пока нет</span>"}</div>
         ${releaseDate ? `<div class="release-date">Дата релиза: ${escapeHtml(releaseDate)}</div>` : ""}
         <div class="canonical-row">
           <button class="copy-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку">Скопировать ссылку</button>
