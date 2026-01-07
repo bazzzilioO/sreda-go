@@ -2,7 +2,6 @@ interface Env {
   DB: D1Database;
   ISKRA_API_BASE: string;
   SMARTLINK_API_KEY?: string;
-  SMARTLINK_INDEX_TOKEN?: string;
   ISKRA_API_KEY?: string;
   GO_INDEX_BASE?: string;
   TELEGRAM_BOT_TOKEN?: string;
@@ -972,22 +971,32 @@ function buildOwnerResponse(record: {
 }
 
 function requireIndexAuth(request: Request, env: Env): Response | null {
-  const token = env.SMARTLINK_INDEX_TOKEN;
+  const token = env.SMARTLINK_API_KEY;
   if (!token) {
-    return jsonResponse({ ok: false, error: "server_error", details: "missing_index_token" }, 500);
+    return jsonResponse({ ok: false, error: "server_error", details: "missing_api_key" }, 500);
   }
 
   const header = request.headers.get("Authorization") || request.headers.get("authorization");
-  if (!header || !header.startsWith("Bearer ")) {
+  if (!header) {
     return jsonResponse({ ok: false, error: "unauthorized" }, 401);
   }
 
-  const provided = header.slice("Bearer ".length).trim();
-  if (provided !== token) {
+  const provided = header.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : header.trim();
+  if (!provided || provided !== token) {
     return jsonResponse({ ok: false, error: "unauthorized" }, 401);
   }
 
   return null;
+}
+
+function getOwnerTgId(url: URL): string | null {
+  const rawOwnerId =
+    url.searchParams.get("tg_id") ??
+    url.searchParams.get("owner_tg_user_id") ??
+    url.searchParams.get("owner_tg_id") ??
+    url.searchParams.get("tg_user_id");
+  const ownerTgId = rawOwnerId?.trim();
+  return ownerTgId ? ownerTgId : null;
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -2177,47 +2186,16 @@ export default {
       await ensureSchema(env.DB);
 
       if (segments.length === 2 && request.method === "GET") {
-        const rawOwnerId =
-          url.searchParams.get("owner_tg_user_id") ?? url.searchParams.get("owner_tg_id");
-        const ownerTgId = rawOwnerId?.trim();
+        const ownerTgId = getOwnerTgId(url);
         if (!ownerTgId) {
           return jsonResponse({ ok: false, error: "bad_request", details: "missing_owner_tg_id" }, 400);
         }
 
-        const pageRaw = url.searchParams.get("page");
-        const limitRaw = url.searchParams.get("limit");
-        const pageParsed = Number.parseInt(pageRaw ?? "1", 10);
-        const limitParsed = Number.parseInt(limitRaw ?? "20", 10);
-        const page = Number.isFinite(pageParsed) && pageParsed > 0 ? pageParsed : 1;
-        const limit = Number.isFinite(limitParsed) ? Math.min(Math.max(limitParsed, 1), 200) : 20;
-        const offset = (page - 1) * limit;
-
         try {
           const query = await env.DB.prepare(
-            `SELECT
-              id,
-              artist_slug,
-              slug,
-              title,
-              artist_name,
-              release_date,
-              cover_url,
-              cover_source,
-              cover_version,
-              cover_file_id,
-              caption_text,
-              flags,
-              links_json,
-              updated_at,
-              owner_tg_user_id,
-              owner_tg_username,
-              owner_display_name
-            FROM smartlinks
-            WHERE owner_tg_user_id = ?1
-            ORDER BY updated_at DESC
-            LIMIT ?2 OFFSET ?3`,
+            `SELECT * FROM smartlinks WHERE owner_tg_user_id = :tg_id ORDER BY updated_at DESC`,
           )
-            .bind(String(ownerTgId), limit, offset)
+            .bind(String(ownerTgId))
             .all<{
               id: string;
               artist_slug: string;
@@ -2259,8 +2237,6 @@ export default {
           return jsonResponse({
             ok: true,
             owner_tg_id: String(ownerTgId),
-            page,
-            limit,
             count: items.length,
             items,
           });
@@ -2353,6 +2329,10 @@ export default {
       if (segments.length === 4 && (request.method === "PUT" || request.method === "PATCH")) {
         const artistSlug = decodeURIComponent(segments[2]);
         const slug = decodeURIComponent(segments[3]);
+        const ownerTgId = getOwnerTgId(url);
+        if (!ownerTgId) {
+          return jsonResponse({ ok: false, error: "bad_request", details: "missing_tg_id" }, 400);
+        }
 
         let payload: Record<string, unknown> = {};
         try {
@@ -2366,9 +2346,10 @@ export default {
         const hasReleaseDate = Object.prototype.hasOwnProperty.call(payload, "release_date");
         const hasCaptionText = Object.prototype.hasOwnProperty.call(payload, "caption_text");
         const hasFlags = Object.prototype.hasOwnProperty.call(payload, "flags");
-        const coverSourceProvided = Object.prototype.hasOwnProperty.call(payload, "cover_source");
-        const coverUrlProvided = Object.prototype.hasOwnProperty.call(payload, "cover_url");
-        const coverFileIdProvided = Object.prototype.hasOwnProperty.call(payload, "cover_file_id");
+        const coverPayloadProvided = Object.prototype.hasOwnProperty.call(payload, "cover");
+        let coverSourceProvided = Object.prototype.hasOwnProperty.call(payload, "cover_source");
+        let coverUrlProvided = Object.prototype.hasOwnProperty.call(payload, "cover_url");
+        let coverFileIdProvided = Object.prototype.hasOwnProperty.call(payload, "cover_file_id");
 
         const normalizedLinks = hasLinks
           ? normalizeLinksInput(payload.links, "[api/smartlinks update] links")
@@ -2382,7 +2363,7 @@ export default {
         const normalizedFlags = hasFlags
           ? normalizeFlagsInput(payload.flags, "[api/smartlinks update] flags")
           : { value: null, error: null };
-        const normalizedCoverSource = coverSourceProvided
+        let normalizedCoverSource = coverSourceProvided
           ? normalizeCoverSourceInput(payload.cover_source, "[api/smartlinks update] cover_source")
           : null;
         let normalizedCoverUrl: string | null = null;
@@ -2413,6 +2394,52 @@ export default {
             }
           } else {
             return jsonResponse({ ok: false, error: "bad_request", details: "invalid_cover_file_id" }, 400);
+          }
+        }
+
+        if (coverPayloadProvided && !coverSourceProvided && !coverUrlProvided && !coverFileIdProvided) {
+          const rawCover = payload.cover;
+          if (typeof rawCover === "string") {
+            const telegramFileId = extractTelegramFileIdFromString(rawCover, "[api/smartlinks update] cover");
+            if (telegramFileId) {
+              coverFileIdProvided = true;
+              coverSourceProvided = true;
+              normalizedCoverFileId = telegramFileId;
+              normalizedCoverSource = {
+                value: JSON.stringify({ type: "telegram", file_id: telegramFileId }),
+                error: false,
+              };
+            } else {
+              coverUrlProvided = true;
+              normalizedCoverUrl = resolveCoverUrl(rawCover);
+            }
+          } else if (rawCover && typeof rawCover === "object") {
+            const candidate = rawCover as { telegram?: unknown; url?: unknown; type?: unknown; file_id?: unknown };
+            if (typeof candidate.telegram === "string") {
+              const trimmed = candidate.telegram.trim();
+              if (!validateTelegramFileId(trimmed)) {
+                return jsonResponse(
+                  { ok: false, error: "bad_request", details: "invalid_cover_file_id" },
+                  400,
+                );
+              }
+              coverFileIdProvided = true;
+              coverSourceProvided = true;
+              normalizedCoverFileId = trimmed;
+              normalizedCoverSource = {
+                value: JSON.stringify({ type: "telegram", file_id: trimmed }),
+                error: false,
+              };
+            } else if (typeof candidate.url === "string") {
+              coverUrlProvided = true;
+              normalizedCoverUrl = resolveCoverUrl(candidate.url);
+            } else if (candidate.type) {
+              coverSourceProvided = true;
+              normalizedCoverSource = normalizeCoverSourceInput(
+                candidate,
+                "[api/smartlinks update] cover",
+              );
+            }
           }
         }
 
@@ -2464,6 +2491,10 @@ export default {
           const existing = existingQuery.results?.[0];
           if (!existing) {
             return jsonResponse({ ok: false, error: "not_found" }, 404);
+          }
+
+          if (!existing.owner_tg_user_id || String(existing.owner_tg_user_id) !== ownerTgId) {
+            return jsonResponse({ ok: false, error: "forbidden" }, 403);
           }
 
           const storedLinksJson = hasLinks ? JSON.stringify(normalizedLinks ?? {}) : existing.links_json;
@@ -2588,41 +2619,21 @@ export default {
     }
 
     if (segments.length === 2 && segments[0] === "api" && segments[1] === "my") {
-      const apiKey = env.SMARTLINK_API_KEY;
-      if (!apiKey) {
-        return jsonResponse({ ok: false, error: "server_error" }, 500);
+      const authError = requireIndexAuth(request, env);
+      if (authError) {
+        return authError;
       }
 
-      const providedKey = request.headers.get("X-API-Key");
-      if (providedKey !== apiKey) {
-        return jsonResponse({ ok: false, error: "unauthorized" }, 401);
-      }
-
-      const rawTgUserId = url.searchParams.get("tg_user_id");
-      const normalizedTgUserId = rawTgUserId?.trim();
+      const normalizedTgUserId = getOwnerTgId(url);
 
       if (!normalizedTgUserId) {
         return jsonResponse({ ok: false, error: "bad_request", details: "missing_tg_user_id" }, 400);
       }
 
       try {
-          const query = await env.DB.prepare(
-          `SELECT
-            id,
-            artist_slug,
-            slug,
-            title,
-            artist_name,
-            release_date,
-            cover_url,
-            updated_at,
-            owner_tg_user_id,
-            owner_tg_username,
-            owner_display_name
-          FROM smartlinks
-          WHERE owner_tg_user_id = ?1
-          ORDER BY updated_at DESC
-          LIMIT 200`)
+        const query = await env.DB.prepare(
+          `SELECT * FROM smartlinks WHERE owner_tg_user_id = :tg_id ORDER BY updated_at DESC`,
+        )
           .bind(String(normalizedTgUserId))
           .all<{
             id: string;
@@ -2632,6 +2643,14 @@ export default {
             artist_name: string | null;
             release_date: string | null;
             cover_url: string | null;
+            cover_source: string | null;
+            cover_version: number | null;
+            cover_file_id: string | null;
+            caption_text: string | null;
+            flags: string | null;
+            links_json: string | null;
+            cover_updated_at: string | null;
+            created_at: string | null;
             updated_at: string | null;
             owner_tg_user_id: string | null;
             owner_tg_username: string | null;
@@ -2639,8 +2658,22 @@ export default {
           }>();
 
         const items = (query.results ?? []).map((record) => ({
-          ...record,
+          id: record.id,
+          artist_slug: record.artist_slug,
+          slug: record.slug,
+          title: record.title,
+          artist_name: record.artist_name,
+          release_date: record.release_date,
           cover_url: resolveCoverUrl(record.cover_url ?? null),
+          cover_source: parseCoverSource(record.cover_source, "[api/my] cover_source"),
+          cover_version: record.cover_version ?? 0,
+          cover_file_id: record.cover_file_id,
+          cover_updated_at: record.cover_updated_at,
+          caption_text: record.caption_text,
+          flags: record.flags,
+          links: parseLinksFromJson(record.links_json, "[api/my] links_json"),
+          created_at: record.created_at,
+          updated_at: record.updated_at,
           owner: buildOwnerResponse(record),
         }));
 
