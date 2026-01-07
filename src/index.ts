@@ -2177,7 +2177,8 @@ export default {
       await ensureSchema(env.DB);
 
       if (segments.length === 2 && request.method === "GET") {
-        const rawOwnerId = url.searchParams.get("owner_tg_id");
+        const rawOwnerId =
+          url.searchParams.get("owner_tg_user_id") ?? url.searchParams.get("owner_tg_id");
         const ownerTgId = rawOwnerId?.trim();
         if (!ownerTgId) {
           return jsonResponse({ ok: false, error: "bad_request", details: "missing_owner_tg_id" }, 400);
