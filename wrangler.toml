@@ -4,6 +4,7 @@ compatibility_date = "2024-12-01"
 
 [vars]
 ISKRA_API_BASE = "https://iskra-bot-production.up.railway.app"
+SMARTLINK_API_KEY = "AntonPavlovi4264ehov!"
 
 [[d1_databases]]
 binding = "DB"
