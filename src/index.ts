@@ -10,7 +10,9 @@ interface Env {
 type TelegramCoverSource = { type: "telegram"; file_id: string };
 type ExternalCoverSource = { type: "external"; url: string };
 type CoverSource = TelegramCoverSource | ExternalCoverSource | string;
-type NormalizedCoverSourceResult = { value: string | null; error: boolean };
+type NormalizedCoverSourceResult = { value: string | null; error: string | null };
+type NormalizedLinksResult = { value: LinkRecord; error: string | null };
+type FieldError = { code: string; message: string; field?: string };
 
 const TELEGRAM_FILE_ID_PATTERN = /^[A-Za-z0-9_:-]+$/;
 
@@ -62,32 +64,32 @@ function normalizeCoverVersionInput(input: unknown): number | null {
 
 function normalizeCoverSourceInput(input: unknown, context: string): NormalizedCoverSourceResult {
   if (input === undefined || input === null) {
-    return { value: null, error: false };
+    return { value: null, error: null };
   }
 
   if (typeof input === "string") {
     const trimmed = input.trim();
-    return { value: trimmed || null, error: false };
+    return { value: trimmed || null, error: null };
   }
 
   if (typeof input === "object") {
-    const candidate = input as { type?: unknown; file_id?: unknown };
+    const candidate = input as { type?: unknown; file_id?: unknown; url?: unknown };
     if (candidate.type === "telegram") {
       if (typeof candidate.file_id === "string") {
         const trimmedFileId = candidate.file_id.trim();
         if (validateTelegramFileId(trimmedFileId)) {
           return {
             value: JSON.stringify({ type: "telegram", file_id: trimmedFileId }),
-            error: false,
+            error: null,
           };
         }
 
         console.warn(`${context}: invalid telegram file_id`, candidate.file_id);
-        return { value: null, error: false };
+        return { value: null, error: "invalid_cover_source_file_id" };
       }
 
       console.warn(`${context}: missing telegram file_id`, input);
-      return { value: null, error: false };
+      return { value: null, error: "missing_cover_source_file_id" };
     }
 
     if (candidate.type === "external") {
@@ -95,20 +97,20 @@ function normalizeCoverSourceInput(input: unknown, context: string): NormalizedC
       if (typeof url === "string" && url.trim()) {
         return {
           value: JSON.stringify({ type: "external", url: url.trim() }),
-          error: false,
+          error: null,
         };
       }
 
       console.warn(`${context}: missing external url`, input);
-      return { value: null, error: false };
+      return { value: null, error: "missing_cover_source_url" };
     }
 
     console.warn(`${context}: unsupported cover_source object`, input);
-    return { value: null, error: false };
+    return { value: null, error: "invalid_cover_source_type" };
   }
 
   console.warn(`${context}: unsupported cover_source type`, input);
-  return { value: null, error: false };
+  return { value: null, error: "invalid_cover_source_type" };
 }
 
 function parseCoverSource(raw: string | null, context: string): CoverSource | null {
@@ -664,50 +666,79 @@ function slugify(value?: string | null): string {
 
 function buildSlug(
   value: string | undefined | null,
-  id?: string | number,
-  { allowFallback = true }: { allowFallback?: boolean } = {},
+  { allowFallback = false, fallbackValue }: { allowFallback?: boolean; fallbackValue?: string } = {},
 ): string | undefined {
   const slug = slugify(value);
   if (slug) return slug;
-  if (allowFallback && id !== undefined && id !== null) {
-    return `release-${id}`;
+  if (allowFallback && fallbackValue) {
+    return fallbackValue;
   }
   return undefined;
 }
 
-function deriveSlugsFromPayload(payload: UpsertRequest): { artistSlug?: string; releaseSlug?: string } {
+function deriveSlugsFromPayload(payload: UpsertRequest): {
+  artistSlug?: string;
+  releaseSlug?: string;
+  errors: FieldError[];
+} {
+  const errors: FieldError[] = [];
   const artistSource = payload.artist_slug ?? payload.artist_name ?? payload.artist;
-  const manualSlugProvided = payload.slug !== undefined && payload.slug !== null && String(payload.slug).trim();
-  const releaseSlug = manualSlugProvided
-    ? buildSlug(payload.slug, payload.id, { allowFallback: false })
-    : buildSlug(payload.title, payload.id);
+  const manualSlugProvided =
+    payload.slug !== undefined && payload.slug !== null && String(payload.slug).trim();
+  const releaseSource = manualSlugProvided ? payload.slug : payload.title;
+  const releaseSlug = buildSlug(releaseSource, { allowFallback: false });
+  const artistSlug = buildSlug(artistSource, { allowFallback: false });
 
-  const artistSlug = buildSlug(artistSource, payload.id);
+  if (!artistSlug) {
+    errors.push({
+      code: "artist_slug_required",
+      message: "Укажите artist_slug или artist_name.",
+      field: "artist_slug",
+    });
+  }
 
-  return { artistSlug, releaseSlug };
+  if (!releaseSlug) {
+    errors.push({
+      code: "slug_required",
+      message: manualSlugProvided
+        ? "Поле slug пустое или содержит недопустимые символы."
+        : "Укажите title или slug для генерации slug.",
+      field: manualSlugProvided ? "slug" : "title",
+    });
+  }
+
+  return { artistSlug, releaseSlug, errors };
 }
 
-function normalizeLinksInput(input: unknown, context: string): LinkRecord {
+function normalizeLinksInput(
+  input: unknown,
+  context: string,
+  { strict = false }: { strict?: boolean } = {},
+): NormalizedLinksResult {
   const normalized: LinkRecord = {};
 
   if (input === undefined || input === null) {
-    return normalized;
+    return { value: normalized, error: null };
   }
 
   if (typeof input === "string") {
     const trimmed = input.trim();
-    if (!trimmed) return normalized;
+    if (!trimmed) return { value: normalized, error: null };
 
     try {
-      return normalizeLinksInput(JSON.parse(trimmed), context);
+      return normalizeLinksInput(JSON.parse(trimmed), context, { strict });
     } catch (error) {
-      console.warn(`${context}: links string is not JSON, storing as 'other'`, trimmed);
+      console.warn(`${context}: links string is not JSON`, trimmed);
+      if (strict) {
+        return { value: normalized, error: "links_invalid_json" };
+      }
       normalized.other = trimmed;
-      return normalized;
+      return { value: normalized, error: null };
     }
   }
 
   if (Array.isArray(input)) {
+    let hasValid = false;
     for (const entry of input) {
       if (entry && typeof entry === "object") {
         const platform =
@@ -717,6 +748,7 @@ function normalizeLinksInput(input: unknown, context: string): LinkRecord {
 
         if (platform && url && typeof platform === "string" && typeof url === "string") {
           normalized[platform] = url;
+          hasValid = true;
           continue;
         }
       }
@@ -725,6 +757,7 @@ function normalizeLinksInput(input: unknown, context: string): LinkRecord {
         const [platform, url] = entry as unknown[];
         if (typeof platform === "string" && typeof url === "string") {
           normalized[platform] = url;
+          hasValid = true;
           continue;
         }
       }
@@ -732,23 +765,33 @@ function normalizeLinksInput(input: unknown, context: string): LinkRecord {
       console.warn(`${context}: skipping unrecognized link entry`, entry);
     }
 
-    return normalized;
+    if (strict && !hasValid && input.length > 0) {
+      return { value: normalized, error: "links_empty" };
+    }
+
+    return { value: normalized, error: null };
   }
 
   if (typeof input === "object") {
+    let hasValid = false;
     for (const [platform, value] of Object.entries(input as Record<string, unknown>)) {
       if (typeof value === "string" && value.trim()) {
-        normalized[platform] = value;
+        normalized[platform] = value.trim();
+        hasValid = true;
       } else if (value !== undefined && value !== null) {
         console.warn(`${context}: non-string link value dropped`, platform, value);
       }
     }
 
-    return normalized;
+    if (strict && !hasValid && Object.keys(input as Record<string, unknown>).length > 0) {
+      return { value: normalized, error: "links_empty" };
+    }
+
+    return { value: normalized, error: null };
   }
 
   console.warn(`${context}: unsupported links payload`, input);
-  return normalized;
+  return { value: normalized, error: strict ? "links_invalid_type" : null };
 }
 
 function parseLinksFromJson(linksJson: string | null, context: string): LinkRecord {
@@ -759,7 +802,7 @@ function parseLinksFromJson(linksJson: string | null, context: string): LinkReco
 
   try {
     const parsed = JSON.parse(linksJson);
-    const normalized = normalizeLinksInput(parsed, `${context}:parse`);
+    const normalized = normalizeLinksInput(parsed, `${context}:parse`).value;
 
     if (!Object.keys(normalized).length) {
       console.warn(`${context}: parsed links empty`, linksJson);
@@ -779,12 +822,21 @@ async function syncSmartlinkToWeb(
   const apiKey = env.SMARTLINK_API_KEY;
   if (!apiKey) return [false, null, "missing_api_key"];
 
-  const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+  const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "");
+  if (!goIndexBase) {
+    return [false, null, "missing_go_index_base"];
+  }
 
-  const { artistSlug, releaseSlug: slug } = deriveSlugsFromPayload(payload);
+  const { artistSlug, releaseSlug: slug, errors } = deriveSlugsFromPayload(payload);
 
-  if (!payload.id || !artistSlug || !slug || !payload.title) {
-    console.warn("smartlink sync skipped", payload.id, artistSlug, slug, payload.title);
+  if (errors.length || !payload.id || !artistSlug || !slug || !payload.title) {
+    console.warn("smartlink sync skipped", {
+      id: payload.id,
+      artistSlug,
+      slug,
+      title: payload.title,
+      errors,
+    });
     return [false, null, "invalid_payload"];
   }
 
@@ -877,27 +929,46 @@ async function ensureSchema(db: D1Database): Promise<void> {
   }
 }
 
-function normalizeOwnerInput(
-  input: unknown,
-): { owner: { tg_user_id: string; username: string | null; display_name: string | null } | null; error: string | null } {
+function normalizeOwnerInput(input: unknown): { owner: OwnerRecord | null; error: FieldError | null } {
   if (input === undefined || input === null) {
     return { owner: null, error: null };
   }
 
   if (typeof input !== "object") {
-    return { owner: null, error: "owner_must_be_object" };
+    return {
+      owner: null,
+      error: {
+        code: "owner_must_be_object",
+        message: "Поле owner должно быть объектом.",
+        field: "owner",
+      },
+    };
   }
 
   const candidate = input as { tg_user_id?: unknown; username?: unknown; display_name?: unknown };
   const tgUserIdRaw = candidate.tg_user_id;
 
   if (tgUserIdRaw === undefined || tgUserIdRaw === null) {
-    return { owner: null, error: "owner_tg_user_id_required" };
+    return {
+      owner: null,
+      error: {
+        code: "owner_tg_user_id_required",
+        message: "Укажите owner.tg_user_id.",
+        field: "owner.tg_user_id",
+      },
+    };
   }
 
   const tgUserId = String(tgUserIdRaw).trim();
   if (!tgUserId) {
-    return { owner: null, error: "owner_tg_user_id_empty" };
+    return {
+      owner: null,
+      error: {
+        code: "owner_tg_user_id_empty",
+        message: "Поле owner.tg_user_id не может быть пустым.",
+        field: "owner.tg_user_id",
+      },
+    };
   }
 
   const usernameRaw = candidate.username;
@@ -970,10 +1041,36 @@ function buildOwnerResponse(record: {
   };
 }
 
+function requireEnvValue(
+  value: string | undefined,
+  envName: string,
+  message: string,
+): Response | null {
+  if (!value) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "missing_env",
+        details: {
+          env: envName,
+          message,
+        },
+      },
+      503,
+    );
+  }
+  return null;
+}
+
 function requireIndexAuth(request: Request, env: Env): Response | null {
   const token = env.SMARTLINK_API_KEY;
-  if (!token) {
-    return jsonResponse({ ok: false, error: "server_error", details: "missing_api_key" }, 500);
+  const envError = requireEnvValue(
+    token,
+    "SMARTLINK_API_KEY",
+    "Настройте SMARTLINK_API_KEY, чтобы использовать защищенные API эндпоинты.",
+  );
+  if (envError) {
+    return envError;
   }
 
   const header = request.headers.get("Authorization") || request.headers.get("authorization");
@@ -1596,6 +1693,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         return buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
       })
       .find((url) => Boolean(url));
+    const artistCanonicalUrl = `${canonicalBase}/artist/${encodeURIComponent(artistSlug)}`;
 
     const cards = items.map((record) => {
       const links = parseLinksFromJson(record.links_json, `[artist ${artistSlug}/${record.slug}] links`);
@@ -1633,7 +1731,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           </a>
           <div class="smartlink-footer">
             <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
-            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Скопировать ссылку">Копировать</button>
+            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Скопировать ссылку">Скопировать</button>
             <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </article>
@@ -1645,6 +1743,10 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
           <div class="artist-meta">
             <span>Все смартлинки в одном месте.</span>
+          </div>
+          <div class="canonical-row">
+            <button class="copy-btn" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Скопировать ссылку на страницу артиста">Скопировать ссылку</button>
+            <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </div>
         ${
@@ -1905,14 +2007,29 @@ export default {
       }
 
       const apiKey = env.SMARTLINK_API_KEY;
-      if (!apiKey) {
-        return jsonResponse({ ok: false, error: "server_error" }, 500);
+      const apiKeyError = requireEnvValue(
+        apiKey,
+        "SMARTLINK_API_KEY",
+        "Настройте SMARTLINK_API_KEY для доступа к /api/index/upsert.",
+      );
+      if (apiKeyError) {
+        return apiKeyError;
       }
 
       const providedKey = request.headers.get("X-API-Key");
       const isAuthed = providedKey === apiKey;
       if (!isAuthed) {
         return jsonResponse({ ok: false, error: "unauthorized" }, 401);
+      }
+
+      const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "");
+      const goIndexBaseError = requireEnvValue(
+        goIndexBase,
+        "GO_INDEX_BASE",
+        "Настройте GO_INDEX_BASE для формирования канонических ссылок.",
+      );
+      if (goIndexBaseError) {
+        return goIndexBaseError;
       }
 
       await ensureSchema(env.DB);
@@ -1941,22 +2058,39 @@ export default {
           owner,
         } = payload ?? {};
 
-        const { artistSlug: computedArtistSlug, releaseSlug: computedSlug } = deriveSlugsFromPayload({
-          id,
-          title,
-          artist_name,
-          artist,
-          artist_slug,
-          slug,
-        });
+        const { artistSlug: computedArtistSlug, releaseSlug: computedSlug, errors: slugErrors } =
+          deriveSlugsFromPayload({
+            id,
+            title,
+            artist_name,
+            artist,
+            artist_slug,
+            slug,
+          });
 
-        if (!computedArtistSlug || !computedSlug || !title) {
-          return jsonResponse({ ok: false, error: "bad_request" }, 400);
+        if (!computedArtistSlug || !computedSlug || !title || slugErrors.length) {
+          return jsonResponse(
+            {
+              ok: false,
+              error: "bad_request",
+              details: {
+                fields: slugErrors,
+                message: "Не удалось сформировать slug. Проверьте artist_slug и title/slug.",
+              },
+            },
+            400,
+          );
         }
 
         const canonicalId = `${computedArtistSlug}:${computedSlug}`;
-        const normalizedLinks = normalizeLinksInput(links, "[upsert] links");
-        const linksJson = JSON.stringify(normalizedLinks);
+        const normalizedLinksResult = normalizeLinksInput(links, "[upsert] links", { strict: true });
+        if (normalizedLinksResult.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { links: normalizedLinksResult.error } },
+            400,
+          );
+        }
+        const linksJson = JSON.stringify(normalizedLinksResult.value);
         const coverSourceProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_source");
         const coverUrlProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_url");
         const normalizedCoverSource = coverSourceProvided
@@ -1967,7 +2101,7 @@ export default {
 
         if (normalizedCoverSource?.error) {
           return jsonResponse(
-            { ok: false, error: "bad_request", details: "invalid_cover_source" },
+            { ok: false, error: "bad_request", details: { cover_source: normalizedCoverSource.error } },
             400,
           );
         }
@@ -2018,6 +2152,26 @@ export default {
 
           const existing = existingRecord.results?.[0];
 
+          if (
+            existing?.id &&
+            normalizedOwner?.tg_user_id &&
+            existing.owner_tg_user_id &&
+            normalizedOwner.tg_user_id !== existing.owner_tg_user_id
+          ) {
+            return jsonResponse(
+              {
+                ok: false,
+                error: "slug_conflict",
+                details: {
+                  message: "Slug уже используется для другого владельца.",
+                  artist_slug: computedArtistSlug,
+                  slug: computedSlug,
+                },
+              },
+              409,
+            );
+          }
+
           ownerSaved = Boolean(normalizedOwner && !existing?.owner_tg_user_id);
           storedCoverFileId = existing?.cover_file_id ?? null;
 
@@ -2036,7 +2190,6 @@ export default {
 
           storedCoverVersion ??= 0;
 
-          const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
           const defaultCoverUrl = `${goIndexBase}/api/cover/${encodeURIComponent(computedArtistSlug)}/${encodeURIComponent(computedSlug)}`;
           const existingCoverUrl = resolveCoverUrl(existing?.cover_url ?? null);
 
@@ -2128,7 +2281,9 @@ export default {
           );
         }
 
-        const skipSync = request.headers.get("X-Skip-Sync") === "1" || isAuthed;
+        // Синхронизация запускается для входящих upsert по умолчанию.
+        // Если запрос приходит из веб-индекса (чтобы избежать циклов), используйте заголовок X-Skip-Sync: 1.
+        const skipSync = request.headers.get("X-Skip-Sync") === "1";
 
         let syncResult: [boolean, number | null, string | null] = [true, null, null];
         if (!skipSync) {
@@ -2145,7 +2300,7 @@ export default {
                 cover_source: storedCoverSource ?? undefined,
                 cover_url: storedCoverUrl ?? undefined,
                 cover_version: storedCoverVersion,
-                links: normalizedLinks,
+                links: normalizedLinksResult.value,
               },
               env,
             );
@@ -2153,11 +2308,21 @@ export default {
             console.warn("smartlink sync error", error);
             syncResult = [false, null, error instanceof Error ? error.message : String(error)];
           }
+        } else {
+          console.info("smartlink sync skipped", { id: canonicalId, reason: "X-Skip-Sync" });
         }
 
         const [synced, syncStatus, syncError] = syncResult;
         if (!synced) {
-          return jsonResponse({ ok: false, error: "sync_failed", details: { status: syncStatus, error: syncError } }, 502);
+          console.warn("smartlink sync failed", {
+            id: canonicalId,
+            status: syncStatus,
+            error: syncError,
+          });
+          return jsonResponse(
+            { ok: false, error: "sync_failed", details: { status: syncStatus, error: syncError } },
+            502,
+          );
         }
 
         return jsonResponse({
@@ -2177,11 +2342,18 @@ export default {
       }
     }
 
-        if (normalizedPath === "/api/index/my") {
+    if (normalizedPath === "/api/index/my") {
       if (request.method !== "GET") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
 
       const apiKey = env.SMARTLINK_API_KEY;
-      if (!apiKey) return jsonResponse({ ok: false, error: "server_error" }, 500);
+      const apiKeyError = requireEnvValue(
+        apiKey,
+        "SMARTLINK_API_KEY",
+        "Настройте SMARTLINK_API_KEY для доступа к /api/index/my.",
+      );
+      if (apiKeyError) {
+        return apiKeyError;
+      }
 
       const providedKey = request.headers.get("X-API-Key");
       if (providedKey !== apiKey) return jsonResponse({ ok: false, error: "unauthorized" }, 401);
@@ -2235,11 +2407,18 @@ export default {
       });
     }
     
-        if (normalizedPath === "/api/index/patch") {
+    if (normalizedPath === "/api/index/patch") {
       if (request.method !== "POST") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
 
       const apiKey = env.SMARTLINK_API_KEY;
-      if (!apiKey) return jsonResponse({ ok: false, error: "server_error" }, 500);
+      const apiKeyError = requireEnvValue(
+        apiKey,
+        "SMARTLINK_API_KEY",
+        "Настройте SMARTLINK_API_KEY для доступа к /api/index/patch.",
+      );
+      if (apiKeyError) {
+        return apiKeyError;
+      }
 
       const providedKey = request.headers.get("X-API-Key");
       if (providedKey !== apiKey) return jsonResponse({ ok: false, error: "unauthorized" }, 401);
@@ -2279,8 +2458,16 @@ export default {
       if (Object.prototype.hasOwnProperty.call(patch, "caption_text")) next.caption_text = patch.caption_text ? String(patch.caption_text) : null;
 
       if (Object.prototype.hasOwnProperty.call(patch, "links")) {
-        const normalizedLinks = normalizeLinksInput(patch.links, "[patch] links");
-        next.links_json = JSON.stringify(normalizedLinks);
+        const normalizedLinksResult = normalizeLinksInput(patch.links, "[patch] links", {
+          strict: true,
+        });
+        if (normalizedLinksResult.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { links: normalizedLinksResult.error } },
+            400,
+          );
+        }
+        next.links_json = JSON.stringify(normalizedLinksResult.value);
       }
 
       if (Object.prototype.hasOwnProperty.call(patch, "cover_url")) {
@@ -2330,7 +2517,14 @@ export default {
       if (request.method !== "GET") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
 
       const apiKey = env.SMARTLINK_API_KEY;
-      if (!apiKey) return jsonResponse({ ok: false, error: "server_error" }, 500);
+      const apiKeyError = requireEnvValue(
+        apiKey,
+        "SMARTLINK_API_KEY",
+        "Настройте SMARTLINK_API_KEY для доступа к /api/index/get.",
+      );
+      if (apiKeyError) {
+        return apiKeyError;
+      }
 
       const providedKey = request.headers.get("X-API-Key");
       if (providedKey !== apiKey) return jsonResponse({ ok: false, error: "unauthorized" }, 401);
@@ -2351,97 +2545,6 @@ export default {
       return jsonResponse({ ok: true, item: row });
     }
 
-        if (normalizedPath === "/api/index/patch") {
-      if (request.method !== "POST") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
-
-      const apiKey = env.SMARTLINK_API_KEY;
-      if (!apiKey) return jsonResponse({ ok: false, error: "server_error" }, 500);
-
-      const providedKey = request.headers.get("X-API-Key");
-      if (providedKey !== apiKey) return jsonResponse({ ok: false, error: "unauthorized" }, 401);
-
-      await ensureSchema(env.DB);
-
-      let payload: any;
-      try {
-        payload = await request.json();
-      } catch {
-        return jsonResponse({ ok: false, error: "bad_request" }, 400);
-      }
-
-      const artist_slug = String(payload?.artist_slug || "").trim();
-      const slug = String(payload?.slug || "").trim();
-      const owner_tg_user_id = String(payload?.owner_tg_user_id || "").trim();
-      const patch = payload?.patch || {};
-
-      if (!artist_slug || !slug || !owner_tg_user_id || typeof patch !== "object") {
-        return jsonResponse({ ok: false, error: "bad_request" }, 400);
-      }
-
-      const existing = await env.DB
-        .prepare(`SELECT * FROM smartlinks WHERE artist_slug = ? AND slug = ? LIMIT 1`)
-        .bind(artist_slug, slug)
-        .first<any>();
-
-      if (!existing) return jsonResponse({ ok: false, error: "not_found" }, 404);
-      if (String(existing.owner_tg_user_id || "") !== owner_tg_user_id) return jsonResponse({ ok: false, error: "forbidden" }, 403);
-
-      // разрешаем менять только конкретные поля
-      const next: any = { ...existing };
-
-      if (Object.prototype.hasOwnProperty.call(patch, "title")) next.title = String(patch.title || "").trim();
-      if (Object.prototype.hasOwnProperty.call(patch, "artist_name")) next.artist_name = patch.artist_name ? String(patch.artist_name) : null;
-      if (Object.prototype.hasOwnProperty.call(patch, "release_date")) next.release_date = patch.release_date ? String(patch.release_date) : null;
-      if (Object.prototype.hasOwnProperty.call(patch, "caption_text")) next.caption_text = patch.caption_text ? String(patch.caption_text) : null;
-
-      if (Object.prototype.hasOwnProperty.call(patch, "links")) {
-        const normalizedLinks = normalizeLinksInput(patch.links, "[patch] links");
-        next.links_json = JSON.stringify(normalizedLinks);
-      }
-
-      if (Object.prototype.hasOwnProperty.call(patch, "cover_url")) {
-        next.cover_url = patch.cover_url ? resolveCoverUrl(String(patch.cover_url)) : null;
-      }
-
-      if (Object.prototype.hasOwnProperty.call(patch, "cover_version")) {
-        const v = Number(patch.cover_version);
-        next.cover_version = Number.isFinite(v) ? v : next.cover_version;
-      }
-
-      const now = new Date().toISOString().replace("T", " ").slice(0, 19);
-      next.updated_at = now;
-
-      await env.DB
-        .prepare(
-          `UPDATE smartlinks SET
-            title=?,
-            artist_name=?,
-            release_date=?,
-            links_json=?,
-            cover_url=?,
-            cover_version=?,
-            caption_text=?,
-            updated_at=?
-           WHERE artist_slug=? AND slug=? AND owner_tg_user_id=?`
-        )
-        .bind(
-          next.title,
-          next.artist_name,
-          next.release_date,
-          next.links_json,
-          next.cover_url,
-          next.cover_version,
-          next.caption_text,
-          next.updated_at,
-          artist_slug,
-          slug,
-          owner_tg_user_id
-        )
-        .run();
-
-      return jsonResponse({ ok: true });
-    }
-    
     if (segments.length >= 2 && segments[0] === "api" && segments[1] === "smartlinks") {
       const authError = requireIndexAuth(request, env);
       if (authError) {
@@ -2616,8 +2719,8 @@ export default {
         let coverUrlProvided = Object.prototype.hasOwnProperty.call(payload, "cover_url");
         let coverFileIdProvided = Object.prototype.hasOwnProperty.call(payload, "cover_file_id");
 
-        const normalizedLinks = hasLinks
-          ? normalizeLinksInput(payload.links, "[api/smartlinks update] links")
+        const normalizedLinksResult = hasLinks
+          ? normalizeLinksInput(payload.links, "[api/smartlinks update] links", { strict: true })
           : null;
         const normalizedReleaseDate = hasReleaseDate
           ? normalizeTextInput(payload.release_date, "[api/smartlinks update] release_date")
@@ -2712,8 +2815,18 @@ export default {
           return jsonResponse({ ok: false, error: "bad_request", details: "invalid_text_input" }, 400);
         }
 
+        if (normalizedLinksResult?.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { links: normalizedLinksResult.error } },
+            400,
+          );
+        }
+
         if (normalizedCoverSource?.error) {
-          return jsonResponse({ ok: false, error: "bad_request", details: "invalid_cover_source" }, 400);
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { cover_source: normalizedCoverSource.error } },
+            400,
+          );
         }
 
         try {
@@ -2762,7 +2875,9 @@ export default {
             return jsonResponse({ ok: false, error: "forbidden" }, 403);
           }
 
-          const storedLinksJson = hasLinks ? JSON.stringify(normalizedLinks ?? {}) : existing.links_json;
+          const storedLinksJson = hasLinks
+            ? JSON.stringify(normalizedLinksResult?.value ?? {})
+            : existing.links_json;
           const storedReleaseDate = hasReleaseDate ? normalizedReleaseDate.value : existing.release_date;
           const storedCaptionText = hasCaptionText ? normalizedCaptionText.value : existing.caption_text;
           const storedFlags = hasFlags ? normalizedFlags.value : existing.flags;
@@ -2868,7 +2983,11 @@ export default {
 
     await ensureSchema(env.DB);
 
-    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "") || "https://go.sreda.pw";
+    const goIndexBase =
+      env.GO_INDEX_BASE?.replace(/\/$/, "") ?? new URL(request.url).origin;
+    if (!env.GO_INDEX_BASE) {
+      console.warn("[env] GO_INDEX_BASE missing, falling back to request origin");
+    }
 
     if (segments.length >= 3 && segments[0] === "api" && segments[1] === "cover") {
       if (segments.length === 3) {
@@ -2990,7 +3109,17 @@ export default {
       const base = env.ISKRA_API_BASE?.replace(/\/$/, "");
 
       if (!base) {
-        return jsonResponse({ error: "missing_iskra_api_base" }, 500);
+        return jsonResponse(
+          {
+            ok: false,
+            error: "missing_env",
+            details: {
+              env: "ISKRA_API_BASE",
+              message: "Настройте ISKRA_API_BASE для доступа к ИСКРА API.",
+            },
+          },
+          503,
+        );
       }
 
       const urlToFetch = `${base}/api/smartlink/latest`;
@@ -3034,7 +3163,17 @@ export default {
       const base = env.ISKRA_API_BASE?.replace(/\/$/, "");
 
       if (!base) {
-        return jsonResponse({ error: "missing_iskra_api_base" }, 500);
+        return jsonResponse(
+          {
+            ok: false,
+            error: "missing_env",
+            details: {
+              env: "ISKRA_API_BASE",
+              message: "Настройте ISKRA_API_BASE для доступа к ИСКРА API.",
+            },
+          },
+          503,
+        );
       }
 
       const urlToFetch = `${base}/api/smartlink/${id}`;
@@ -3163,7 +3302,7 @@ export default {
       const data: ApiSmartlink = {
         id: record.id,
         title: record.title ?? undefined,
-        artist: record.artist_name ?? artistSlug,
+        artist: record.artist_name ?? undefined,
         artist_name: record.artist_name ?? undefined,
         release_date: record.release_date ?? undefined,
         cover_version: record.cover_version ?? undefined,
