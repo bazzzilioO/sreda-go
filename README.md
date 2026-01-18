@@ -28,6 +28,7 @@ npm run deploy
 
 ## Переменные окружения
 - `ISKRA_API_BASE` — базовый URL API ИСКРЫ (например, `https://api.example.com`).
+- `GO_INDEX_BASE` — базовый URL веб-индекса (например, `https://go.sreda.pw`).
 - `SMARTLINK_API_KEY` — приватный ключ для чтения смартлинков из бота. Добавляется как секрет.
 - `TELEGRAM_BOT_TOKEN` — токен бота для загрузки и проксирования обложек Telegram.
 
@@ -58,6 +59,11 @@ curl -X POST \
 
 Тело запроса: `id`, `artist_slug`, `slug`, `title` — обязательные поля. Остальные поля (`artist_name`, `release_date`, `cover_source`, `links`) опциональны.
 
+### Поведение slug
+- `slug` формируется через `transliterate` + `slugify` и сохраняется в kebab-case.
+- Если `title` или `slug` не позволяют сформировать slug, API вернет `400` с описанием ошибки.
+- Если в запросе указан владелец (`owner.tg_user_id`), и slug уже занят другим владельцем, API вернет `409 slug_conflict`.
+
 ### Формат данных
 - Таблица D1 `smartlinks` хранит строки с колонками: `id` (строковый идентификатор), `artist_slug`, `slug`, `title`, `artist_name`, `release_date`, `cover_source`, `cover_file_id`, `cover_version`, `cover_url`, `cover_updated_at`, `links_json`, `created_at`, `updated_at`.
 - `links_json` — **TEXT** с JSON-объектом `Record<string, string>` (например `{ "spotify": "https://..." }`).
@@ -70,3 +76,51 @@ curl -X POST \
 - Ручное создание может прислать `cover_url` **или не присылать ничего** — в этом случае в БД сохраняется `cover_source = null`, а на сайте рендерится плейсхолдер.
 - Ручные записи не должны придумывать `telegram.file_id` и не генерируют фейковые обложки. Поддерживаются только реальные `cover_url` или валидные telegram-объекты.
 - Некорректные объекты `cover_source` (неизвестный `type`, пустой/невалидный `file_id`) отклоняются с `400 Bad Request`, при этом проблема логируется в консоль без падения воркера.
+
+## API: дополнительные эндпоинты
+
+### `POST /api/index/patch`
+Частичное обновление смартлинка по `artist_slug`, `slug` и `owner_tg_user_id`. Требует `X-API-Key`.
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $SMARTLINK_API_KEY" \
+  -d '{
+    "artist_slug": "artist",
+    "slug": "release",
+    "owner_tg_user_id": "123",
+    "patch": { "title": "Новый заголовок", "links": { "vk": "https://..." } }
+  }' \
+  https://go.sreda.pw/api/index/patch
+```
+
+### `GET /api/index/my`
+Возвращает список смартлинков владельца. Фильтрация по `owner_tg_user_id`. Требует `X-API-Key`.
+
+```
+GET /api/index/my?owner_tg_user_id=123&page=0&limit=10
+```
+
+### `GET /api/my`
+Упрощенный список смартлинков владельца. Требует `Authorization: Bearer $SMARTLINK_API_KEY` и `owner_tg_user_id` в query.
+
+```
+GET /api/my?owner_tg_user_id=123
+```
+
+### `GET /api/index/get`
+Возвращает один смартлинк по `artist_slug` и `slug`. Требует `X-API-Key`.
+
+```
+GET /api/index/get?artist_slug=artist&slug=release
+```
+
+## Страницы
+- `GET /artist/:artist_slug` — список всех смартлинков артиста с кнопками «Скопировать ссылку».
+- `GET /:artist_slug/:slug` — страница релиза с заголовком `title` и именем `artist_name`.
+
+## Тесты
+```bash
+npm test
+```
