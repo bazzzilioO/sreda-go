@@ -2342,7 +2342,7 @@ export default {
       }
     }
 
-    if (normalizedPath === "/api/index/my") {
+    if (normalizedPath === "/api/index/my" || normalizedPath === "/api/my") {
       if (request.method !== "GET") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
 
       const apiKey = env.SMARTLINK_API_KEY;
@@ -2392,6 +2392,8 @@ export default {
         page,
         limit,
         total,
+        // Backward-compatible field name expected by iskra-bot
+        total_count: total,
         total_pages,
         items: (rows.results || []).map((r: any) => ({
           id: r.id,
@@ -2405,6 +2407,58 @@ export default {
           updated_at: r.updated_at,
         })),
       });
+    }
+
+    // Backward-compatible endpoint expected by iskra-bot:
+    // GET /api/smartlinks/:artist_slug/:slug (private, X-API-Key)
+    if (segments.length === 4 && segments[0] === "api" && segments[1] === "smartlinks") {
+      if (request.method !== "GET") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
+
+      const apiKey = env.SMARTLINK_API_KEY;
+      if (!apiKey) return jsonResponse({ ok: false, error: "server_error" }, 500);
+
+      const providedKey = request.headers.get("X-API-Key");
+      if (providedKey !== apiKey) return jsonResponse({ ok: false, error: "unauthorized" }, 401);
+
+      await ensureSchema(env.DB);
+
+      const artist_slug = decodeURIComponent(segments[2] || "").trim();
+      const slug = decodeURIComponent(segments[3] || "").trim();
+      if (!artist_slug || !slug) return jsonResponse({ ok: false, error: "bad_request" }, 400);
+
+      const record = await env.DB
+        .prepare(`SELECT * FROM smartlinks WHERE artist_slug=?1 AND slug=?2 LIMIT 1`)
+        .bind(artist_slug, slug)
+        .first<any>();
+
+      if (!record) return jsonResponse({ ok: false, error: "not_found" }, 404);
+
+      const item = {
+        id: record.id,
+        artist_slug: record.artist_slug,
+        slug: record.slug,
+        title: record.title,
+        artist: record.artist_name,
+        artist_name: record.artist_name,
+        release_date: record.release_date,
+        cover_url: record.cover_url,
+        cover_version: record.cover_version,
+        cover_source: parseCoverSource(record.cover_source, "[api/smartlinks] cover_source"),
+        cover_file_id: record.cover_file_id,
+        owner_tg_user_id: record.owner_tg_user_id,
+        owner_tg_username: record.owner_tg_username,
+        owner_display_name: record.owner_display_name,
+        caption_text: record.caption_text,
+        branding_disabled: record.branding_disabled,
+        branding_paid: record.branding_paid,
+        pre_save_enabled: record.pre_save_enabled,
+        reminders_enabled: record.reminders_enabled,
+        links: parseLinksFromJson(record.links_json, "[api/smartlinks] links_json"),
+        updated_at: record.updated_at,
+        created_at: record.created_at,
+      };
+
+      return jsonResponse({ ok: true, item });
     }
     
     if (normalizedPath === "/api/index/patch") {
