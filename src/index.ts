@@ -54,6 +54,80 @@ type OwnerRecord = {
   display_name: string | null;
 };
 
+// ==================== Anti-phishing URL allowlist (server-side) ====================
+const PLATFORM_ALLOWED_HOSTS: Record<string, string[]> = {
+  spotify: ["open.spotify.com", "spotify.link", "spoti.fi"],
+  apple: ["music.apple.com", "geo.music.apple.com", "apple.co"],
+  itunes: ["itunes.apple.com", "music.apple.com", "apple.co"],
+  yandex: ["music.yandex.ru"],
+  vk: ["vk.com", "m.vk.com"],
+  deezer: ["www.deezer.com", "deezer.com", "deezer.page.link"],
+  youtube: ["www.youtube.com", "youtube.com", "m.youtube.com", "youtu.be"],
+  youtubemusic: ["music.youtube.com"],
+  zvuk: ["zvuk.com", "open.zvuk.com"],
+  kion: ["kion.ru", "music.mts.ru"],
+  bandlink: ["band.link", "bandlink.to"],
+  telegram: ["t.me", "telegram.me"],
+};
+
+function normalizeHostname(rawUrl: string): string {
+  try {
+    const u = new URL(rawUrl);
+    const host = (u.hostname || "").trim().toLowerCase();
+    return host.endsWith(".") ? host.slice(0, -1) : host;
+  } catch {
+    return "";
+  }
+}
+
+function isAllowedPlatformUrl(platform: string, rawUrl: string): boolean {
+  const p = (platform || "").trim().toLowerCase();
+  const allowed = PLATFORM_ALLOWED_HOSTS[p];
+  if (!allowed) return false;
+  const trimmed = (rawUrl || "").trim();
+  if (!trimmed) return false;
+  let u: URL;
+  try {
+    u = new URL(trimmed);
+  } catch {
+    return false;
+  }
+  const proto = (u.protocol || "").toLowerCase();
+  if (proto !== "http:" && proto !== "https:") return false;
+  const host = normalizeHostname(trimmed);
+  if (!host) return false;
+  for (const canon of allowed) {
+    const c = canon.toLowerCase();
+    if (host === c || host.endsWith("." + c)) return true;
+  }
+  return false;
+}
+
+function enforceLinksAllowlist(
+  links: LinkRecord,
+  context: string,
+): { value: LinkRecord; rejected: LinkRecord; error: string | null } {
+  const value: LinkRecord = {};
+  const rejected: LinkRecord = {};
+  for (const [k, v] of Object.entries(links || {})) {
+    const platform = String(k || "").trim().toLowerCase();
+    const url = String(v || "").trim();
+    if (!platform || !url) continue;
+    // Only enforce for known platforms; unknown keys are dropped to avoid storing arbitrary phishing vectors.
+    if (!Object.prototype.hasOwnProperty.call(PLATFORM_ALLOWED_HOSTS, platform)) {
+      continue;
+    }
+    if (isAllowedPlatformUrl(platform, url)) {
+      value[platform] = url;
+    } else {
+      rejected[platform] = url;
+      console.warn(`${context}: rejected non-canonical host`, platform, url);
+    }
+  }
+  const hasRejected = Object.keys(rejected).length > 0;
+  return { value, rejected, error: hasRejected ? "links_invalid_domain" : null };
+}
+
 function normalizeCoverVersionInput(input: unknown): number | null {
   if (typeof input !== "number" || !Number.isFinite(input)) return null;
 
@@ -2090,7 +2164,14 @@ export default {
             400,
           );
         }
-        const linksJson = JSON.stringify(normalizedLinksResult.value);
+        const allowlist = enforceLinksAllowlist(normalizedLinksResult.value, "[upsert] links_allowlist");
+        if (allowlist.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { links: allowlist.error, rejected: allowlist.rejected } },
+            400,
+          );
+        }
+        const linksJson = JSON.stringify(allowlist.value);
         const coverSourceProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_source");
         const coverUrlProvided = payload !== undefined && Object.prototype.hasOwnProperty.call(payload, "cover_url");
         const normalizedCoverSource = coverSourceProvided
@@ -2300,7 +2381,7 @@ export default {
                 cover_source: storedCoverSource ?? undefined,
                 cover_url: storedCoverUrl ?? undefined,
                 cover_version: storedCoverVersion,
-                links: normalizedLinksResult.value,
+                links: allowlist.value,
               },
               env,
             );
@@ -2521,7 +2602,14 @@ export default {
             400,
           );
         }
-        next.links_json = JSON.stringify(normalizedLinksResult.value);
+        const allowlist = enforceLinksAllowlist(normalizedLinksResult.value, "[patch] links_allowlist");
+        if (allowlist.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { links: allowlist.error, rejected: allowlist.rejected } },
+            400,
+          );
+        }
+        next.links_json = JSON.stringify(allowlist.value);
       }
 
       if (Object.prototype.hasOwnProperty.call(patch, "cover_url")) {
@@ -2875,6 +2963,15 @@ export default {
             400,
           );
         }
+        const allowlist = normalizedLinksResult
+          ? enforceLinksAllowlist(normalizedLinksResult.value, "[api/smartlinks update] links_allowlist")
+          : null;
+        if (allowlist?.error) {
+          return jsonResponse(
+            { ok: false, error: "bad_request", details: { links: allowlist.error, rejected: allowlist.rejected } },
+            400,
+          );
+        }
 
         if (normalizedCoverSource?.error) {
           return jsonResponse(
@@ -2929,9 +3026,7 @@ export default {
             return jsonResponse({ ok: false, error: "forbidden" }, 403);
           }
 
-          const storedLinksJson = hasLinks
-            ? JSON.stringify(normalizedLinksResult?.value ?? {})
-            : existing.links_json;
+          const storedLinksJson = hasLinks ? JSON.stringify(allowlist?.value ?? {}) : existing.links_json;
           const storedReleaseDate = hasReleaseDate ? normalizedReleaseDate.value : existing.release_date;
           const storedCaptionText = hasCaptionText ? normalizedCaptionText.value : existing.caption_text;
           const storedFlags = hasFlags ? normalizedFlags.value : existing.flags;
