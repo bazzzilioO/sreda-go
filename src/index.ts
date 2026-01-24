@@ -1421,6 +1421,9 @@ function htmlPage(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <title>${escapeHtml(title)}</title>
   <style>
     :root { color-scheme: dark; }
@@ -1657,13 +1660,13 @@ function htmlPage(
     }
     .smartlink-release__cover .cover,
     .smartlink-release__cover .media {
-      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
     }
     .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 1.5rem; margin-top: -2rem; position: relative; z-index: 1; }
     .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; width: 100%; }
-    .smartlink-release__title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; letter-spacing: -0.01em; }
-    .smartlink-release__artist { font-size: 0.9rem; }
+    .smartlink-release__title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.15; letter-spacing: -0.02em; }
+    .smartlink-release__artist { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.95rem; font-weight: 500; }
     .smartlink-release__artist .artist-link { color: rgba(255,255,255,0.6); font-weight: 500; transition: color 150ms ease; text-decoration: none; }
     .smartlink-release__artist .artist-link:hover { color: #fff; }
     .smartlink-release__date { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 0.15rem; }
