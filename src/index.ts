@@ -1439,6 +1439,7 @@ function htmlPage(
     /* ==================== Home page ==================== */
     body.page-home { align-items: center; padding-top: 3.6rem; padding-bottom: 3.6rem; }
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
+    body.page-smartlink .card { width: min(460px, calc(100% - 24px)); padding: 1.75rem; }
     .home { display: flex; flex-direction: column; gap: 1.45rem; position: relative; }
     .home::before {
       content: "";
@@ -2537,7 +2538,7 @@ function renderSmartlink(
     </script>
   `;
 
-  return new Response(htmlPage(body, { title: `${title} — ${artistName}`, backgroundImage: coverUrlWithVersion }), {
+  return new Response(htmlPage(body, { title: `${title} — ${artistName}`, backgroundImage: coverUrlWithVersion, pageClass: "page-smartlink" }), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
