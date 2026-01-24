@@ -1519,6 +1519,7 @@ function htmlPage(
       background-clip: padding-box;
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: visible;
     }
     body.page-artist .card::before {
       content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
