@@ -1660,7 +1660,7 @@ function htmlPage(
     .smartlink-release__links { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.5rem; }
     .smartlink-release__links .link-btn { 
       display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem;
-      padding: 0.9rem 1.1rem; font-size: 0.92rem; border-radius: 12px; font-weight: 600; 
+      padding: 0.9rem 1.1rem; font-size: 0.92rem; border-radius: 16px; font-weight: 600; 
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       color: #fff; 
@@ -2020,7 +2020,7 @@ function htmlPage(
       .smartlink-release__title { font-size: 1.2rem; }
       .smartlink-release__artist { font-size: 0.85rem; }
       .smartlink-release__links { gap: 0.45rem; }
-      .smartlink-release__links .link-btn { padding: 0.7rem 0.9rem; font-size: 0.88rem; gap: 0.7rem; border-radius: 10px; }
+      .smartlink-release__links .link-btn { padding: 0.7rem 0.9rem; font-size: 0.88rem; gap: 0.7rem; border-radius: 14px; }
       .link-btn__icon { width: 20px; height: 20px; }
       .share-social { width: 36px; height: 36px; }
       .share-social svg { width: 15px; height: 15px; }
