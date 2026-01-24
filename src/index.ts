@@ -1838,14 +1838,14 @@ function htmlPage(
       .smartlink-list { grid-template-columns: 1fr; gap: 0.65rem; }
       .smartlink-item { padding: 0.85rem; }
       /* Release cards: horizontal layout on mobile */
-      .smartlink-item--release { padding: 0.7rem; padding-right: 2.8rem; }
+      .smartlink-item--release { padding: 0.7rem; padding-right: 3rem; }
       .smartlink-item--release .smartlink-main { grid-template-columns: auto 1fr; align-items: center; gap: 0.65rem; }
       .smartlink-item--release .smartlink-cover { width: 56px; height: 56px; }
       .smartlink-item--release .smartlink-content { min-width: 0; }
       .smartlink-item--release .smartlink-title { font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .smartlink-item--release .meta-row { font-size: 0.78rem; }
-      .smartlink-item__copy { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); bottom: auto; }
-      .copy-toast--floating { display: none; }
+      .smartlink-item--release .smartlink-item__copy { top: 50%; bottom: auto; transform: translateY(-50%); right: 0.6rem; }
+      .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
     }
     @media (max-width: 480px) {
@@ -2402,25 +2402,31 @@ function renderSmartlink(
       (function() {
         async function copyText(text) {
           if (!text) return false;
-
-          try {
-            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          // Try modern clipboard API first
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            try {
               await navigator.clipboard.writeText(text);
               return true;
+            } catch (e) {
+              console.warn('clipboard API failed, trying fallback', e);
             }
-
+          }
+          // Fallback to execCommand
+          try {
             const textarea = document.createElement('textarea');
             textarea.value = text;
             textarea.setAttribute('readonly', '');
             textarea.style.position = 'fixed';
             textarea.style.top = '-9999px';
+            textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
+            textarea.focus();
             textarea.select();
-            document.execCommand('copy');
+            const ok = document.execCommand('copy');
             document.body.removeChild(textarea);
-            return true;
+            return ok;
           } catch (error) {
-            console.warn('clipboard copy failed', error);
+            console.warn('clipboard fallback failed', error);
             return false;
           }
         }
