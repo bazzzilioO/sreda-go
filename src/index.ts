@@ -1449,8 +1449,11 @@ function htmlPage(
       border: 1px solid ${THEME.colors.borderSubtle};
       background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
       box-shadow: 0 18px 46px rgba(0,0,0,0.38);
-      display: grid;
-      place-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
       overflow: hidden;
       position: relative;
     }
@@ -1463,7 +1466,17 @@ function htmlPage(
       opacity: 0.95;
       pointer-events: none;
     }
-    .home-visual svg { position: relative; z-index: 1; }
+    .home-visual svg { position: relative; z-index: 1; display: block; }
+    .home-visual-wordmark {
+      position: relative;
+      z-index: 1;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      font-size: 0.92rem;
+      color: ${THEME.colors.textPrimary};
+      opacity: 0.92;
+      text-transform: uppercase;
+    }
     .home-badge {
       display: inline-flex;
       align-items: center;
@@ -1854,6 +1867,7 @@ function renderHome(): Response {
               <polygon fill="#F9A600" points="504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25"/>
             </g>
           </svg>
+          <div class="home-visual-wordmark">SREDA</div>
         </div>
       </div>
 
@@ -1873,17 +1887,17 @@ function renderHome(): Response {
           </div>
         </div>
         <div class="home-feature" role="listitem">
-          <div class="home-feature-icon" aria-hidden="true"><span>🛡</span></div>
+          <div class="home-feature-icon" aria-hidden="true"><span>🔔</span></div>
           <div>
-            <div class="home-feature-title">Защита от фишинга</div>
-            <div class="home-feature-text">Ссылки принимаются только с официальных доменов площадок (бот + индекс).</div>
+            <div class="home-feature-title">Напоминания о релизе</div>
+            <div class="home-feature-text">Поставь напоминания до и в день релиза — чтобы не забыть про промо.</div>
           </div>
         </div>
         <div class="home-feature" role="listitem">
-          <div class="home-feature-icon" aria-hidden="true"><span>⟳</span></div>
+          <div class="home-feature-icon" aria-hidden="true"><span>✏️</span></div>
           <div>
-            <div class="home-feature-title">Авто‑деплой</div>
-            <div class="home-feature-text">Обновления воркера публикуются напрямую из GitHub Actions.</div>
+            <div class="home-feature-title">Редактирование после создания</div>
+            <div class="home-feature-text">Меняй обложку и ссылки, обновляй карточку и удаляй смартлинки из бота.</div>
           </div>
         </div>
       </div>
