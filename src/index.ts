@@ -1680,6 +1680,24 @@ function htmlPage(
     .copy-toast { min-width: 80px; color: ${THEME.colors.accent}; opacity: 0; transform: translateY(4px); transition: opacity 180ms ease, transform 180ms ease; font-weight: 760; font-size: 0.9rem; text-align: left; }
     .copy-toast.visible { opacity: 1; transform: translateY(0); }
     .smartlink-footer .copy-toast { grid-column: 1 / -1; font-size: 0.85rem; }
+    .copy-toast--floating {
+      position: absolute;
+      right: 12px;
+      bottom: 54px;
+      min-width: 0;
+      padding: 0.35rem 0.6rem;
+      border-radius: ${THEME.radii.pill};
+      border: 1px solid ${THEME.colors.borderSubtle};
+      background: rgba(18,18,18,0.78);
+      color: ${THEME.colors.textPrimary};
+      font-size: 0.82rem;
+      font-weight: 760;
+      letter-spacing: 0.01em;
+      pointer-events: none;
+      backdrop-filter: blur(14px) saturate(1.1);
+      -webkit-backdrop-filter: blur(14px) saturate(1.1);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    }
     .smartlink-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.6rem; align-items: stretch; }
     .smartlink-item { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.95rem 1rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
@@ -1703,12 +1721,12 @@ function htmlPage(
     .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
     .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
     .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; }
-    .smartlink-item--release { gap: 0.35rem; position: relative; }
+    .smartlink-item--release { gap: 0.35rem; position: relative; padding-bottom: 1.25rem; }
     .smartlink-item--release .smartlink-main { align-items: flex-start; }
     .smartlink-item--release .smartlink-cover { width: 84px; height: 84px; }
     .smartlink-item--release .smartlink-title { font-size: 1.05rem; }
     .smartlink-item--release .meta-row { margin-top: 0.15rem; }
-    .smartlink-item__copy { position: absolute; top: 12px; right: 12px; z-index: 2; }
+    .smartlink-item__copy { position: absolute; right: 12px; bottom: 12px; z-index: 2; }
     .smartlink-footer { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.5rem; }
     .copy-btn--ghost { background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; box-shadow: none; border: 1px solid ${THEME.colors.borderSubtle}; padding: 0.5rem 0.65rem; min-height: 0; font-size: 0.92rem; font-weight: 760; width: auto; }
     .copy-btn--ghost:hover { background: rgba(255,255,255,0.08); color: ${THEME.colors.textPrimary}; box-shadow: 0 8px 18px rgba(0,0,0,0.26); }
@@ -2093,6 +2111,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           <button class="copy-btn copy-btn--icon smartlink-item__copy" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку на релиз" title="Скопировать ссылку">
             ${linkIcon}
           </button>
+          <span class="copy-toast copy-toast--floating" role="status" aria-live="polite"></span>
           <a class="smartlink-main" href="${escapeHtml(canonicalUrl)}">
             ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "smartlink-cover" })}
             <div class="smartlink-content">
@@ -2164,10 +2183,10 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 const originalTitle = button.getAttribute('title') || '';
 
                 if (toast) {
-                  toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+                  toast.textContent = ok ? 'Ссылка скопирована' : 'Не удалось скопировать';
                   toast.classList.add('visible');
                 } else if (originalTitle) {
-                  button.setAttribute('title', ok ? 'Скопировано' : 'Не удалось скопировать');
+                  button.setAttribute('title', ok ? 'Ссылка скопирована' : 'Не удалось скопировать');
                 }
 
                 button.classList.toggle('copied', ok);
@@ -2343,7 +2362,7 @@ function renderSmartlink(
               const ok = await copyText(urlToCopy);
 
               if (toast) {
-                toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
+                toast.textContent = ok ? 'Ссылка скопирована' : 'Не удалось скопировать';
                 toast.classList.add('visible');
               }
 
