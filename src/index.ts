@@ -2222,7 +2222,6 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 return { ok: true, shared: true };
               } catch (e) {
                 if (e.name === 'AbortError') return { ok: false, shared: true }; // User cancelled
-                alert('Share error: ' + e.name + ' - ' + e.message);
                 // Share failed, fall through to clipboard
               }
             }
