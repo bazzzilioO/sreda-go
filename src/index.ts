@@ -1676,7 +1676,7 @@ function htmlPage(
     .link-btn__icon { 
       width: 24px; height: 24px; flex-shrink: 0; 
       display: flex; align-items: center; justify-content: center;
-      color: var(--platform-color, #fff);
+      color: rgba(255,255,255,0.85);
     }
     .link-btn__icon svg { width: 100%; height: 100%; }
     .link-btn__label { flex: 1; text-align: left; font-weight: 600; }
@@ -2566,8 +2566,7 @@ function renderSmartlink(
       const platformKey = platform.toLowerCase();
       const label = PLATFORM_LABELS[platformKey] || platform.charAt(0).toUpperCase() + platform.slice(1);
       const icon = PLATFORM_ICONS[platformKey] || PLATFORM_ICONS["other"];
-      const color = PLATFORM_COLORS[platformKey] || PLATFORM_COLORS["other"];
-      return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-platform="${escapeHtml(platformKey)}" style="--platform-color: ${color}">
+      return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-platform="${escapeHtml(platformKey)}">
         <span class="link-btn__icon">${icon}</span>
         <span class="link-btn__label">${escapeHtml(label)}</span>
       </a>`;
