@@ -1933,7 +1933,7 @@ function htmlPage(
       right: 0;
       padding: 1.5rem;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
