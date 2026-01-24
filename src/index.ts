@@ -1573,12 +1573,12 @@ function htmlPage(
       width: 100%; max-width: 100%; aspect-ratio: 1/1; border-radius: 0; 
       box-shadow: none; display: block;
     }
-    .smartlink-release__cover::after {
-      content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 70%;
-      background: linear-gradient(to top, rgba(18,18,20,1) 0%, rgba(18,18,20,0.95) 25%, rgba(18,18,20,0.6) 50%, transparent 100%);
-      pointer-events: none;
+    .smartlink-release__cover .cover,
+    .smartlink-release__cover .media {
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
     }
-    .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 1.5rem; margin-top: -4.5rem; position: relative; z-index: 1; }
+    .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 1.5rem; margin-top: -2rem; position: relative; z-index: 1; }
     .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; width: 100%; }
     .smartlink-release__title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .smartlink-release__artist { font-size: 0.9rem; }
@@ -1898,7 +1898,7 @@ function htmlPage(
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
-      .smartlink-release__body { padding: 0 1.25rem 1.25rem; margin-top: -4rem; gap: 0.9rem; }
+      .smartlink-release__body { padding: 0 1.25rem 1.25rem; margin-top: -1.5rem; gap: 0.9rem; }
       .smartlink-release__links .link-btn { padding: 0.7rem 1rem; font-size: 0.9rem; }
       body.page-smartlink .card { width: calc(100% - 20px); }
     }
@@ -1917,7 +1917,7 @@ function htmlPage(
       .artist-meta { font-size: 0.82rem; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
-      .smartlink-release__body { padding: 0 1.1rem 1.1rem; margin-top: -3.5rem; gap: 0.8rem; }
+      .smartlink-release__body { padding: 0 1.1rem 1.1rem; margin-top: -1.25rem; gap: 0.8rem; }
       .smartlink-release__title { font-size: 1.25rem; }
       .smartlink-release__artist { font-size: 0.85rem; }
       .smartlink-release__links .link-btn { padding: 0.65rem 0.9rem; font-size: 0.88rem; }
