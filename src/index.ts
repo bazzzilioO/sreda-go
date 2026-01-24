@@ -2275,6 +2275,115 @@ function renderSmartlink(
   });
 }
 
+async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Response> {
+  try {
+    const query = await env.DB.prepare(
+      `WITH latest AS (
+         SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
+         FROM smartlinks
+         GROUP BY artist_slug
+       )
+       SELECT
+         s.artist_slug AS artist_slug,
+         s.slug AS slug,
+         s.artist_name AS artist_name,
+         s.cover_url AS cover_url,
+         s.cover_source AS cover_source,
+         s.cover_version AS cover_version,
+         s.updated_at AS updated_at,
+         l.cnt AS cnt
+       FROM smartlinks s
+       JOIN latest l
+         ON l.artist_slug = s.artist_slug
+        AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
+       GROUP BY s.artist_slug
+       ORDER BY datetime(l.max_ts) DESC
+       LIMIT 600`,
+    ).all<{
+      artist_slug: string;
+      slug: string;
+      artist_name: string | null;
+      cover_url: string | null;
+      cover_source: string | null;
+      cover_version: number | null;
+      updated_at: string | null;
+      cnt: number | null;
+    }>();
+
+    const items = query.results ?? [];
+    const canonicalBase = goIndexBase.replace(/\/$/, "");
+
+    const cards = items.map((record) => {
+      const artistSlug = record.artist_slug;
+      const latestSlug = (record.slug || "").trim() || "latest";
+      const displayName = (record.artist_name || "").trim() || prettifySlug(artistSlug);
+      const coverSource = parseCoverSource(record.cover_source, `[artists] ${artistSlug} cover_source`);
+      const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
+      const coverUrlWithVersion = buildDisplayCoverUrl({
+        coverUrl: record.cover_url,
+        coverSource,
+        artistSlug,
+        slug: latestSlug,
+        goIndexBase,
+        coverVersion,
+        context: `[artists] ${artistSlug} cover_display`,
+      });
+      const artistUrl = `/artist/${encodeURIComponent(artistSlug)}`;
+      const count = Number(record.cnt || 0);
+      const updatedAt = formatDisplayDate(record.updated_at);
+      const releaseLabel =
+        count % 10 === 1 && count % 100 !== 11
+          ? "релиз"
+          : count % 10 >= 2 && count % 10 <= 4 && !(count % 100 >= 12 && count % 100 <= 14)
+            ? "релиза"
+            : "релизов";
+      const meta = [count ? `${count} ${releaseLabel}` : null, updatedAt ? `Обновлено ${escapeHtml(updatedAt)}` : null]
+        .filter(Boolean)
+        .join('<span class="meta-dot"></span>');
+
+      return `
+        <article class="smartlink-item" role="link">
+          <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
+            ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
+            <div class="smartlink-content">
+              <div class="smartlink-title-row">
+                <div class="smartlink-title">${escapeHtml(displayName)}</div>
+                <span class="platform-chip" title="Количество релизов">${escapeHtml(String(count || 0))}</span>
+              </div>
+              <div class="meta-row subtle">${meta || ""}</div>
+            </div>
+          </a>
+        </article>
+      `;
+    });
+
+    const body = `
+      <div class="artist-header">
+        <h1 class="artist-name">Артисты</h1>
+        <div class="artist-meta">
+          <span>Все артисты, у которых есть смартлинки.</span>
+        </div>
+      </div>
+      ${
+        cards.length
+          ? `<div class="smartlink-list">${cards.join("\n")}</div>`
+          : `<div class="empty-state">Пока нет артистов со смартлинками.</div>`
+      }
+      <div class="small">
+        <span class="meta-label">База:</span> <span>${escapeHtml(canonicalBase)}</span>
+      </div>
+    `;
+
+    return new Response(htmlPage(body, { title: "Артисты — SREDA", pageClass: "page-artists" }), {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+    });
+  } catch (error) {
+    console.error("[artists] db error", error);
+    return renderError();
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -3580,6 +3689,10 @@ export default {
       const slug = decodeURIComponent(segments[2]);
 
       return handleCoverProxy(request, env, artistSlug, slug);
+    }
+
+    if (segments.length === 1 && segments[0] === "artist") {
+      return renderArtistsIndex(env, goIndexBase);
     }
 
     if (segments.length === 2 && segments[0] === "artist") {
