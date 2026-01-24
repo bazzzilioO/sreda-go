@@ -2259,10 +2259,18 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
               const container = button.closest('.artist-actions') || button.parentElement;
               const toast = container?.querySelector('.copy-toast') || null;
+              const card = button.closest('.smartlink-item');
+
+              // Stop propagation on touch to prevent card activation
+              button.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+              button.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
 
               button.addEventListener('click', async (event) => {
                 event.preventDefault();
                 event.stopPropagation();
+                
+                // Remove focus from card if present
+                if (card) card.blur();
                 
                 const urlToCopy = button.getAttribute('data-url') || '';
                 const cardTitle = container?.querySelector('.smartlink-title')?.textContent || '';
