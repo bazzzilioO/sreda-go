@@ -1675,9 +1675,8 @@ function htmlPage(
     .smartlink-release__links .link-btn { 
       display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem;
       padding: 0.9rem 1.1rem; font-size: 0.92rem; border-radius: 16px; font-weight: 600; 
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
       color: #fff; 
       transition: all 180ms ease;
       text-decoration: none;
