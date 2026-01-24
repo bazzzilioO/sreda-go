@@ -1663,7 +1663,7 @@ function htmlPage(
       -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
       mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
     }
-    .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 1.5rem; margin-top: -2rem; position: relative; z-index: 1; }
+    .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 1.1rem; margin-top: -2rem; position: relative; z-index: 1; }
     .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; width: 100%; }
     .smartlink-release__title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.15; letter-spacing: -0.02em; }
     .smartlink-release__artist { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.95rem; font-weight: 500; }
@@ -1708,7 +1708,7 @@ function htmlPage(
     .link-btn__icon svg { width: 100%; height: 100%; }
     .link-btn__label { flex: 1; text-align: left; font-weight: 600; }
     .smartlink-release__empty { color: rgba(255,255,255,0.4); text-align: center; padding: 1rem; }
-    .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.06); }
+    .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; width: 100%; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06); }
     .smartlink-release__share .share-btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
       padding: 0.5rem 1rem; border-radius: 20px;
@@ -2020,7 +2020,7 @@ function htmlPage(
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
-      .smartlink-release__body { padding: 0 1.25rem 1.25rem; margin-top: -1.5rem; gap: 0.9rem; }
+      .smartlink-release__body { padding: 0 1.25rem 1rem; margin-top: -1.5rem; gap: 0.9rem; }
       .smartlink-release__title { font-size: 1.3rem; }
       .smartlink-release__links .link-btn { padding: 0.8rem 1rem; font-size: 0.9rem; gap: 0.8rem; }
       .link-btn__icon { width: 22px; height: 22px; }
@@ -2043,7 +2043,7 @@ function htmlPage(
       .artist-meta { font-size: 0.82rem; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
-      .smartlink-release__body { padding: 0 1rem 1rem; margin-top: -1.25rem; gap: 0.8rem; }
+      .smartlink-release__body { padding: 0 1rem 0.85rem; margin-top: -1.25rem; gap: 0.8rem; }
       .smartlink-release__title { font-size: 1.2rem; }
       .smartlink-release__artist { font-size: 0.85rem; }
       .smartlink-release__links { gap: 0.45rem; }
