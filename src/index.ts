@@ -889,6 +889,101 @@ function parseLinksFromJson(linksJson: string | null, context: string): LinkReco
   }
 }
 
+// ==================== Yandex artist photo fetching ====================
+const YANDEX_ARTIST_PHOTO_CACHE = new Map<string, { url: string | null; ts: number }>();
+const YANDEX_CACHE_TTL_MS = 1000 * 60 * 60; // 1 hour
+
+async function fetchYandexArtistPhoto(yandexUrl: string): Promise<string | null> {
+  if (!yandexUrl) return null;
+
+  // Check in-memory cache first
+  const cacheKey = yandexUrl;
+  const cached = YANDEX_ARTIST_PHOTO_CACHE.get(cacheKey);
+  if (cached && Date.now() - cached.ts < YANDEX_CACHE_TTL_MS) {
+    return cached.url;
+  }
+
+  try {
+    // Step 1: Fetch the Yandex album/track page to find artist link
+    const pageResp = await fetch(yandexUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "ru-RU,ru;q=0.9",
+      },
+    });
+
+    if (!pageResp.ok) {
+      console.warn("[yandex-artist] failed to fetch page", yandexUrl, pageResp.status);
+      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
+      return null;
+    }
+
+    const html = await pageResp.text();
+
+    // Extract artist link from the page: /artist/12345
+    const artistMatch = html.match(/href="\/artist\/(\d+)"/);
+    if (!artistMatch) {
+      console.warn("[yandex-artist] no artist link found in page", yandexUrl);
+      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
+      return null;
+    }
+
+    const artistId = artistMatch[1];
+    const artistUrl = `https://music.yandex.ru/artist/${artistId}`;
+
+    // Step 2: Fetch the artist page
+    const artistResp = await fetch(artistUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "ru-RU,ru;q=0.9",
+      },
+    });
+
+    if (!artistResp.ok) {
+      console.warn("[yandex-artist] failed to fetch artist page", artistUrl, artistResp.status);
+      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
+      return null;
+    }
+
+    const artistHtml = await artistResp.text();
+
+    // Extract og:image from the artist page
+    const ogImageMatch = artistHtml.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i)
+      || artistHtml.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i);
+
+    if (!ogImageMatch) {
+      console.warn("[yandex-artist] no og:image found", artistUrl);
+      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
+      return null;
+    }
+
+    let imageUrl = ogImageMatch[1];
+    // Yandex images often use //avatars... format, ensure https
+    if (imageUrl.startsWith("//")) {
+      imageUrl = "https:" + imageUrl;
+    }
+
+    // Upgrade to larger size if possible (Yandex uses %%size in URL)
+    imageUrl = imageUrl.replace(/%%$/, "1000x1000").replace(/\/\d+x\d+$/, "/1000x1000");
+
+    console.log("[yandex-artist] found artist photo", artistId, imageUrl);
+    YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: imageUrl, ts: Date.now() });
+    return imageUrl;
+  } catch (error) {
+    console.warn("[yandex-artist] error fetching artist photo", yandexUrl, error);
+    YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
+    return null;
+  }
+}
+
+async function getArtistPhotoFromLinks(links: LinkRecord): Promise<string | null> {
+  const yandexUrl = links.yandex;
+  if (!yandexUrl) return null;
+  return fetchYandexArtistPhoto(yandexUrl);
+}
+
 async function syncSmartlinkToWeb(
   payload: UpsertRequest,
   env: Env,
@@ -1715,23 +1810,45 @@ function htmlPage(
     .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: ${THEME.colors.textFaint}; display: inline-block; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
-    .artist-header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
-    .artist-header-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-    .artist-header-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
-    .artist-avatar {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: 2px solid ${THEME.colors.borderSubtle};
-      background: ${THEME.colors.surface};
-      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+    .artist-hero {
+      position: relative;
+      width: calc(100% + 3rem);
+      margin: -1.5rem -1.5rem 1.25rem -1.5rem;
+      border-radius: 20px 20px 0 0;
       overflow: hidden;
-      flex-shrink: 0;
+      aspect-ratio: 16 / 9;
+      max-height: 280px;
+      background: linear-gradient(180deg, rgba(30,30,30,0.6), rgba(18,18,18,0.95));
     }
-    .artist-avatar .media__img { object-fit: cover; }
-    .artist-header-copy { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
-    .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
-    .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .artist-hero__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 25%;
+    }
+    .artist-hero__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.45) 60%, rgba(18,18,18,0.92) 100%);
+      pointer-events: none;
+    }
+    .artist-hero__content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+    .artist-name { color: #FFFFFF; font-size: 2.2rem; font-weight: 850; letter-spacing: 0.015em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+    .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
     .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; }
     .smartlink-item--release { gap: 0.35rem; position: relative; padding-bottom: 1.25rem; }
     .smartlink-item--release .smartlink-main { align-items: flex-start; }
@@ -2063,7 +2180,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     const displayArtistName =
       items.find((item) => item.artist_name?.trim())?.artist_name?.trim() || prettifySlug(artistSlug);
     const canonicalBase = goIndexBase.replace(/\/$/, "");
-    const backgroundCover = items
+    const releaseCover = items
       .map((item) => {
         const coverSource = parseCoverSource(
           item.cover_source,
@@ -2081,6 +2198,20 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         return buildCoverUrlWithVersion(resolvedCoverUrl, coverVersion);
       })
       .find((url) => Boolean(url));
+
+    // Try to get artist photo from Yandex links
+    let artistPhoto: string | null = null;
+    for (const item of items) {
+      const links = parseLinksFromJson(item.links_json, `[artist ${artistSlug}/${item.slug}] links_photo`);
+      const photo = await getArtistPhotoFromLinks(links);
+      if (photo) {
+        artistPhoto = photo;
+        break;
+      }
+    }
+
+    // Use artist photo if available, otherwise fall back to release cover
+    const heroImage = artistPhoto || releaseCover;
     const artistCanonicalUrl = `${canonicalBase}/artist/${encodeURIComponent(artistSlug)}`;
 
     const cards = items.map((record) => {
@@ -2136,15 +2267,14 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
     });
 
       const body = `
-        <div class="artist-header">
-          <div class="artist-header-top">
-            <div class="artist-header-left">
-              ${backgroundCover ? renderMedia({ src: backgroundCover, alt: displayArtistName, className: "artist-avatar" }) : ""}
-              <div class="artist-header-copy">
-                <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-                <div class="artist-meta">
-                  <span>Релизы артиста — выбери нужный.</span>
-                </div>
+        <div class="artist-hero">
+          ${heroImage ? `<img class="artist-hero__img" src="${escapeHtml(heroImage)}" alt="${escapeHtml(displayArtistName)}" />` : ""}
+          <div class="artist-hero__overlay"></div>
+          <div class="artist-hero__content">
+            <div class="artist-hero__info">
+              <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+              <div class="artist-meta">
+                <span>Релизы артиста</span>
               </div>
             </div>
             <div class="artist-actions">
@@ -2244,7 +2374,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       </script>
     `;
 
-    return new Response(htmlPage(body, { title: `${displayArtistName} — SREDA`, backgroundImage: backgroundCover || null }), {
+    return new Response(htmlPage(body, { title: `${displayArtistName} — SREDA`, backgroundImage: heroImage || null }), {
       status: 200,
       headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
     });
