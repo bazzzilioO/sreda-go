@@ -1835,14 +1835,28 @@ function htmlPage(
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
       .links-grid { grid-template-columns: 1fr; }
-      .smartlink-list { grid-template-columns: 1fr; }
+      .smartlink-list { grid-template-columns: 1fr; gap: 0.75rem; }
+      .smartlink-item { padding: 0.85rem; }
+      .smartlink-item--release .smartlink-cover { width: 72px; height: 72px; }
+      .smartlink-item--release .smartlink-title { font-size: 1rem; }
+      .smartlink-item--release .meta-row { font-size: 0.82rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
-      .card { padding: 1.25rem; width: calc(100% - 16px); }
+      .card { padding: 1.1rem; width: calc(100% - 12px); }
       .release-grid { gap: 1rem; }
       .canonical-row { align-items: center; gap: 0.5rem; }
+      .smartlink-list { gap: 0.6rem; }
+      .smartlink-item { padding: 0.75rem; border-radius: 14px; }
+      .smartlink-item--release .smartlink-cover { width: 64px; height: 64px; border-radius: 10px; }
+      .smartlink-item--release .smartlink-title { font-size: 0.95rem; line-height: 1.25; }
+      .smartlink-item--release .meta-row { font-size: 0.78rem; gap: 0.3rem; }
+      .smartlink-item__copy { right: 8px; bottom: 8px; padding: 0.4rem; }
+      .artist-hero { max-height: 220px; margin: -1.1rem -1.1rem 1rem -1.1rem; width: calc(100% + 2.2rem); }
+      .artist-name { font-size: 1.6rem; }
+      .artist-meta { font-size: 0.85rem; }
+      .copy-btn--ghost { padding: 0.4rem 0.55rem; font-size: 0.85rem; }
     }
   </style>
 </head>
