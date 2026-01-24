@@ -1835,11 +1835,17 @@ function htmlPage(
       .smartlink-cover { width: 100%; height: auto; max-height: 240px; aspect-ratio: 1 / 1; }
       .smartlink-title-row { align-items: flex-start; }
       .links-grid { grid-template-columns: 1fr; }
-      .smartlink-list { grid-template-columns: 1fr; gap: 0.75rem; }
+      .smartlink-list { grid-template-columns: 1fr; gap: 0.65rem; }
       .smartlink-item { padding: 0.85rem; }
-      .smartlink-item--release .smartlink-cover { width: 72px; height: 72px; }
-      .smartlink-item--release .smartlink-title { font-size: 1rem; }
-      .smartlink-item--release .meta-row { font-size: 0.82rem; }
+      /* Release cards keep horizontal layout on mobile */
+      .smartlink-item--release { display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.75rem; }
+      .smartlink-item--release .smartlink-main { grid-template-columns: auto 1fr; align-items: center; gap: 0.65rem; flex: 1; min-width: 0; }
+      .smartlink-item--release .smartlink-cover { width: 56px; height: 56px; flex-shrink: 0; }
+      .smartlink-item--release .smartlink-content { min-width: 0; }
+      .smartlink-item--release .smartlink-title { font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .smartlink-item--release .meta-row { font-size: 0.78rem; flex-wrap: wrap; }
+      .smartlink-item__copy { position: static; flex-shrink: 0; }
+      .copy-toast--floating { display: none; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
     }
     @media (max-width: 480px) {
@@ -1847,16 +1853,15 @@ function htmlPage(
       .card { padding: 1.1rem; width: calc(100% - 12px); }
       .release-grid { gap: 1rem; }
       .canonical-row { align-items: center; gap: 0.5rem; }
-      .smartlink-list { gap: 0.6rem; }
-      .smartlink-item { padding: 0.75rem; border-radius: 14px; }
-      .smartlink-item--release .smartlink-cover { width: 64px; height: 64px; border-radius: 10px; }
-      .smartlink-item--release .smartlink-title { font-size: 0.95rem; line-height: 1.25; }
-      .smartlink-item--release .meta-row { font-size: 0.78rem; gap: 0.3rem; }
-      .smartlink-item__copy { right: 8px; bottom: 8px; padding: 0.4rem; }
-      .artist-hero { max-height: 220px; margin: -1.1rem -1.1rem 1rem -1.1rem; width: calc(100% + 2.2rem); }
-      .artist-name { font-size: 1.6rem; }
-      .artist-meta { font-size: 0.85rem; }
-      .copy-btn--ghost { padding: 0.4rem 0.55rem; font-size: 0.85rem; }
+      .smartlink-list { gap: 0.55rem; }
+      .smartlink-item { padding: 0.7rem; border-radius: 14px; }
+      .smartlink-item--release .smartlink-cover { width: 52px; height: 52px; border-radius: 10px; }
+      .smartlink-item--release .smartlink-title { font-size: 0.9rem; }
+      .smartlink-item--release .meta-row { font-size: 0.75rem; gap: 0.25rem; }
+      .artist-hero { max-height: 200px; margin: -1.1rem -1.1rem 1rem -1.1rem; width: calc(100% + 2.2rem); }
+      .artist-name { font-size: 1.5rem; }
+      .artist-meta { font-size: 0.82rem; }
+      .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
     }
   </style>
 </head>
