@@ -2216,13 +2216,13 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             if (!url) return { ok: false, shared: false };
             
             // Try Web Share API first (works on mobile and some desktop browsers)
-            const canShare = navigator.share && (!navigator.canShare || navigator.canShare({ url: url }));
-            if (canShare) {
+            if (typeof navigator.share === 'function') {
               try {
                 await navigator.share({ url: url, title: title || 'Поделиться' });
                 return { ok: true, shared: true };
               } catch (e) {
                 if (e.name === 'AbortError') return { ok: false, shared: true }; // User cancelled
+                alert('Share error: ' + e.name + ' - ' + e.message);
                 // Share failed, fall through to clipboard
               }
             }
