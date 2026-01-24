@@ -1467,16 +1467,6 @@ function htmlPage(
       pointer-events: none;
     }
     .home-visual svg { position: relative; z-index: 1; display: block; }
-    .home-visual-wordmark {
-      position: relative;
-      z-index: 1;
-      font-weight: 900;
-      letter-spacing: 0.22em;
-      font-size: 0.92rem;
-      color: ${THEME.colors.textPrimary};
-      opacity: 0.92;
-      text-transform: uppercase;
-    }
     .home-badge {
       display: inline-flex;
       align-items: center;
@@ -1856,18 +1846,24 @@ function renderHome(): Response {
           </div>
         </div>
         <div class="home-visual" aria-hidden="true">
-          <svg width="190" height="190" viewBox="140 80 740 1340" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <!-- Official SREDA logo (from provided SVG) -->
+          <svg width="210" height="210" viewBox="160 120 1240 1260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <defs>
               <filter id="logoShadow" x="-30%" y="-20%" width="160%" height="160%">
                 <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="rgba(0,0,0,0.45)"/>
               </filter>
             </defs>
             <g filter="url(#logoShadow)">
-              <!-- Original SREDA lightning mark (from provided SVG) -->
               <polygon fill="#F9A600" points="504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25"/>
+              <g fill="#FFFFFF" opacity="0.92">
+                <path d="M622.08,1248.19h-54.74c-1.89-9.12-13.84-17.93-27.06-17.93s-21.71,3.78-21.71,11.96c0,24.54,105.39-.32,105.39,58.52,0,28.94-30.2,50.02-79.28,50.02-39.95,0-76.13-19.51-86.51-51.6v-9.75h54.74c3.46,11.33,16.99,18.88,30.2,18.88,15.42,0,23.91-5.66,23.91-12.27,0-19.19-104.13,1.57-104.13-58.2,0-28.31,31.46-51.91,76.76-51.91s72.99,22.97,82.43,52.54v9.75Z"/>
+                <path d="M653.54,1189.67h52.85v16.36c11.64-12.58,28-20.13,46.88-20.13v54.74c-4.09-.94-11.01-1.57-16.04-1.57-14.16,0-27.37,7.55-30.83,21.39v86.51h-52.85v-157.3Z"/>
+                <path d="M942.96,1287.83v10.07c-9.75,29.89-42.79,52.85-85.57,52.85-50.02,0-86.83-32.09-86.83-82.43s36.81-82.43,86.83-82.43c47.19,0,81.17,28.31,85.57,69.84v19.51h-118.6c2.52,17.3,15.1,27.68,33.03,27.68,12.9,0,24.22-4.72,30.2-15.1h55.37ZM827.51,1247.24h59.77c-5.35-11.01-15.1-17.3-29.89-17.3-13.84,0-24.54,6.29-29.89,17.3Z"/>
+                <path d="M1135.49,1346.97h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-78.02h52.85v220.22ZM1019.09,1268.32c0,20.45,12.9,32.72,32.72,32.72s32.72-12.27,32.72-32.72-12.9-32.72-32.72-32.72-32.72,12.27-32.72,32.72Z"/>
+                <path d="M1336.83,1346.97h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-15.1h52.85v157.3ZM1285.86,1268.32c0-20.45-12.9-32.72-32.72-32.72s-32.72,12.27-32.72,32.72,12.9,32.72,32.72,32.72,32.72-12.27,32.72-32.72Z"/>
+              </g>
             </g>
           </svg>
-          <div class="home-visual-wordmark">SREDA</div>
         </div>
       </div>
 
