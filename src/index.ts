@@ -1423,10 +1423,47 @@ function htmlPage(
     .card > * { position: relative; z-index: 1; }
 
     /* ==================== Home page ==================== */
-    body.page-home { align-items: center; padding-top: 3.25rem; padding-bottom: 3.25rem; }
-    body.page-home .card { width: min(1040px, calc(100% - 24px)); padding: 1.9rem; }
-    .home { display: flex; flex-direction: column; gap: 1.35rem; }
-    .home-top { display: flex; flex-direction: column; gap: 0.85rem; max-width: 760px; margin: 0 auto; text-align: left; }
+    body.page-home { align-items: center; padding-top: 3.6rem; padding-bottom: 3.6rem; }
+    body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
+    .home { display: flex; flex-direction: column; gap: 1.45rem; position: relative; }
+    .home::before {
+      content: "";
+      position: absolute;
+      inset: -80px -80px auto auto;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle at 35% 35%, rgba(245,158,11,0.28), transparent 60%),
+                  radial-gradient(circle at 55% 55%, rgba(255,255,255,0.08), transparent 58%);
+      filter: blur(18px);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .home > * { position: relative; z-index: 1; }
+    .home-hero { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 1.25rem; align-items: start; }
+    .home-top { display: flex; flex-direction: column; gap: 0.85rem; max-width: 720px; text-align: left; }
+    .home-visual {
+      width: 250px;
+      height: 250px;
+      border-radius: 24px;
+      border: 1px solid ${THEME.colors.borderSubtle};
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+      box-shadow: 0 18px 46px rgba(0,0,0,0.38);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .home-visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 40% 30%, rgba(245,158,11,0.26), transparent 55%),
+                  radial-gradient(circle at 70% 65%, rgba(255,255,255,0.06), transparent 60%);
+      opacity: 0.95;
+      pointer-events: none;
+    }
+    .home-visual svg { position: relative; z-index: 1; }
     .home-badge {
       display: inline-flex;
       align-items: center;
@@ -1442,8 +1479,8 @@ function htmlPage(
       font-size: 0.92rem;
     }
     .home-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 4px rgba(245,158,11,0.09); }
-    .home-title { font-size: 2.35rem; line-height: 1.12; letter-spacing: 0.01em; margin: 0; }
-    .home-lead { font-size: 1.05rem; color: ${THEME.colors.textSecondary}; max-width: 56ch; }
+    .home-title { font-size: 2.55rem; line-height: 1.1; letter-spacing: 0.012em; margin: 0; }
+    .home-lead { font-size: 1.08rem; color: ${THEME.colors.textSecondary}; max-width: 58ch; }
     .home-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.25rem; }
     .home-action {
       display: inline-flex;
@@ -1461,14 +1498,48 @@ function htmlPage(
     }
     .home-action:focus-visible { outline: 2px solid rgba(245,158,11,0.5); outline-offset: 3px; }
     .home-action--primary { background: linear-gradient(125deg, rgba(245,158,11,0.95), rgba(251,191,36,0.92)); color: #0b0b0b; box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18); }
-    .home-action--secondary { background: rgba(255,255,255,0.04); color: ${THEME.colors.textPrimary}; }
+    .home-action--secondary { background: rgba(255,255,255,0.035); color: ${THEME.colors.textPrimary}; border-color: rgba(255,255,255,0.10); }
     .home-action:hover { transform: translateY(-1px); border-color: rgba(245,158,11,0.45); box-shadow: 0 14px 30px rgba(0,0,0,0.34); }
     .home-action:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
     .home-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.95rem; margin-top: 0.25rem; }
     .home-inline { color: ${THEME.colors.textPrimary}; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .home-inline:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; margin-top: 0.25rem; }
-    .home-feature { padding: 1.05rem 1.1rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.6); box-shadow: ${THEME.shadows.gridCard}; }
+    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.25rem; }
+    .home-feature {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 0.85rem;
+      padding: 1.05rem 1.1rem;
+      border-radius: 16px;
+      border: 1px solid ${THEME.colors.borderSubtle};
+      background: linear-gradient(180deg, rgba(30,30,30,0.62), rgba(24,24,24,0.54));
+      box-shadow: ${THEME.shadows.gridCard};
+      transition: transform 130ms ease, border-color 140ms ease, box-shadow 160ms ease;
+    }
+    .home-feature:hover { transform: translateY(-2px); border-color: rgba(245,158,11,0.34); box-shadow: 0 18px 44px rgba(0,0,0,0.42); }
+    .home-feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      display: grid;
+      place-items: center;
+      color: ${THEME.colors.textPrimary};
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.22);
+      position: relative;
+      overflow: hidden;
+    }
+    .home-feature-icon::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 35% 30%, rgba(245,158,11,0.28), transparent 60%);
+      opacity: 0.9;
+    }
+    .home-feature-icon > span { position: relative; z-index: 1; }
     .home-feature-title { font-weight: 850; letter-spacing: 0.01em; margin-bottom: 0.3rem; color: ${THEME.colors.textPrimary}; }
     .home-feature-text { color: ${THEME.colors.textSecondary}; line-height: 1.55; }
     .home-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.92rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem; margin-top: 0.3rem; }
@@ -1639,6 +1710,8 @@ function htmlPage(
       .home-actions { justify-content: center; }
       .home-features { grid-template-columns: 1fr; }
       .home-footer { justify-content: center; }
+      .home-hero { grid-template-columns: 1fr; justify-items: center; }
+      .home-visual { width: min(260px, 100%); height: auto; aspect-ratio: 1 / 1; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
@@ -1754,44 +1827,73 @@ function renderHome(): Response {
   const demoSmartlink = "/boris/heavy-rain";
   const body = `
     <section class="home">
-      <div class="home-top">
-        <div class="home-badge">SREDA · tools for artists</div>
-        <h1 class="home-title">Инструменты для независимых артистов</h1>
-        <p class="home-lead">
-          Релиз‑план, смартлинки, напоминания, кабинеты артиста и питчинг — в одном месте.
-        </p>
-        <div class="home-actions">
-          <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
-            Открыть ИСКРУ в Telegram
-          </a>
-          <a class="home-action home-action--secondary" href="${escapeHtml(demoArtist)}">
-            Открыть смартлинки (пример)
-          </a>
+      <div class="home-hero">
+        <div class="home-top">
+          <div class="home-badge">SREDA · tools for artists</div>
+          <h1 class="home-title">Инструменты для независимых артистов</h1>
+          <p class="home-lead">
+            Релиз‑план, смартлинки, напоминания, кабинеты артиста и питчинг — в одном месте.
+          </p>
+          <div class="home-actions">
+            <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
+              Открыть ИСКРУ в Telegram
+            </a>
+            <a class="home-action home-action--secondary" href="${escapeHtml(demoArtist)}">
+              Открыть смартлинки (пример)
+            </a>
+          </div>
+          <div class="home-kicker">
+            <span class="meta-label">Формат ссылок:</span>
+            <strong>go.sreda.pw/&lt;artist&gt;/&lt;slug&gt;</strong>
+            <span class="meta-divider">•</span>
+            <a class="home-inline" href="${escapeHtml(demoSmartlink)}">пример релиза</a>
+          </div>
         </div>
-        <div class="home-kicker">
-          <span class="meta-label">Формат ссылок:</span>
-          <strong>go.sreda.pw/&lt;artist&gt;/&lt;slug&gt;</strong>
-          <span class="meta-divider">•</span>
-          <a class="home-inline" href="${escapeHtml(demoSmartlink)}">пример релиза</a>
+        <div class="home-visual" aria-hidden="true">
+          <svg width="168" height="168" viewBox="0 0 168 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g1" x1="20" y1="10" x2="148" y2="158" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FBBF24" stop-opacity="0.95"/>
+                <stop offset="1" stop-color="#F59E0B" stop-opacity="0.55"/>
+              </linearGradient>
+            </defs>
+            <circle cx="84" cy="84" r="62" stroke="url(#g1)" stroke-width="2.4" opacity="0.9"/>
+            <circle cx="84" cy="84" r="44" stroke="rgba(255,255,255,0.12)" stroke-width="2.2"/>
+            <path d="M52 106c10-26 54-52 64-22 7 21-12 42-32 42-14 0-24-9-32-20Z" fill="rgba(255,255,255,0.06)"/>
+            <path d="M62 92c8-18 40-36 48-14 5 14-8 30-24 30-10 0-18-6-24-16Z" fill="rgba(245,158,11,0.12)"/>
+            <text x="84" y="88" text-anchor="middle" dominant-baseline="middle" font-family="'Inter','Segoe UI',system-ui" font-size="18" font-weight="800" fill="rgba(255,255,255,0.92)">SREDA</text>
+          </svg>
         </div>
       </div>
 
       <div class="home-features" role="list">
         <div class="home-feature" role="listitem">
-          <div class="home-feature-title">Смартлинк за минуту</div>
-          <div class="home-feature-text">Вставь ссылку на релиз — соберём площадки и сделаем аккуратную карточку.</div>
+          <div class="home-feature-icon" aria-hidden="true"><span>⚡</span></div>
+          <div>
+            <div class="home-feature-title">Смартлинк за минуту</div>
+            <div class="home-feature-text">Вставь ссылку на релиз — соберём площадки и сделаем аккуратную карточку.</div>
+          </div>
         </div>
         <div class="home-feature" role="listitem">
-          <div class="home-feature-title">Можно пересылать</div>
-          <div class="home-feature-text">Карточка без “техкнопок”. Управление — отдельным меню только для владельца.</div>
+          <div class="home-feature-icon" aria-hidden="true"><span>↗</span></div>
+          <div>
+            <div class="home-feature-title">Можно пересылать</div>
+            <div class="home-feature-text">Карточка без “техкнопок”. Управление — отдельным меню только для владельца.</div>
+          </div>
         </div>
         <div class="home-feature" role="listitem">
-          <div class="home-feature-title">Защита от фишинга</div>
-          <div class="home-feature-text">Ссылки принимаются только с официальных доменов площадок (бот + индекс).</div>
+          <div class="home-feature-icon" aria-hidden="true"><span>🛡</span></div>
+          <div>
+            <div class="home-feature-title">Защита от фишинга</div>
+            <div class="home-feature-text">Ссылки принимаются только с официальных доменов площадок (бот + индекс).</div>
+          </div>
         </div>
         <div class="home-feature" role="listitem">
-          <div class="home-feature-title">Авто‑деплой</div>
-          <div class="home-feature-text">Обновления воркера публикуются напрямую из GitHub Actions.</div>
+          <div class="home-feature-icon" aria-hidden="true"><span>⟳</span></div>
+          <div>
+            <div class="home-feature-title">Авто‑деплой</div>
+            <div class="home-feature-text">Обновления воркера публикуются напрямую из GitHub Actions.</div>
+          </div>
         </div>
       </div>
 
