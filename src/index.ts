@@ -1651,14 +1651,9 @@ function htmlPage(
     /* Smartlink Release Page - Integrated Cover Design */
     .smartlink-release { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: 100%; }
     .smartlink-release__cover { width: 100%; position: relative; line-height: 0; }
-    .smartlink-release__cover::after {
-      content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 40%;
-      background: radial-gradient(ellipse at center bottom, rgba(255,255,255,0.06) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
     .smartlink-release__cover .cover { 
       width: 100%; max-width: 100%; aspect-ratio: 1/1; border-radius: 0; 
-      box-shadow: none; display: block; position: relative; z-index: 1;
+      box-shadow: none; display: block;
     }
     .smartlink-release__cover .cover,
     .smartlink-release__cover .media {
