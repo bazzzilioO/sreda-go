@@ -1512,9 +1512,9 @@ function htmlPage(
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
-      background: rgba(20,20,24,0.95);
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+      background: rgba(18,18,22,0.75);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(40px) saturate(1.2); -webkit-backdrop-filter: blur(40px) saturate(1.2);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.5);
     }
     .home { display: flex; flex-direction: column; gap: 1.45rem; position: relative; }
@@ -1673,6 +1673,7 @@ function htmlPage(
       transform: translateY(-1px);
     }
     .smartlink-release__links .link-btn:active { transform: translateY(0); }
+    .smartlink-release__links .link-btn::after { display: none; }
     .link-btn__icon { 
       width: 24px; height: 24px; flex-shrink: 0; 
       display: flex; align-items: center; justify-content: center;
