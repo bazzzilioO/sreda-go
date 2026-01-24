@@ -1941,6 +1941,7 @@ function htmlPage(
     .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .artist-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
     .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; flex-shrink: 0; }
     .smartlink-item--release { gap: 0.35rem; position: relative; padding-bottom: 1.25rem; }
     .smartlink-item--release .smartlink-main { align-items: flex-start; }
@@ -2401,13 +2402,15 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 <span>Релизы артиста</span>
               </div>
             </div>
-            <div class="artist-actions">
-              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
-                ${linkIcon}
-                <span>Поделиться</span>
-              </button>
-              <span class="copy-toast" role="status" aria-live="polite"></span>
-            </div>
+          </div>
+        </div>
+        <div class="artist-toolbar">
+          <div class="artist-actions">
+            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+              ${linkIcon}
+              <span>Поделиться</span>
+            </button>
+            <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </div>
         ${
