@@ -1837,14 +1837,14 @@ function htmlPage(
       .links-grid { grid-template-columns: 1fr; }
       .smartlink-list { grid-template-columns: 1fr; gap: 0.65rem; }
       .smartlink-item { padding: 0.85rem; }
-      /* Release cards keep horizontal layout on mobile */
-      .smartlink-item--release { display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.75rem; }
-      .smartlink-item--release .smartlink-main { grid-template-columns: auto 1fr; align-items: center; gap: 0.65rem; flex: 1; min-width: 0; }
-      .smartlink-item--release .smartlink-cover { width: 56px; height: 56px; flex-shrink: 0; }
+      /* Release cards: horizontal layout on mobile */
+      .smartlink-item--release { padding: 0.7rem; padding-right: 2.8rem; }
+      .smartlink-item--release .smartlink-main { grid-template-columns: auto 1fr; align-items: center; gap: 0.65rem; }
+      .smartlink-item--release .smartlink-cover { width: 56px; height: 56px; }
       .smartlink-item--release .smartlink-content { min-width: 0; }
       .smartlink-item--release .smartlink-title { font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .smartlink-item--release .meta-row { font-size: 0.78rem; flex-wrap: wrap; }
-      .smartlink-item__copy { position: static; flex-shrink: 0; }
+      .smartlink-item--release .meta-row { font-size: 0.78rem; }
+      .smartlink-item__copy { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); bottom: auto; }
       .copy-toast--floating { display: none; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
     }
