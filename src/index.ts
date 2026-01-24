@@ -1847,7 +1847,7 @@ function renderHome(): Response {
         </div>
         <div class="home-visual" aria-hidden="true">
           <!-- Official SREDA logo (from provided SVG) -->
-          <svg width="210" height="210" viewBox="160 120 1240 1260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <svg width="170" height="170" viewBox="160 120 1240 1260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <defs>
               <filter id="logoShadow" x="-30%" y="-20%" width="160%" height="160%">
                 <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="rgba(0,0,0,0.45)"/>
