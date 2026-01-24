@@ -3137,6 +3137,78 @@ export default {
 
       return jsonResponse({ ok: true });
     }
+
+    // Admin endpoint to get smartlinks needing artist photo migration
+    if (normalizedPath === "/api/admin/migrate-photos") {
+      if (request.method !== "GET") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
+
+      const apiKey = env.SMARTLINK_API_KEY;
+      const apiKeyError = requireEnvValue(
+        apiKey,
+        "SMARTLINK_API_KEY",
+        "Настройте SMARTLINK_API_KEY для доступа к /api/admin/migrate-photos.",
+      );
+      if (apiKeyError) {
+        return apiKeyError;
+      }
+
+      const providedKey = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
+        request.headers.get("X-API-Key");
+      if (providedKey !== apiKey) return jsonResponse({ ok: false, error: "unauthorized" }, 401);
+
+      await ensureSchema(env.DB);
+
+      try {
+        // Get all smartlinks with Yandex links but no artist_photo_url
+        const query = await env.DB.prepare(
+          `SELECT
+            id,
+            artist_slug,
+            slug,
+            title,
+            artist_name,
+            links_json,
+            artist_photo_url
+          FROM smartlinks
+          WHERE artist_photo_url IS NULL OR artist_photo_url = ''
+          ORDER BY updated_at DESC
+          LIMIT 500`,
+        ).all<{
+          id: string;
+          artist_slug: string;
+          slug: string;
+          title: string | null;
+          artist_name: string | null;
+          links_json: string | null;
+          artist_photo_url: string | null;
+        }>();
+
+        const items = (query.results ?? [])
+          .map((record) => {
+            const links = parseLinksFromJson(record.links_json, "[migrate-photos] links_json");
+            // Only include if it has a Yandex link
+            if (!links.yandex) return null;
+            return {
+              id: record.id,
+              artist_slug: record.artist_slug,
+              slug: record.slug,
+              title: record.title,
+              artist_name: record.artist_name,
+              links,
+            };
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+
+        return jsonResponse({
+          ok: true,
+          count: items.length,
+          items,
+        });
+      } catch (error) {
+        console.error("[api/admin/migrate-photos] db error", error);
+        return jsonResponse({ ok: false, error: "db_error" }, 500);
+      }
+    }
        
     if (normalizedPath === "/api/index/get") {
       if (request.method !== "GET") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
