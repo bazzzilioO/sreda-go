@@ -2212,34 +2212,46 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       }
       <script>
         (function() {
-          async function copyText(text) {
-            if (!text) return false;
-            // Try modern clipboard API first
+          async function copyOrShare(url, title) {
+            if (!url) return { ok: false, shared: false };
+            
+            // On mobile, try Web Share API first
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && navigator.share) {
+              try {
+                await navigator.share({ url: url, title: title || 'Поделиться' });
+                return { ok: true, shared: true };
+              } catch (e) {
+                if (e.name === 'AbortError') return { ok: false, shared: true }; // User cancelled
+                console.warn('share failed, trying clipboard', e);
+              }
+            }
+            
+            // Try clipboard API
             if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
               try {
-                await navigator.clipboard.writeText(text);
-                return true;
+                await navigator.clipboard.writeText(url);
+                return { ok: true, shared: false };
               } catch (e) {
                 console.warn('clipboard API failed, trying fallback', e);
               }
             }
+            
             // Fallback to execCommand
             try {
               const textarea = document.createElement('textarea');
-              textarea.value = text;
+              textarea.value = url;
               textarea.setAttribute('readonly', '');
-              textarea.style.position = 'fixed';
-              textarea.style.top = '-9999px';
-              textarea.style.left = '-9999px';
+              textarea.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
               document.body.appendChild(textarea);
               textarea.focus();
               textarea.select();
               const ok = document.execCommand('copy');
               document.body.removeChild(textarea);
-              return ok;
+              return { ok: ok, shared: false };
             } catch (error) {
               console.warn('clipboard fallback failed', error);
-              return false;
+              return { ok: false, shared: false };
             }
           }
 
@@ -2249,19 +2261,26 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
               const toast = container?.querySelector('.copy-toast') || null;
 
               button.addEventListener('click', async (event) => {
+                event.preventDefault();
                 event.stopPropagation();
+                
                 const urlToCopy = button.getAttribute('data-url') || '';
-                const ok = await copyText(urlToCopy);
+                const cardTitle = container?.querySelector('.smartlink-title')?.textContent || '';
+                const result = await copyOrShare(urlToCopy, cardTitle);
+                
+                // If shared via native dialog, no need for toast
+                if (result.shared) return;
+                
                 const originalTitle = button.getAttribute('title') || '';
 
                 if (toast) {
-                  toast.textContent = ok ? 'Ссылка скопирована' : 'Не удалось скопировать';
+                  toast.textContent = result.ok ? 'Ссылка скопирована' : 'Не удалось скопировать';
                   toast.classList.add('visible');
                 } else if (originalTitle) {
-                  button.setAttribute('title', ok ? 'Ссылка скопирована' : 'Не удалось скопировать');
+                  button.setAttribute('title', result.ok ? 'Ссылка скопирована' : 'Не удалось скопировать');
                 }
 
-                button.classList.toggle('copied', ok);
+                button.classList.toggle('copied', result.ok);
 
                 window.setTimeout(() => {
                   button.classList.remove('copied');
@@ -2269,7 +2288,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                   if (!toast && originalTitle) {
                     button.setAttribute('title', originalTitle);
                   }
-                }, ok ? 1500 : 1800);
+                }, result.ok ? 1500 : 1800);
               });
             });
           }
@@ -2400,34 +2419,46 @@ function renderSmartlink(
     </div>
     <script>
       (function() {
-        async function copyText(text) {
-          if (!text) return false;
-          // Try modern clipboard API first
+        async function copyOrShare(url, title) {
+          if (!url) return { ok: false, shared: false };
+          
+          // On mobile, try Web Share API first
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          if (isMobile && navigator.share) {
+            try {
+              await navigator.share({ url: url, title: title || 'Поделиться' });
+              return { ok: true, shared: true };
+            } catch (e) {
+              if (e.name === 'AbortError') return { ok: false, shared: true };
+              console.warn('share failed, trying clipboard', e);
+            }
+          }
+          
+          // Try clipboard API
           if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
             try {
-              await navigator.clipboard.writeText(text);
-              return true;
+              await navigator.clipboard.writeText(url);
+              return { ok: true, shared: false };
             } catch (e) {
               console.warn('clipboard API failed, trying fallback', e);
             }
           }
+          
           // Fallback to execCommand
           try {
             const textarea = document.createElement('textarea');
-            textarea.value = text;
+            textarea.value = url;
             textarea.setAttribute('readonly', '');
-            textarea.style.position = 'fixed';
-            textarea.style.top = '-9999px';
-            textarea.style.left = '-9999px';
+            textarea.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
             document.body.appendChild(textarea);
             textarea.focus();
             textarea.select();
             const ok = document.execCommand('copy');
             document.body.removeChild(textarea);
-            return ok;
+            return { ok: ok, shared: false };
           } catch (error) {
             console.warn('clipboard fallback failed', error);
-            return false;
+            return { ok: false, shared: false };
           }
         }
 
@@ -2435,21 +2466,26 @@ function renderSmartlink(
           document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
             const toast = button.parentElement?.querySelector('.copy-toast');
 
-            button.addEventListener('click', async () => {
+            button.addEventListener('click', async (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              
               const urlToCopy = button.getAttribute('data-url') || '';
-              const ok = await copyText(urlToCopy);
+              const result = await copyOrShare(urlToCopy, document.title);
+
+              if (result.shared) return;
 
               if (toast) {
-                toast.textContent = ok ? 'Ссылка скопирована' : 'Не удалось скопировать';
+                toast.textContent = result.ok ? 'Ссылка скопирована' : 'Не удалось скопировать';
                 toast.classList.add('visible');
               }
 
-              button.classList.toggle('copied', ok);
+              button.classList.toggle('copied', result.ok);
 
               window.setTimeout(() => {
                 button.classList.remove('copied');
                 toast?.classList.remove('visible');
-              }, ok ? 1500 : 1800);
+              }, result.ok ? 1500 : 1800);
             });
           });
         }
