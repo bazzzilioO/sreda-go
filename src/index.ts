@@ -1707,11 +1707,16 @@ function htmlPage(
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     .powered-by {
       display: flex;
+      justify-content: center;
+      margin-top: 0.9rem;
+    }
+    .powered-by__stack {
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
       gap: 0.6rem;
-      margin-top: 0.9rem;
+      width: fit-content;
     }
     .powered-by__text {
       color: ${THEME.colors.textMuted};
@@ -1727,13 +1732,12 @@ function htmlPage(
       color: rgba(255,255,255,0.92);
       opacity: 0.92;
       transition: opacity 140ms ease, transform 120ms ease;
+      width: 50%;
+      max-width: 92px;
     }
     .powered-by__logo:hover { opacity: 1; transform: translateY(-1px); }
     .powered-by__logo:active { transform: translateY(0); }
-    .powered-by__logo svg { width: 110px; height: auto; display: block; }
-    @media (max-width: 480px) {
-      .powered-by__logo svg { width: 96px; }
-    }
+    .powered-by__logo svg { width: 100%; height: auto; display: block; }
     @media (max-width: 1024px) {
       .smartlink-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
     }
@@ -1783,10 +1787,12 @@ function htmlPage(
     ${body}
   </main>
   <footer class="powered-by" aria-label="powered by SREDA">
-    <div class="powered-by__text">powered by <strong>SREDA</strong></div>
-    <a class="powered-by__logo" href="/" aria-label="SREDA">
-      ${poweredLogo}
-    </a>
+    <div class="powered-by__stack">
+      <div class="powered-by__text">powered by <strong>SREDA</strong></div>
+      <a class="powered-by__logo" href="/" aria-label="SREDA">
+        ${poweredLogo}
+      </a>
+    </div>
   </footer>
   <script>
     (function() {
