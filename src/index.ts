@@ -889,101 +889,6 @@ function parseLinksFromJson(linksJson: string | null, context: string): LinkReco
   }
 }
 
-// ==================== Yandex artist photo fetching ====================
-const YANDEX_ARTIST_PHOTO_CACHE = new Map<string, { url: string | null; ts: number }>();
-const YANDEX_CACHE_TTL_MS = 1000 * 60 * 60; // 1 hour
-
-async function fetchYandexArtistPhoto(yandexUrl: string): Promise<string | null> {
-  if (!yandexUrl) return null;
-
-  // Check in-memory cache first
-  const cacheKey = yandexUrl;
-  const cached = YANDEX_ARTIST_PHOTO_CACHE.get(cacheKey);
-  if (cached && Date.now() - cached.ts < YANDEX_CACHE_TTL_MS) {
-    return cached.url;
-  }
-
-  try {
-    // Step 1: Fetch the Yandex album/track page to find artist link
-    const pageResp = await fetch(yandexUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "ru-RU,ru;q=0.9",
-      },
-    });
-
-    if (!pageResp.ok) {
-      console.warn("[yandex-artist] failed to fetch page", yandexUrl, pageResp.status);
-      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
-      return null;
-    }
-
-    const html = await pageResp.text();
-
-    // Extract artist link from the page: /artist/12345
-    const artistMatch = html.match(/href="\/artist\/(\d+)"/);
-    if (!artistMatch) {
-      console.warn("[yandex-artist] no artist link found in page", yandexUrl);
-      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
-      return null;
-    }
-
-    const artistId = artistMatch[1];
-    const artistUrl = `https://music.yandex.ru/artist/${artistId}`;
-
-    // Step 2: Fetch the artist page
-    const artistResp = await fetch(artistUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "ru-RU,ru;q=0.9",
-      },
-    });
-
-    if (!artistResp.ok) {
-      console.warn("[yandex-artist] failed to fetch artist page", artistUrl, artistResp.status);
-      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
-      return null;
-    }
-
-    const artistHtml = await artistResp.text();
-
-    // Extract og:image from the artist page
-    const ogImageMatch = artistHtml.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i)
-      || artistHtml.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i);
-
-    if (!ogImageMatch) {
-      console.warn("[yandex-artist] no og:image found", artistUrl);
-      YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
-      return null;
-    }
-
-    let imageUrl = ogImageMatch[1];
-    // Yandex images often use //avatars... format, ensure https
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    // Upgrade to larger size if possible (Yandex uses %%size in URL)
-    imageUrl = imageUrl.replace(/%%$/, "1000x1000").replace(/\/\d+x\d+$/, "/1000x1000");
-
-    console.log("[yandex-artist] found artist photo", artistId, imageUrl);
-    YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: imageUrl, ts: Date.now() });
-    return imageUrl;
-  } catch (error) {
-    console.warn("[yandex-artist] error fetching artist photo", yandexUrl, error);
-    YANDEX_ARTIST_PHOTO_CACHE.set(cacheKey, { url: null, ts: Date.now() });
-    return null;
-  }
-}
-
-async function getArtistPhotoFromLinks(links: LinkRecord): Promise<string | null> {
-  const yandexUrl = links.yandex;
-  if (!yandexUrl) return null;
-  return fetchYandexArtistPhoto(yandexUrl);
-}
-
 async function syncSmartlinkToWeb(
   payload: UpsertRequest,
   env: Env,
@@ -1074,6 +979,7 @@ async function ensureSchema(db: D1Database): Promise<void> {
     "ALTER TABLE smartlinks ADD COLUMN owner_display_name TEXT",
     "ALTER TABLE smartlinks ADD COLUMN caption_text TEXT",
     "ALTER TABLE smartlinks ADD COLUMN flags TEXT",
+    "ALTER TABLE smartlinks ADD COLUMN artist_photo_url TEXT",
   ];
 
   for (const statement of alterStatements) {
@@ -2157,6 +2063,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         cover_version,
         links_json,
         artist_name,
+        artist_photo_url,
         updated_at
       FROM smartlinks
       WHERE artist_slug=?1
@@ -2173,6 +2080,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         cover_version: number | null;
         links_json: string | null;
         artist_name: string | null;
+        artist_photo_url: string | null;
         updated_at: string | null;
       }>();
 
@@ -2199,16 +2107,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       })
       .find((url) => Boolean(url));
 
-    // Try to get artist photo from Yandex links
-    let artistPhoto: string | null = null;
-    for (const item of items) {
-      const links = parseLinksFromJson(item.links_json, `[artist ${artistSlug}/${item.slug}] links_photo`);
-      const photo = await getArtistPhotoFromLinks(links);
-      if (photo) {
-        artistPhoto = photo;
-        break;
-      }
-    }
+    // Use stored artist photo URL if available (populated by bot when creating smartlinks)
+    const artistPhoto = items.find((item) => item.artist_photo_url?.trim())?.artist_photo_url?.trim() || null;
 
     // Use artist photo if available, otherwise fall back to release cover
     const heroImage = artistPhoto || releaseCover;
@@ -2704,6 +2604,7 @@ export default {
           slug,
           artist_slug,
           owner,
+          artist_photo_url,
         } = payload ?? {};
 
         const { artistSlug: computedArtistSlug, releaseSlug: computedSlug, errors: slugErrors } =
@@ -2873,6 +2774,11 @@ export default {
             ? new Date().toISOString()
             : existing?.cover_updated_at ?? null;
 
+          // Normalize artist_photo_url
+          const storedArtistPhotoUrl = typeof artist_photo_url === "string" && artist_photo_url.trim()
+            ? artist_photo_url.trim()
+            : null;
+
           await env.DB.prepare(
             `INSERT INTO smartlinks (
               id,
@@ -2890,9 +2796,10 @@ export default {
               cover_url,
               cover_updated_at,
               links_json,
+              artist_photo_url,
               created_at,
               updated_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, datetime('now'), datetime('now'))
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, datetime('now'), datetime('now'))
             ON CONFLICT(artist_slug, slug) DO UPDATE SET
               title=excluded.title,
               artist_name=excluded.artist_name,
@@ -2906,6 +2813,7 @@ export default {
               cover_url=excluded.cover_url,
               cover_updated_at=excluded.cover_updated_at,
               links_json=excluded.links_json,
+              artist_photo_url=COALESCE(excluded.artist_photo_url, smartlinks.artist_photo_url),
               updated_at=datetime('now')`,
           )
             .bind(
@@ -2924,6 +2832,7 @@ export default {
               storedCoverUrl,
               storedCoverUpdatedAt,
               linksJson,
+              storedArtistPhotoUrl,
             )
             .run();
 
