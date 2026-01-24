@@ -1334,14 +1334,7 @@ function htmlPage(
   const backgroundAttribute = backgroundImage ? `data-bg-image="${escapeHtml(backgroundImage)}"` : "";
   const poweredLogo = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1500" role="img" aria-label="SREDA logo">
-      <polygon fill="#f9a600" points="504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25"/>
-      <g fill="currentColor">
-        <path d="M622.08,1248.19h-54.74c-1.89-9.12-13.84-17.93-27.06-17.93s-21.71,3.78-21.71,11.96c0,24.54,105.39-.32,105.39,58.52,0,28.94-30.2,50.02-79.28,50.02-39.95,0-76.13-19.51-86.51-51.6v-9.75h54.74c3.46,11.33,16.99,18.88,30.2,18.88,15.42,0,23.91-5.66,23.91-12.27,0-19.19-104.13,1.57-104.13-58.2,0-28.31,31.46-51.91,76.76-51.91s72.99,22.97,82.43,52.54v9.75Z"/>
-        <path d="M653.54,1189.67h52.85v16.36c11.64-12.58,28-20.13,46.88-20.13v54.74c-4.09-.94-11.01-1.57-16.04-1.57-14.16,0-27.37,7.55-30.83,21.39v86.51h-52.85v-157.3Z"/>
-        <path d="M942.96,1287.83v10.07c-9.75,29.89-42.79,52.85-85.57,52.85-50.02,0-86.83-32.09-86.83-82.43s36.81-82.43,86.83-82.43c47.19,0,81.17,28.31,85.57,69.84v19.51h-118.6c2.52,17.3,15.1,27.68,33.03,27.68,12.9,0,24.22-4.72,30.2-15.1h55.37ZM827.51,1247.24h59.77c-5.35-11.01-15.1-17.3-29.89-17.3-13.84,0-24.54,6.29-29.89,17.3Z"/>
-        <path d="M1135.49,1346.97h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-78.02h52.85v220.22ZM1019.09,1268.32c0,20.45,12.9,32.72,32.72,32.72s32.72-12.27,32.72-32.72-12.9-32.72-32.72-32.72-32.72,12.27-32.72,32.72Z"/>
-        <path d="M1336.83,1346.97h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-15.1h52.85v157.3ZM1285.86,1268.32c0-20.45-12.9-32.72-32.72-32.72s-32.72,12.27-32.72,32.72,12.9,32.72,32.72,32.72,32.72-12.27,32.72-32.72Z"/>
-      </g>
+      <polygon fill="currentColor" points="504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25"/>
     </svg>
   `;
   return `<!DOCTYPE html>
@@ -1706,30 +1699,45 @@ function htmlPage(
     .copy-btn--ghost::before { content: "⧉"; font-size: 0.9rem; }
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     .powered-by {
-      width: min(960px, calc(100% - 24px));
       display: flex;
-      flex-direction: column;
+      justify-content: center;
+      margin-top: 0.9rem;
+    }
+    .powered-by__pill {
+      display: inline-flex;
       align-items: center;
       gap: 0.55rem;
-      margin-top: 1.15rem;
-      color: ${THEME.colors.textMuted};
-      font-size: 0.86rem;
-      letter-spacing: 0.01em;
-      text-transform: none;
+      padding: 0.55rem 0.75rem;
+      border-radius: ${THEME.radii.pill};
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(26,26,26,0.42);
+      box-shadow: 0 14px 42px rgba(0,0,0,0.32);
+      backdrop-filter: blur(16px) saturate(1.15);
+      -webkit-backdrop-filter: blur(16px) saturate(1.15);
     }
-    .powered-by__text { opacity: 0.95; }
-    .powered-by__text strong { color: ${THEME.colors.textPrimary}; font-weight: 860; }
+    .powered-by__text {
+      color: ${THEME.colors.textMuted};
+      font-size: 0.85rem;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+    .powered-by__text strong { color: ${THEME.colors.textSecondary}; font-weight: 860; }
     .powered-by__logo {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.92);
-      opacity: 0.92;
-      transition: opacity 140ms ease, transform 140ms ease;
+      width: 26px;
+      height: 26px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.68);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.24);
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease, transform 120ms ease;
     }
-    .powered-by__logo:hover { opacity: 1; transform: translateY(-1px); }
+    .powered-by__logo:hover { border-color: rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.82); transform: translateY(-1px); }
     .powered-by__logo:active { transform: translateY(0); }
-    .powered-by__logo svg { width: 118px; height: auto; display: block; }
+    .powered-by__logo svg { width: 14px; height: 14px; display: block; }
     @media (max-width: 1024px) {
       .smartlink-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
     }
@@ -1779,10 +1787,12 @@ function htmlPage(
     ${body}
   </main>
   <footer class="powered-by" aria-label="powered by SREDA">
-    <div class="powered-by__text">powered by <strong>SREDA</strong></div>
-    <a class="powered-by__logo" href="/" aria-label="SREDA">
-      ${poweredLogo}
-    </a>
+    <div class="powered-by__pill">
+      <a class="powered-by__logo" href="/" aria-label="SREDA">
+        ${poweredLogo}
+      </a>
+      <div class="powered-by__text">powered by <strong>SREDA</strong></div>
+    </div>
   </footer>
   <script>
     (function() {
