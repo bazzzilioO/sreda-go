@@ -1322,7 +1322,11 @@ function renderMedia({
 
 function htmlPage(
   body: string,
-  { title = "SREDA go", backgroundImage }: { title?: string; backgroundImage?: string | null } = {},
+  {
+    title = "SREDA go",
+    backgroundImage,
+    pageClass,
+  }: { title?: string; backgroundImage?: string | null; pageClass?: string | null } = {},
 ): string {
   const backgroundStyle = backgroundImage
     ? "--page-bg-image: none; --page-bg-opacity: 0.32;"
@@ -1417,6 +1421,57 @@ function htmlPage(
       z-index: 0;
     }
     .card > * { position: relative; z-index: 1; }
+
+    /* ==================== Home page ==================== */
+    body.page-home { align-items: center; padding-top: 3.25rem; padding-bottom: 3.25rem; }
+    body.page-home .card { width: min(1040px, calc(100% - 24px)); padding: 1.9rem; }
+    .home { display: flex; flex-direction: column; gap: 1.35rem; }
+    .home-top { display: flex; flex-direction: column; gap: 0.85rem; max-width: 760px; margin: 0 auto; text-align: left; }
+    .home-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      width: fit-content;
+      padding: 0.25rem 0.75rem;
+      border-radius: ${THEME.radii.pill};
+      border: 1px solid ${THEME.colors.borderSubtle};
+      background: rgba(255,255,255,0.04);
+      color: ${THEME.colors.textSecondary};
+      font-weight: 760;
+      letter-spacing: 0.02em;
+      font-size: 0.92rem;
+    }
+    .home-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 4px rgba(245,158,11,0.09); }
+    .home-title { font-size: 2.35rem; line-height: 1.12; letter-spacing: 0.01em; margin: 0; }
+    .home-lead { font-size: 1.05rem; color: ${THEME.colors.textSecondary}; max-width: 56ch; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.25rem; }
+    .home-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      min-height: 46px;
+      padding: 0.75rem 1.05rem;
+      border-radius: 14px;
+      border: 1px solid ${THEME.colors.borderSubtle};
+      font-weight: 820;
+      letter-spacing: 0.01em;
+      transition: transform 120ms ease, box-shadow 160ms ease, border-color 140ms ease, background 140ms ease;
+      white-space: nowrap;
+    }
+    .home-action:focus-visible { outline: 2px solid rgba(245,158,11,0.5); outline-offset: 3px; }
+    .home-action--primary { background: linear-gradient(125deg, rgba(245,158,11,0.95), rgba(251,191,36,0.92)); color: #0b0b0b; box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18); }
+    .home-action--secondary { background: rgba(255,255,255,0.04); color: ${THEME.colors.textPrimary}; }
+    .home-action:hover { transform: translateY(-1px); border-color: rgba(245,158,11,0.45); box-shadow: 0 14px 30px rgba(0,0,0,0.34); }
+    .home-action:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
+    .home-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.95rem; margin-top: 0.25rem; }
+    .home-inline { color: ${THEME.colors.textPrimary}; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
+    .home-inline:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
+    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; margin-top: 0.25rem; }
+    .home-feature { padding: 1.05rem 1.1rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.6); box-shadow: ${THEME.shadows.gridCard}; }
+    .home-feature-title { font-weight: 850; letter-spacing: 0.01em; margin-bottom: 0.3rem; color: ${THEME.colors.textPrimary}; }
+    .home-feature-text { color: ${THEME.colors.textSecondary}; line-height: 1.55; }
+    .home-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.92rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem; margin-top: 0.3rem; }
     .release-grid { display: grid; grid-template-columns: minmax(300px, 360px) minmax(420px, 520px); gap: 1.35rem; align-items: start; justify-content: center; min-width: 0; }
     .cover-wrap { display: flex; justify-content: center; align-items: flex-start; width: 100%; align-self: stretch; min-width: 0; }
     .content-wrap { display: flex; flex-direction: column; gap: 0.75rem; width: min(520px, 100%); max-width: 520px; min-width: 0; }
@@ -1579,6 +1634,11 @@ function htmlPage(
       .canonical-row { align-items: center; }
       .links-grid { grid-template-columns: 1fr; }
       .smartlink-footer { grid-template-columns: 1fr; }
+      .home-top { text-align: center; align-items: center; }
+      .home-badge { margin: 0 auto; }
+      .home-actions { justify-content: center; }
+      .home-features { grid-template-columns: 1fr; }
+      .home-footer { justify-content: center; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
@@ -1600,7 +1660,7 @@ function htmlPage(
     }
   </style>
 </head>
-<body style="${backgroundStyle}" ${backgroundAttribute}>
+<body class="${escapeHtml(pageClass || "")}" style="${backgroundStyle}" ${backgroundAttribute}>
   <div class="noise-layer"></div>
   <main class="card release-card">
     ${body}
@@ -1689,10 +1749,60 @@ function htmlPage(
 }
 
 function renderHome(): Response {
-  const body = `<h1>SREDA go</h1>
-    <p>Укороченные ссылки для релизов SREDA.</p>
-    <p class="meta">Используйте формат <strong>go.sreda.pw/&lt;artist&gt;/&lt;slug&gt;</strong>.</p>`;
-  return new Response(htmlPage(body, { title: "SREDA go" }), {
+  const telegramUrl = "https://t.me/iskramusic_bot";
+  const demoArtist = "/artist/boris";
+  const demoSmartlink = "/boris/heavy-rain";
+  const body = `
+    <section class="home">
+      <div class="home-top">
+        <div class="home-badge">SREDA · tools for artists</div>
+        <h1 class="home-title">Инструменты для независимых артистов</h1>
+        <p class="home-lead">
+          Релиз‑план, смартлинки, напоминания, кабинеты артиста и питчинг — в одном месте.
+        </p>
+        <div class="home-actions">
+          <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
+            Открыть ИСКРУ в Telegram
+          </a>
+          <a class="home-action home-action--secondary" href="${escapeHtml(demoArtist)}">
+            Открыть смартлинки (пример)
+          </a>
+        </div>
+        <div class="home-kicker">
+          <span class="meta-label">Формат ссылок:</span>
+          <strong>go.sreda.pw/&lt;artist&gt;/&lt;slug&gt;</strong>
+          <span class="meta-divider">•</span>
+          <a class="home-inline" href="${escapeHtml(demoSmartlink)}">пример релиза</a>
+        </div>
+      </div>
+
+      <div class="home-features" role="list">
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-title">Смартлинк за минуту</div>
+          <div class="home-feature-text">Вставь ссылку на релиз — соберём площадки и сделаем аккуратную карточку.</div>
+        </div>
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-title">Можно пересылать</div>
+          <div class="home-feature-text">Карточка без “техкнопок”. Управление — отдельным меню только для владельца.</div>
+        </div>
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-title">Защита от фишинга</div>
+          <div class="home-feature-text">Ссылки принимаются только с официальных доменов площадок (бот + индекс).</div>
+        </div>
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-title">Авто‑деплой</div>
+          <div class="home-feature-text">Обновления воркера публикуются напрямую из GitHub Actions.</div>
+        </div>
+      </div>
+
+      <div class="home-footer">
+        <span>© SREDA</span>
+        <span class="meta-divider">•</span>
+        <a class="home-inline" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">Telegram</a>
+      </div>
+    </section>
+  `;
+  return new Response(htmlPage(body, { title: "SREDA — tools for artists", pageClass: "page-home" }), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
