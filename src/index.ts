@@ -2413,7 +2413,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
       <div class="artist-header">
         <h1 class="artist-name">Артисты</h1>
         <div class="artist-meta">
-          <span>Все артисты, у которых есть смартлинки.</span>
+          <span>Выбери артиста — откроется список его релизов.</span>
         </div>
       </div>
       ${
