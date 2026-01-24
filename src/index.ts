@@ -2304,8 +2304,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             };
 
             card.addEventListener('click', (event) => {
-              const target = event.target as HTMLElement | null;
-              if (target?.closest('button') || target?.closest('a')) return;
+              const target = event.target;
+              if (target && target.closest && (target.closest('button') || target.closest('a'))) return;
               navigate();
             });
 
