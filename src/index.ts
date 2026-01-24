@@ -1697,8 +1697,16 @@ function htmlPage(
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
+    .artist-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .artist-header-copy { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
     .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
     .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; }
+    .smartlink-item--release { gap: 0.35rem; }
+    .smartlink-item--release .smartlink-main { align-items: flex-start; }
+    .smartlink-item--release .smartlink-cover { width: 84px; height: 84px; }
+    .smartlink-item--release .smartlink-title { font-size: 1.05rem; }
+    .smartlink-item--release .meta-row { margin-top: 0.15rem; }
     .smartlink-footer { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.5rem; }
     .copy-btn--ghost { background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; box-shadow: none; border: 1px solid ${THEME.colors.borderSubtle}; padding: 0.5rem 0.65rem; min-height: 0; font-size: 0.92rem; font-weight: 760; width: auto; }
     .copy-btn--ghost:hover { background: rgba(255,255,255,0.08); color: ${THEME.colors.textPrimary}; box-shadow: 0 8px 18px rgba(0,0,0,0.26); }
@@ -2055,39 +2063,48 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       const formattedUpdatedAt = formatDisplayDate(record.updated_at);
       const metaParts = [
         formattedReleaseDate ? escapeHtml(formattedReleaseDate) : null,
+        linkCount
+          ? (() => {
+              const n = linkCount;
+              const label =
+                n % 10 === 1 && n % 100 !== 11
+                  ? "площадка"
+                  : n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14)
+                    ? "площадки"
+                    : "площадок";
+              return `${n} ${label}`;
+            })()
+          : null,
         formattedUpdatedAt ? `Обновлено ${escapeHtml(formattedUpdatedAt)}` : null,
       ].filter(Boolean);
       const title = record.title ?? "Релиз";
 
       return `
-        <article class="smartlink-item" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
+        <article class="smartlink-item smartlink-item--release" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
           <a class="smartlink-main" href="${escapeHtml(canonicalUrl)}">
             ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "smartlink-cover" })}
             <div class="smartlink-content">
-              <div class="smartlink-title-row">
-                <div class="smartlink-title">${escapeHtml(title)}</div>
-                <span class="platform-chip" title="Доступные платформы">${linkCount}</span>
-              </div>
+              <div class="smartlink-title">${escapeHtml(title)}</div>
+              <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
             </div>
           </a>
-          <div class="smartlink-footer">
-            <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
-            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку ${escapeHtml(title)}" title="Скопировать ссылку">Скопировать</button>
-            <span class="copy-toast" role="status" aria-live="polite"></span>
-          </div>
         </article>
       `;
     });
 
       const body = `
         <div class="artist-header">
-          <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-          <div class="artist-meta">
-            <span>Все смартлинки в одном месте.</span>
-          </div>
-          <div class="canonical-row">
-            <button class="copy-btn" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Скопировать ссылку на страницу артиста">Скопировать ссылку</button>
-            <span class="copy-toast" role="status" aria-live="polite"></span>
+          <div class="artist-header-top">
+            <div class="artist-header-copy">
+              <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+              <div class="artist-meta">
+                <span>Релизы артиста — выбери нужный.</span>
+              </div>
+            </div>
+            <div class="artist-actions">
+              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Скопировать ссылку на страницу артиста" title="Скопировать ссылку">Скопировать</button>
+              <span class="copy-toast" role="status" aria-live="polite"></span>
+            </div>
           </div>
         </div>
         ${
@@ -2122,7 +2139,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
 
           function attachCopyHandlers() {
             document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
-              const toast = button.parentElement?.querySelector('.copy-toast');
+              const toast = button.parentElement?.querySelector('.copy-toast') || document.querySelector('.artist-actions .copy-toast');
 
               button.addEventListener('click', async (event) => {
                 event.stopPropagation();
