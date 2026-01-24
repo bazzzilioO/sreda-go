@@ -1716,7 +1716,19 @@ function htmlPage(
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-header { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
-    .artist-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .artist-header-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .artist-header-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+    .artist-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid ${THEME.colors.borderSubtle};
+      background: ${THEME.colors.surface};
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .artist-avatar .media__img { object-fit: cover; }
     .artist-header-copy { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
     .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
     .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
@@ -2126,10 +2138,13 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       const body = `
         <div class="artist-header">
           <div class="artist-header-top">
-            <div class="artist-header-copy">
-              <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-              <div class="artist-meta">
-                <span>Релизы артиста — выбери нужный.</span>
+            <div class="artist-header-left">
+              ${backgroundCover ? renderMedia({ src: backgroundCover, alt: displayArtistName, className: "artist-avatar" }) : ""}
+              <div class="artist-header-copy">
+                <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+                <div class="artist-meta">
+                  <span>Релизы артиста — выбери нужный.</span>
+                </div>
               </div>
             </div>
             <div class="artist-actions">
