@@ -1675,7 +1675,7 @@ function htmlPage(
     .copy-btn { border: none; background: linear-gradient(125deg, rgba(245,158,11,0.95), rgba(251,191,36,0.92)); color: #0b0b0b; border-radius: 12px; width: 100%; padding: 0.7rem 0.95rem; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; font-weight: 790; letter-spacing: 0.005em; transition: background 140ms ease, color 140ms ease, box-shadow 150ms ease, transform 120ms ease; box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18); }
     .copy-btn:hover { background: linear-gradient(125deg, rgba(251,191,36,0.98), rgba(245,158,11,0.95)); color: #0a0a0a; box-shadow: 0 12px 26px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,158,11,0.22); transform: translateY(-1px); }
     .copy-btn:active { background: linear-gradient(125deg, rgba(245,158,11,0.98), rgba(245,158,11,0.95)); box-shadow: 0 8px 18px rgba(0,0,0,0.26), 0 0 0 1px rgba(245,158,11,0.26); transform: translateY(0); }
-    .copy-btn.copied { box-shadow: 0 8px 20px rgba(0,0,0,0.26), 0 0 0 1px rgba(245,158,11,0.32); }
+    .copy-btn.copied { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4); color: #22c55e; }
     .copy-btn:focus-visible { outline: 2px solid rgba(245,158,11,0.5); outline-offset: 3px; }
     .copy-btn__icon { width: 16px; height: 16px; display: block; flex: 0 0 auto; }
     .copy-toast { min-width: 80px; color: ${THEME.colors.accent}; opacity: 0; transform: translateY(4px); transition: opacity 180ms ease, transform 180ms ease; font-weight: 760; font-size: 0.9rem; text-align: left; }
@@ -2214,23 +2214,31 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         (function() {
           async function copyText(text) {
             if (!text) return false;
-            try {
-              if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            // Try modern clipboard API first
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              try {
                 await navigator.clipboard.writeText(text);
                 return true;
+              } catch (e) {
+                console.warn('clipboard API failed, trying fallback', e);
               }
+            }
+            // Fallback to execCommand
+            try {
               const textarea = document.createElement('textarea');
               textarea.value = text;
               textarea.setAttribute('readonly', '');
               textarea.style.position = 'fixed';
               textarea.style.top = '-9999px';
+              textarea.style.left = '-9999px';
               document.body.appendChild(textarea);
+              textarea.focus();
               textarea.select();
-              document.execCommand('copy');
+              const ok = document.execCommand('copy');
               document.body.removeChild(textarea);
-              return true;
+              return ok;
             } catch (error) {
-              console.warn('clipboard copy failed', error);
+              console.warn('clipboard fallback failed', error);
               return false;
             }
           }
