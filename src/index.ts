@@ -1441,9 +1441,10 @@ function htmlPage(
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
-      background: rgba(18,18,20,0.85); border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(40px) saturate(1.4); -webkit-backdrop-filter: blur(40px) saturate(1.4);
-      box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+      background: linear-gradient(to bottom, rgba(28,28,32,0.9) 0%, rgba(18,18,22,0.95) 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(40px) saturate(1.5); -webkit-backdrop-filter: blur(40px) saturate(1.5);
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,0.65), inset 0 1px 0 0 rgba(255,255,255,0.08);
     }
     .home { display: flex; flex-direction: column; gap: 1.45rem; position: relative; }
     .home::before {
@@ -1587,24 +1588,31 @@ function htmlPage(
     .smartlink-release__date { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 0.1rem; }
     .smartlink-release__links { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.25rem; }
     .smartlink-release__links .link-btn { 
-      justify-content: center; padding: 0.75rem 1rem; font-size: 0.92rem; border-radius: 10px; font-weight: 600; 
-      background: rgba(255,255,255,0.08); border: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
-      color: #fff; transition: all 180ms ease;
+      justify-content: center; padding: 0.8rem 1rem; font-size: 0.95rem; border-radius: 12px; font-weight: 600; 
+      background: linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2);
+      color: #fff; transition: all 200ms ease;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .smartlink-release__links .link-btn:hover { 
-      background: rgba(255,255,255,0.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15); 
+      background: linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.1) 100%);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.15), 0 4px 16px rgba(0,0,0,0.25), 0 0 20px rgba(255,255,255,0.05);
+      transform: translateY(-1px);
     }
-    .smartlink-release__links .link-btn:active { background: rgba(255,255,255,0.1); }
+    .smartlink-release__links .link-btn:active { transform: translateY(0); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.2); }
     .smartlink-release__links .link-btn::after { display: none; }
     .smartlink-release__empty { color: rgba(255,255,255,0.4); text-align: center; padding: 1rem; }
     .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin-top: 0.5rem; }
     .share-btn { 
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.45rem 0.9rem; 
-      border: none; border-radius: 8px; background: rgba(255,255,255,0.05); 
-      color: rgba(255,255,255,0.45); font-size: 0.8rem; font-weight: 550; cursor: pointer; transition: all 150ms ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; 
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; 
+      background: rgba(255,255,255,0.04); 
+      color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 550; cursor: pointer; transition: all 180ms ease;
     }
-    .share-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
-    .share-btn.copied { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .share-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.15); }
+    .share-btn.copied { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #4ade80; }
     .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
     .smartlink-release .copy-toast { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.65); }
     
