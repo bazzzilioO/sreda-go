@@ -1843,23 +1843,15 @@ function renderHome(): Response {
           </div>
         </div>
         <div class="home-visual" aria-hidden="true">
-          <svg width="180" height="180" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="190" height="190" viewBox="140 80 740 1340" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <defs>
-              <linearGradient id="bolt" x1="50" y1="25" x2="170" y2="195" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#FBBF24" stop-opacity="0.98"/>
-                <stop offset="1" stop-color="#F59E0B" stop-opacity="0.92"/>
-              </linearGradient>
-              <filter id="ds" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="rgba(0,0,0,0.45)"/>
+              <filter id="logoShadow" x="-30%" y="-20%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="rgba(0,0,0,0.45)"/>
               </filter>
             </defs>
-            <circle cx="110" cy="110" r="78" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
-            <circle cx="110" cy="110" r="58" stroke="rgba(245,158,11,0.22)" stroke-width="2"/>
-            <g filter="url(#ds)">
-              <path
-                d="M96 18 L156 86 L124 114 L176 156 L58 202 L78 142 L44 120 Z"
-                fill="url(#bolt)"
-              />
+            <g filter="url(#logoShadow)">
+              <!-- Original SREDA lightning mark (from provided SVG) -->
+              <polygon fill="#F9A600" points="504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25"/>
             </g>
           </svg>
         </div>
