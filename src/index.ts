@@ -1676,7 +1676,7 @@ function htmlPage(
     }
     .smartlink-release__links { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; margin-top: 0.5rem; }
     .smartlink-release__links .link-btn { 
-      display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.9rem;
       padding: 0.9rem 1.1rem; font-size: 0.92rem; border-radius: 16px; font-weight: 600; 
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.1);
@@ -1706,7 +1706,7 @@ function htmlPage(
       color: rgba(255,255,255,0.85);
     }
     .link-btn__icon svg { width: 100%; height: 100%; }
-    .link-btn__label { flex: 1; text-align: left; font-weight: 600; }
+    .link-btn__label { font-weight: 600; }
     .smartlink-release__empty { color: rgba(255,255,255,0.4); text-align: center; padding: 1rem; }
     .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; width: 100%; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.06); }
     .smartlink-release__share .share-btn {
