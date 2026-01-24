@@ -1931,12 +1931,11 @@ function htmlPage(
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1.5rem;
+      padding: 0 1.5rem 1.5rem 1.5rem;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
       gap: 1rem;
-      flex-wrap: wrap;
     }
     .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
