@@ -1288,7 +1288,7 @@ const THEME = {
     body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
   radii: {
-    card: "22px",
+    card: "26px",
     cover: "18px",
     pill: "999px",
     glass: "20px",
@@ -2051,7 +2051,7 @@ function htmlPage(
       .link-btn__icon { width: 20px; height: 20px; }
       .share-social { width: 36px; height: 36px; }
       .share-social svg { width: 15px; height: 15px; }
-      body.page-smartlink .card { width: calc(100% - 16px); border-radius: 16px; }
+      body.page-smartlink .card { width: calc(100% - 16px); border-radius: 20px; }
     }
   </style>
 </head>
