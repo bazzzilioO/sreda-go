@@ -1871,15 +1871,15 @@ function htmlPage(
       box-shadow: 0 10px 24px rgba(0,0,0,0.35);
     }
     .smartlink-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.6rem; align-items: stretch; }
-    .smartlink-item { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.95rem 1rem; border-radius: 16px; border: 1px solid ${THEME.colors.borderSubtle}; background: rgba(30,30,30,0.62); cursor: pointer; transition: border-color 140ms ease, transform 120ms ease, background 140ms ease, box-shadow 150ms ease; box-shadow: ${THEME.shadows.gridCard}; }
+    .smartlink-item { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.95rem 1rem; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); cursor: pointer; transition: all 180ms ease; box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 1px rgba(255,255,255,0.1); }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
-    .smartlink-item:hover { border-color: ${THEME.colors.accent}; background: rgba(38,38,38,0.82); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
+    .smartlink-item:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 2px rgba(255,255,255,0.15); }
     .smartlink-item:active { transform: translateY(0); }
     .smartlink-main { display: grid; grid-template-columns: auto 1fr; gap: 0.85rem; align-items: center; color: inherit; text-decoration: none; }
-    .smartlink-cover { width: 76px; height: 76px; aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid ${THEME.colors.borderSubtle}; background: ${THEME.colors.surface}; box-shadow: ${THEME.shadows.cover}; overflow: hidden; position: relative; }
+    .smartlink-cover { width: 76px; height: 76px; aspect-ratio: 1 / 1; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: rgba(30,30,30,0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; position: relative; }
     .smartlink-content { display: flex; flex-direction: column; gap: 0.25rem; }
     .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-    .smartlink-title { font-size: 1.02rem; font-weight: 820; letter-spacing: 0.01em; color: ${THEME.colors.textPrimary}; }
+    .smartlink-title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 1.02rem; font-weight: 700; letter-spacing: -0.01em; color: ${THEME.colors.textPrimary}; }
     .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.55); border: 1px solid ${THEME.colors.borderSubtle}; color: ${THEME.colors.textSecondary}; font-weight: 740; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.3rem; }
     .platform-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 3px rgba(245,158,11,0.08); }
     .meta-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.65rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.9rem; }
@@ -1924,7 +1924,7 @@ function htmlPage(
       flex-wrap: wrap;
     }
     .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-    .artist-name { color: #FFFFFF; font-size: 2.2rem; font-weight: 850; letter-spacing: 0.015em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+    .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
     .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; }
     .smartlink-item--release { gap: 0.35rem; position: relative; padding-bottom: 1.25rem; }
@@ -2034,7 +2034,7 @@ function htmlPage(
       .release-grid { gap: 1rem; }
       .canonical-row { align-items: center; gap: 0.5rem; }
       .smartlink-list { gap: 0.55rem; }
-      .smartlink-item { padding: 0.7rem; border-radius: 14px; }
+      .smartlink-item { padding: 0.7rem; border-radius: 16px; }
       .smartlink-item--release .smartlink-cover { width: 52px; height: 52px; border-radius: 10px; }
       .smartlink-item--release .smartlink-title { font-size: 0.9rem; }
       .smartlink-item--release .meta-row { font-size: 0.75rem; gap: 0.25rem; }
