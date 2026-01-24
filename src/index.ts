@@ -2348,7 +2348,6 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
             <div class="smartlink-content">
               <div class="smartlink-title-row">
                 <div class="smartlink-title">${escapeHtml(displayName)}</div>
-                <span class="platform-chip" title="Количество релизов">${escapeHtml(String(count || 0))}</span>
               </div>
               <div class="meta-row subtle">${meta || ""}</div>
             </div>
@@ -2369,9 +2368,6 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
           ? `<div class="smartlink-list">${cards.join("\n")}</div>`
           : `<div class="empty-state">Пока нет артистов со смартлинками.</div>`
       }
-      <div class="small">
-        <span class="meta-label">База:</span> <span>${escapeHtml(canonicalBase)}</span>
-      </div>
     `;
 
     return new Response(htmlPage(body, { title: "Артисты — SREDA", pageClass: "page-artists" }), {
