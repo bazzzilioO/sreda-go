@@ -1512,16 +1512,16 @@ function htmlPage(
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
-      background: rgba(18,18,22,0.75);
+      background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
       background-clip: padding-box;
-      backdrop-filter: blur(40px) saturate(1.2); -webkit-backdrop-filter: blur(40px) saturate(1.2);
-      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08);
+      backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       position: relative;
     }
     body.page-smartlink .card::before {
       content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
-      background: linear-gradient(160deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%);
+      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor; mask-composite: exclude;
@@ -1675,9 +1675,9 @@ function htmlPage(
     .smartlink-release__links .link-btn { 
       display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem;
       padding: 0.9rem 1.1rem; font-size: 0.92rem; border-radius: 16px; font-weight: 600; 
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 1px rgba(255,255,255,0.15);
       color: #fff; 
       transition: all 180ms ease;
       text-decoration: none;
@@ -1690,10 +1690,10 @@ function htmlPage(
     .smartlink-release__links .link-btn:nth-child(5) { animation-delay: 0.25s; }
     .smartlink-release__links .link-btn:nth-child(6) { animation-delay: 0.3s; }
     .smartlink-release__links .link-btn:hover { 
-      background: rgba(255,255,255,0.18);
-      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15), 0 0 2px rgba(255,255,255,0.2);
     }
     .smartlink-release__links .link-btn:active { transform: translateY(0); box-shadow: none; }
     .smartlink-release__links .link-btn::after { display: none; }
