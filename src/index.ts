@@ -2215,15 +2215,15 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           async function copyOrShare(url, title) {
             if (!url) return { ok: false, shared: false };
             
-            // On mobile, try Web Share API first
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile && navigator.share) {
+            // Try Web Share API first (works on mobile and some desktop browsers)
+            const canShare = navigator.share && (!navigator.canShare || navigator.canShare({ url: url }));
+            if (canShare) {
               try {
                 await navigator.share({ url: url, title: title || 'Поделиться' });
                 return { ok: true, shared: true };
               } catch (e) {
                 if (e.name === 'AbortError') return { ok: false, shared: true }; // User cancelled
-                console.warn('share failed, trying clipboard', e);
+                // Share failed, fall through to clipboard
               }
             }
             
@@ -2233,7 +2233,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 await navigator.clipboard.writeText(url);
                 return { ok: true, shared: false };
               } catch (e) {
-                console.warn('clipboard API failed, trying fallback', e);
+                // Clipboard failed, fall through to execCommand
               }
             }
             
@@ -2250,7 +2250,6 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
               document.body.removeChild(textarea);
               return { ok: ok, shared: false };
             } catch (error) {
-              console.warn('clipboard fallback failed', error);
               return { ok: false, shared: false };
             }
           }
@@ -2430,15 +2429,15 @@ function renderSmartlink(
         async function copyOrShare(url, title) {
           if (!url) return { ok: false, shared: false };
           
-          // On mobile, try Web Share API first
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-          if (isMobile && navigator.share) {
+          // Try Web Share API first (works on mobile and some desktop browsers)
+          const canShare = navigator.share && (!navigator.canShare || navigator.canShare({ url: url }));
+          if (canShare) {
             try {
               await navigator.share({ url: url, title: title || 'Поделиться' });
               return { ok: true, shared: true };
             } catch (e) {
               if (e.name === 'AbortError') return { ok: false, shared: true };
-              console.warn('share failed, trying clipboard', e);
+              // Share failed, fall through to clipboard
             }
           }
           
@@ -2448,7 +2447,7 @@ function renderSmartlink(
               await navigator.clipboard.writeText(url);
               return { ok: true, shared: false };
             } catch (e) {
-              console.warn('clipboard API failed, trying fallback', e);
+              // Clipboard failed, fall through to execCommand
             }
           }
           
@@ -2465,7 +2464,6 @@ function renderSmartlink(
             document.body.removeChild(textarea);
             return { ok: ok, shared: false };
           } catch (error) {
-            console.warn('clipboard fallback failed', error);
             return { ok: false, shared: false };
           }
         }
