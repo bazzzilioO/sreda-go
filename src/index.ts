@@ -68,6 +68,77 @@ const PLATFORM_ALLOWED_HOSTS: Record<string, string[]> = {
   kion: ["kion.ru", "music.mts.ru"],
   bandlink: ["band.link", "bandlink.to"],
   telegram: ["t.me", "telegram.me"],
+  tidal: ["tidal.com", "listen.tidal.com"],
+  soundcloud: ["soundcloud.com", "m.soundcloud.com"],
+  amazon: ["music.amazon.com", "amazon.com"],
+  pandora: ["pandora.com", "www.pandora.com"],
+  shazam: ["shazam.com", "www.shazam.com"],
+};
+
+// ==================== Platform Display Configuration ====================
+const PLATFORM_LABELS: Record<string, string> = {
+  spotify: "Spotify",
+  apple: "Apple Music",
+  itunes: "iTunes Store",
+  yandex: "Яндекс Музыка",
+  vk: "ВКонтакте",
+  deezer: "Deezer",
+  youtube: "YouTube",
+  youtubemusic: "YouTube Music",
+  zvuk: "Звук",
+  kion: "KION",
+  bandlink: "Band.link",
+  telegram: "Telegram",
+  tidal: "TIDAL",
+  soundcloud: "SoundCloud",
+  amazon: "Amazon Music",
+  pandora: "Pandora",
+  shazam: "Shazam",
+  other: "Другое",
+};
+
+// Brand colors for hover effects
+const PLATFORM_COLORS: Record<string, string> = {
+  spotify: "#1DB954",
+  apple: "#FA2D48",
+  itunes: "#FA2D48",
+  yandex: "#FFCC00",
+  vk: "#0077FF",
+  deezer: "#A238FF",
+  youtube: "#FF0000",
+  youtubemusic: "#FF0000",
+  zvuk: "#6B4EFF",
+  kion: "#E30611",
+  bandlink: "#FF6B35",
+  telegram: "#26A5E4",
+  tidal: "#00FFFF",
+  soundcloud: "#FF5500",
+  amazon: "#FF9900",
+  pandora: "#224099",
+  shazam: "#0088FF",
+  other: "#F59E0B",
+};
+
+// SVG icons for platforms (optimized, 20x20 viewBox)
+const PLATFORM_ICONS: Record<string, string> = {
+  spotify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`,
+  apple: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.994 6.124c-.064 4.96-4.08 6.573-4.08 6.573-.18 3.82 2.755 5.424 2.755 5.424-1.293 4.14-4.916 5.792-4.916 5.792-3.156-2.27-3.156-5.958-3.156-5.958 0-3.617 2.755-5.164 2.755-5.164-1.508-2.057-3.978-2.057-4.736-2.057-3.156 0-4.736 2.27-4.736 2.27s-1.58-2.27-4.736-2.27c-.758 0-3.228 0-4.736 2.057 0 0 2.755 1.547 2.755 5.164 0 0 0 3.688-3.156 5.958 0 0-3.623-1.652-4.916-5.792 0 0 2.935-1.604 2.755-5.424 0 0-4.016-1.613-4.08-6.573C-.064 1.164 4.016.018 5.524 0c1.508-.018 3.084.787 4.232 2.164 0 0 1.185-2.182 4.244-2.182 3.059 0 4.244 2.182 4.244 2.182C19.392.787 20.968-.018 22.476 0c1.508.018 5.588 1.164 5.518 6.124z"/></svg>`,
+  itunes: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.977 23.999c-6.617 0-12-5.383-12-12s5.383-12 12-12 12 5.383 12 12-5.383 12-12 12zm0-22c-5.514 0-10 4.486-10 10s4.486 10 10 10 10-4.486 10-10-4.486-10-10-10zm4.251 14.666c-.349.506-.906.77-1.48.77-.347 0-.7-.098-1.013-.305l-2.476-1.623c-.262-.17-.419-.46-.419-.77V8.463c0-.505.41-.916.916-.916.505 0 .916.41.916.916v7.462l2.155 1.412c.415.272.53.826.26 1.241l-.859.088z"/></svg>`,
+  yandex: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm2.797 18.891h-2.534V9.188c-1.406.047-2.203.61-2.86 2.11L6.89 16.5H4.21l2.813-5.672c.797-1.593 1.875-2.625 3.75-2.812V5.109h2.531v3.094c1.5.234 2.437 1.219 3.187 2.625l2.297 4.672h-2.672l-2.11-4.36c-.5-1.03-1.14-1.687-2.203-1.827v9.578z"/></svg>`,
+  vk: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.862-.523-2.049-1.712-1.033-1.033-1.49-1.173-1.744-1.173-.356 0-.458.102-.458.593v1.562c0 .424-.135.678-1.253.678-1.846 0-3.896-1.12-5.339-3.202-2.17-3.042-2.763-5.321-2.763-5.79 0-.254.102-.491.593-.491h1.744c.44 0 .61.203.779.678.864 2.49 2.304 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.254-1.406 2.151-3.574 2.151-3.574.119-.254.322-.491.762-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.049.17.474-.085.716-.576.716z"/></svg>`,
+  deezer: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.81 4.16v3.03H24V4.16zM6.27 8.38v3.027h5.189V8.38zm12.54 0v3.027H24V8.38zM6.27 12.566v3.027h5.189v-3.027zm6.271 0v3.027h5.19v-3.027zm6.27 0v3.027H24v-3.027zM0 16.752v3.027h5.19v-3.027zm6.27 0v3.027h5.189v-3.027zm6.271 0v3.027h5.19v-3.027zm6.27 0v3.027H24v-3.027z"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+  youtubemusic: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm0 19.104c-3.924 0-7.104-3.18-7.104-7.104S8.076 4.896 12 4.896s7.104 3.18 7.104 7.104-3.18 7.104-7.104 7.104zm0-13.332c-3.432 0-6.228 2.796-6.228 6.228S8.568 18.228 12 18.228s6.228-2.796 6.228-6.228S15.432 5.772 12 5.772zM9.684 15.54V8.46L15.816 12l-6.132 3.54z"/></svg>`,
+  zvuk: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 16.8H6.432V7.2h11.136v9.6zm-9.936-1.2h8.736V8.4H7.632v7.2z"/></svg>`,
+  kion: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`,
+  bandlink: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+  telegram: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
+  tidal: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004L0 16.004l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004zm4.004 4.004l4.004-4.004L24.024 7.996l-4.004 4.004-4.004-4.004z"/></svg>`,
+  soundcloud: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.175 12.225c-.051 0-.094.046-.101.1l-.233 2.154.233 2.105c.007.058.05.098.101.098.05 0 .09-.04.099-.098l.255-2.105-.27-2.154c-.009-.06-.052-.1-.101-.1m-.899.828c-.06 0-.091.037-.104.094L0 14.479l.165 1.308c.014.057.045.094.09.094s.089-.037.099-.094l.21-1.308-.21-1.319c-.01-.06-.052-.094-.09-.094m1.83-1.229c-.061 0-.12.045-.12.104l-.21 2.563.225 2.458c0 .06.045.104.106.104.061 0 .12-.044.12-.104l.24-2.474-.24-2.547c0-.06-.06-.104-.12-.104m.945-.089c-.075 0-.135.06-.15.135l-.193 2.64.21 2.544c.016.077.075.138.149.138.075 0 .135-.061.15-.138l.24-2.544-.24-2.625c-.015-.09-.074-.15-.165-.15m.976-.18c-.09 0-.166.075-.18.165l-.176 2.805.195 2.579c.015.09.09.166.18.166.074 0 .149-.076.164-.165l.21-2.58-.225-2.805c-.015-.09-.074-.165-.165-.165m1.065-.285c-.104 0-.18.09-.195.194l-.164 3.075.18 2.64c.015.09.09.18.194.18s.18-.09.195-.18l.195-2.64-.21-3.075c-.015-.105-.09-.194-.195-.194m1.035-.255c-.119 0-.21.09-.225.209l-.149 3.315.149 2.64c.015.119.105.21.225.21.119 0 .21-.091.224-.21l.166-2.64-.18-3.315c-.016-.12-.106-.209-.226-.209m1.095-.225c-.135 0-.24.105-.24.24l-.149 3.525.149 2.64c.015.135.105.24.255.24.135 0 .24-.105.24-.24l.165-2.64-.165-3.525c0-.135-.105-.24-.24-.24m1.064-.21c-.149 0-.27.12-.27.27l-.119 3.705.135 2.609c0 .15.12.27.27.27.134 0 .254-.12.27-.27l.149-2.609-.165-3.69c-.015-.165-.12-.285-.27-.285m1.096-.149c-.165 0-.3.135-.3.3l-.12 3.825.135 2.564c0 .165.135.3.285.3.165 0 .3-.135.315-.3l.135-2.564-.149-3.825c-.015-.165-.135-.3-.301-.3m1.11.015c-.18 0-.33.15-.33.33l-.105 3.765.12 2.534c.015.18.149.33.33.33.165 0 .315-.15.33-.33l.135-2.534-.149-3.765c-.015-.18-.15-.33-.331-.33m1.096.135c-.195 0-.345.165-.36.36l-.089 3.615.104 2.504c.016.195.166.36.361.36s.344-.165.359-.36l.12-2.504-.135-3.615c-.015-.195-.165-.36-.36-.36m1.14.24c-.21 0-.375.165-.389.375l-.075 3.36.09 2.474c.015.21.18.376.39.376.195 0 .36-.166.375-.376l.105-2.474-.12-3.36c-.015-.21-.165-.375-.375-.375m1.081.34c-.225 0-.39.18-.405.405l-.06 3.015.075 2.429c.015.225.18.405.405.405.21 0 .39-.18.405-.405l.09-2.43-.105-3.014c-.015-.225-.18-.406-.405-.406m1.155.509c-.24 0-.42.195-.435.42l-.045 2.491.06 2.399c.015.24.195.42.42.42.24 0 .42-.18.435-.42l.075-2.4-.089-2.49c-.016-.226-.196-.42-.421-.42m1.185.645c-.255 0-.45.21-.465.45l-.03 1.83.045 2.344c.015.255.21.45.45.45.255 0 .45-.195.465-.45l.06-2.344-.074-1.83c-.016-.24-.211-.45-.451-.45m4.141-.855c-.42 0-.825.075-1.2.225-.24-2.731-2.535-4.876-5.341-4.876-1.275 0-2.46.449-3.375 1.199-.195.165-.24.285-.24.435v9.75c0 .165.12.33.285.375.045 0 9.75.015 9.87.015 1.906 0 3.45-1.544 3.45-3.45 0-1.904-1.545-3.674-3.45-3.674"/></svg>`,
+  amazon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 7.594 3.166 11.87 3.166 2.852 0 5.668-.533 8.447-1.595l.315-.14c.138-.06.234-.1.293-.13.226-.088.39-.046.493.124.104.17.075.36-.087.572l-.062.086c-.679.938-1.58 1.71-2.71 2.325-1.127.614-2.284 1.024-3.475 1.232-.296.05-.594.093-.893.127-.3.035-.6.063-.896.085-.59.04-1.178.04-1.766 0-.295-.02-.59-.045-.886-.08-.295-.032-.59-.076-.884-.13-1.19-.21-2.347-.62-3.475-1.233-1.13-.615-2.03-1.387-2.71-2.325l-.05-.076c-.065-.12-.055-.2.027-.24.03-.015.06-.022.092-.022.05 0 .1.015.148.045zm3.11-1.47c-.103.07-.177.197-.16.34v.017c.016.136.088.234.218.293l.03.012c.082.035.14.03.175-.02.168-.24.397-.44.683-.6.286-.16.57-.24.856-.24.09 0 .178.01.263.03.287.063.516.193.686.386l.037.044c.046.06.095.08.147.057l.016-.008c.08-.037.118-.11.114-.218-.003-.1-.05-.193-.14-.278-.332-.294-.77-.483-1.31-.567-.168-.026-.338-.038-.508-.038-.475 0-.92.106-1.332.32-.41.213-.733.457-.967.73l-.077.1c-.037.056-.047.105-.03.147.017.042.058.075.122.094.035.01.073.012.11.005.04-.006.085-.027.137-.065l.074-.053c.233-.17.488-.313.764-.434.276-.12.547-.18.815-.18.03 0 .063 0 .096.003.115.01.195.074.24.194.044.12.033.248-.036.38-.068.135-.18.24-.332.32-.152.078-.31.117-.475.117-.06 0-.118-.006-.175-.02-.143-.037-.254-.112-.335-.228-.08-.117-.102-.25-.067-.4.035-.15.125-.277.27-.378.145-.1.304-.15.477-.15.03 0 .06 0 .09.005.14.022.244.09.31.202l.02.038c.025.058.02.098-.02.12l-.015.007c-.04.017-.085.007-.137-.028-.088-.06-.194-.083-.316-.07-.122.013-.23.067-.32.16-.092.095-.14.21-.144.345-.003.135.04.253.132.352.092.1.21.16.356.18.06.01.12.012.18.01.15-.01.286-.066.407-.167.122-.1.2-.225.234-.375.035-.15.012-.29-.068-.418-.08-.127-.198-.216-.354-.265-.065-.02-.133-.03-.204-.03-.13 0-.254.03-.37.09-.115.06-.21.14-.286.24-.1.133-.162.284-.188.453-.025.17.002.33.082.48.08.15.196.266.35.35.154.082.32.124.5.124.06 0 .118-.005.177-.015.175-.03.33-.102.468-.218.137-.115.232-.26.286-.433.053-.173.05-.35-.01-.527-.062-.177-.167-.32-.318-.43-.15-.107-.322-.16-.515-.16-.07 0-.138.006-.205.02-.175.033-.33.106-.465.217-.136.112-.235.25-.297.418-.062.167-.07.34-.024.52.046.177.14.323.28.438.14.114.3.175.48.18.06.003.12 0 .18-.01.14-.02.27-.073.387-.16.118-.085.208-.195.27-.328.105-.223.103-.456-.003-.7-.108-.243-.29-.42-.548-.528-.118-.05-.24-.074-.367-.074-.03 0-.058 0-.088.003-.16.012-.305.06-.436.148-.13.087-.23.2-.297.34-.067.138-.093.287-.08.447.014.16.07.306.168.438.1.132.224.23.378.294.154.064.315.09.485.077.17-.013.326-.065.47-.157.145-.092.26-.214.345-.365.085-.152.126-.32.12-.507-.004-.186-.057-.36-.158-.52-.1-.16-.237-.283-.41-.37-.172-.086-.36-.12-.562-.1-.202.02-.386.09-.552.21-.166.12-.292.278-.378.47-.086.195-.116.402-.09.623.027.22.11.42.248.596.138.177.314.31.528.4.214.09.44.118.677.085.238-.033.452-.12.643-.263.192-.143.338-.327.44-.553.1-.225.14-.47.115-.73-.024-.263-.107-.5-.248-.717-.14-.215-.326-.382-.557-.5-.23-.12-.48-.165-.752-.138-.27.027-.515.117-.735.27-.22.153-.39.354-.512.605-.12.25-.175.52-.162.81.013.288.09.555.23.8.14.247.33.44.57.584.24.143.505.213.795.21.29-.003.56-.08.81-.23.25-.15.445-.353.585-.61.14-.255.21-.536.21-.84 0-.305-.07-.587-.21-.847-.14-.26-.336-.465-.587-.617-.25-.15-.522-.225-.815-.225-.12 0-.238.013-.356.038-.24.053-.456.153-.65.3-.193.147-.34.332-.44.556-.1.223-.142.467-.13.73.014.264.088.505.222.724.135.22.315.394.54.523.225.13.47.194.736.194.03 0 .057 0 .085-.002.297-.015.566-.097.807-.245.24-.148.43-.348.567-.6.137-.25.206-.528.206-.83 0-.304-.07-.584-.21-.84-.14-.256-.335-.458-.586-.608-.252-.15-.527-.225-.825-.225-.12 0-.238.012-.354.037-.24.052-.456.15-.648.298-.192.147-.34.333-.44.557-.1.224-.143.467-.13.73.013.263.087.504.22.723.135.22.315.394.54.523.225.13.47.194.737.194.03 0 .058 0 .086-.002.15-.01.292-.04.427-.094l-.132.048z"/></svg>`,
+  pandora: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm3.75 14.25c-.69 1.035-1.74 1.5-3.015 1.5H9.75v3h-3V5.25h6c2.865 0 4.5 1.98 4.5 4.5 0 1.785-.795 3.405-1.5 4.5z"/></svg>`,
+  shazam: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm3.627 14.715c-.478.904-1.61 1.252-2.513.774-1.746-.923-3.097-2.385-3.892-4.196-.398-.907.015-1.968.923-2.366.908-.397 1.968.016 2.366.924.398.908.015 1.968-.923 2.366-.153.067-.312.108-.473.125.397.676.93 1.27 1.565 1.74.22.164.354.42.354.697 0 .348-.203.662-.52.81-.097.046-.2.07-.305.07-.167 0-.332-.053-.47-.153-1.015-.754-1.793-1.784-2.253-2.976-.398-.906.016-1.968.924-2.365.907-.398 1.967.015 2.365.923.478.905.127 2.036-.774 2.514-.154.082-.32.136-.49.16.322.463.728.867 1.196 1.194.904.478 1.252 1.61.773 2.514-.067.128-.152.246-.252.353l-.1.092z"/></svg>`,
+  other: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
 };
 
 function normalizeHostname(rawUrl: string): string {
@@ -1586,35 +1657,88 @@ function htmlPage(
     .smartlink-release__artist .artist-link { color: rgba(255,255,255,0.7); font-weight: 500; transition: color 150ms ease; }
     .smartlink-release__artist .artist-link:hover { color: #fff; }
     .smartlink-release__date { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 0.1rem; }
-    .smartlink-release__links { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.25rem; }
+    .smartlink-release__links { display: flex; flex-direction: column; gap: 0.55rem; width: 100%; margin-top: 0.25rem; }
     .smartlink-release__links .link-btn { 
-      justify-content: center; padding: 0.8rem 1rem; font-size: 0.95rem; border-radius: 12px; font-weight: 600; 
-      background: linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2);
-      color: #fff; transition: all 200ms ease;
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: flex-start; gap: 0.75rem;
+      padding: 0.85rem 1.1rem; font-size: 0.95rem; border-radius: 14px; font-weight: 600; 
+      background: linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.15);
+      color: #fff; 
+      transition: all 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
     }
+    .smartlink-release__links .link-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--platform-color, #F59E0B) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+    .smartlink-release__links .link-btn:hover::before { opacity: 0.12; }
     .smartlink-release__links .link-btn:hover { 
-      background: linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.1) 100%);
-      border-color: rgba(255,255,255,0.18);
-      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.15), 0 4px 16px rgba(0,0,0,0.25), 0 0 20px rgba(255,255,255,0.05);
-      transform: translateY(-1px);
+      border-color: var(--platform-color, rgba(255,255,255,0.2));
+      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.25), 0 0 0 1px var(--platform-color, transparent);
+      transform: translateY(-2px) scale(1.01);
     }
-    .smartlink-release__links .link-btn:active { transform: translateY(0); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.2); }
+    .smartlink-release__links .link-btn:active { 
+      transform: translateY(0) scale(0.99); 
+      box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2); 
+    }
     .smartlink-release__links .link-btn::after { display: none; }
-    .smartlink-release__empty { color: rgba(255,255,255,0.4); text-align: center; padding: 1rem; }
-    .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin-top: 0.5rem; }
-    .share-btn { 
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; 
-      border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; 
-      background: rgba(255,255,255,0.04); 
-      color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 550; cursor: pointer; transition: all 180ms ease;
+    .link-btn__icon { 
+      width: 22px; height: 22px; flex-shrink: 0; 
+      display: flex; align-items: center; justify-content: center;
+      color: var(--platform-color, #fff);
+      transition: transform 200ms ease, filter 200ms ease;
+      position: relative; z-index: 1;
     }
-    .share-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.15); }
-    .share-btn.copied { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #4ade80; }
-    .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .smartlink-release .copy-toast { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.65); }
+    .link-btn__icon svg { width: 100%; height: 100%; }
+    .link-btn:hover .link-btn__icon { transform: scale(1.1); filter: drop-shadow(0 0 6px var(--platform-color, rgba(255,255,255,0.4))); }
+    .link-btn__label { 
+      flex: 1; text-align: left; font-weight: 600; letter-spacing: -0.01em;
+      position: relative; z-index: 1;
+    }
+    .smartlink-release__empty { color: rgba(255,255,255,0.4); text-align: center; padding: 1rem; }
+    .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; width: 100%; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06); }
+    .share-socials { display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
+    .share-social { 
+      display: flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      text-decoration: none;
+    }
+    .share-social svg { width: 18px; height: 18px; }
+    .share-social:hover { transform: translateY(-2px) scale(1.08); }
+    .share-social--telegram { --social-color: #26A5E4; }
+    .share-social--twitter { --social-color: #fff; }
+    .share-social--whatsapp { --social-color: #25D366; }
+    .share-social--copy { --social-color: #F59E0B; }
+    .share-social:hover { 
+      background: rgba(255,255,255,0.1);
+      border-color: var(--social-color);
+      color: var(--social-color);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 0 3px rgba(255,255,255,0.05);
+    }
+    .share-social--copy.copied { 
+      background: rgba(34,197,94,0.15); 
+      border-color: #4ade80; 
+      color: #4ade80; 
+    }
+    .smartlink-release .copy-toast { 
+      text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.5); 
+      min-height: 1.2em; 
+      opacity: 0; transition: opacity 200ms ease;
+    }
+    .smartlink-release .copy-toast.visible { opacity: 1; }
     
     /* Legacy styles for backward compatibility */
     .release-grid { display: grid; grid-template-columns: minmax(300px, 360px) minmax(420px, 520px); gap: 1.35rem; align-items: start; justify-content: center; min-width: 0; }
@@ -1907,7 +2031,11 @@ function htmlPage(
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
       .smartlink-release__body { padding: 0 1.25rem 1.25rem; margin-top: -1.5rem; gap: 0.9rem; }
-      .smartlink-release__links .link-btn { padding: 0.7rem 1rem; font-size: 0.9rem; }
+      .smartlink-release__links .link-btn { padding: 0.75rem 1rem; font-size: 0.9rem; gap: 0.65rem; }
+      .link-btn__icon { width: 20px; height: 20px; }
+      .share-socials { gap: 0.5rem; }
+      .share-social { width: 38px; height: 38px; }
+      .share-social svg { width: 16px; height: 16px; }
       body.page-smartlink .card { width: calc(100% - 20px); }
     }
     @media (max-width: 480px) {
@@ -1928,7 +2056,11 @@ function htmlPage(
       .smartlink-release__body { padding: 0 1.1rem 1.1rem; margin-top: -1.25rem; gap: 0.8rem; }
       .smartlink-release__title { font-size: 1.25rem; }
       .smartlink-release__artist { font-size: 0.85rem; }
-      .smartlink-release__links .link-btn { padding: 0.65rem 0.9rem; font-size: 0.88rem; }
+      .smartlink-release__links .link-btn { padding: 0.65rem 0.9rem; font-size: 0.88rem; gap: 0.55rem; border-radius: 12px; }
+      .link-btn__icon { width: 18px; height: 18px; }
+      .share-socials { gap: 0.45rem; }
+      .share-social { width: 36px; height: 36px; }
+      .share-social svg { width: 15px; height: 15px; }
       body.page-smartlink .card { width: calc(100% - 16px); border-radius: 16px; }
     }
   </style>
@@ -2464,8 +2596,14 @@ function renderSmartlink(
 
   const linkButtons = orderedEntries
     .map(([platform, url]) => {
-      const label = platform.charAt(0).toUpperCase() + platform.slice(1);
-      return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+      const platformKey = platform.toLowerCase();
+      const label = PLATFORM_LABELS[platformKey] || platform.charAt(0).toUpperCase() + platform.slice(1);
+      const icon = PLATFORM_ICONS[platformKey] || PLATFORM_ICONS["other"];
+      const color = PLATFORM_COLORS[platformKey] || PLATFORM_COLORS["other"];
+      return `<a class="link-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-platform="${escapeHtml(platformKey)}" style="--platform-color: ${color}">
+        <span class="link-btn__icon">${icon}</span>
+        <span class="link-btn__label">${escapeHtml(label)}</span>
+      </a>`;
     })
     .join("\n");
   const linksClassName = linkCount >= 2 ? "links-grid" : "links-grid links-grid--single";
@@ -2487,10 +2625,20 @@ function renderSmartlink(
           ${linkButtons || "<span class=\"smartlink-release__empty\">Ссылок пока нет</span>"}
         </div>
         <div class="smartlink-release__share">
-          <button class="share-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Поделиться">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            <span>Поделиться</span>
-          </button>
+          <div class="share-socials">
+            <a class="share-social share-social--telegram" href="https://t.me/share/url?url=${encodeURIComponent(canonicalUrl)}&text=${encodeURIComponent(`${title} — ${artistName}`)}" target="_blank" rel="noopener noreferrer" aria-label="Поделиться в Telegram">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            </a>
+            <a class="share-social share-social--twitter" href="https://twitter.com/intent/tweet?url=${encodeURIComponent(canonicalUrl)}&text=${encodeURIComponent(`${title} — ${artistName}`)}" target="_blank" rel="noopener noreferrer" aria-label="Поделиться в X/Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a class="share-social share-social--whatsapp" href="https://wa.me/?text=${encodeURIComponent(`${title} — ${artistName} ${canonicalUrl}`)}" target="_blank" rel="noopener noreferrer" aria-label="Поделиться в WhatsApp">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </a>
+            <button class="share-social share-social--copy" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </button>
+          </div>
           <span class="copy-toast" role="status" aria-live="polite"></span>
         </div>
       </div>
@@ -2540,8 +2688,9 @@ function renderSmartlink(
         }
 
         function attachCopyHandlers() {
-          document.querySelectorAll('.share-btn[data-url], .copy-btn[data-url]').forEach((button) => {
-            const toast = button.parentElement?.querySelector('.copy-toast');
+          document.querySelectorAll('.share-social--copy[data-url], .share-btn[data-url], .copy-btn[data-url]').forEach((button) => {
+            const shareContainer = button.closest('.smartlink-release__share');
+            const toast = shareContainer?.querySelector('.copy-toast') || button.parentElement?.querySelector('.copy-toast');
 
             button.addEventListener('click', async (event) => {
               event.preventDefault();
