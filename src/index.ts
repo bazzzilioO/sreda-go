@@ -1676,6 +1676,7 @@ function htmlPage(
     .copy-btn:active { background: linear-gradient(125deg, rgba(245,158,11,0.98), rgba(245,158,11,0.95)); box-shadow: 0 8px 18px rgba(0,0,0,0.26), 0 0 0 1px rgba(245,158,11,0.26); transform: translateY(0); }
     .copy-btn.copied { box-shadow: 0 8px 20px rgba(0,0,0,0.26), 0 0 0 1px rgba(245,158,11,0.32); }
     .copy-btn:focus-visible { outline: 2px solid rgba(245,158,11,0.5); outline-offset: 3px; }
+    .copy-btn__icon { width: 16px; height: 16px; display: block; flex: 0 0 auto; }
     .copy-toast { min-width: 80px; color: ${THEME.colors.accent}; opacity: 0; transform: translateY(4px); transition: opacity 180ms ease, transform 180ms ease; font-weight: 760; font-size: 0.9rem; text-align: left; }
     .copy-toast.visible { opacity: 1; transform: translateY(0); }
     .smartlink-footer .copy-toast { grid-column: 1 / -1; font-size: 0.85rem; }
@@ -1702,16 +1703,19 @@ function htmlPage(
     .artist-name { color: ${THEME.colors.textPrimary}; font-size: 1.9rem; font-weight: 850; letter-spacing: 0.015em; }
     .artist-meta { color: ${THEME.colors.textMuted}; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
     .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; }
-    .smartlink-item--release { gap: 0.35rem; }
+    .smartlink-item--release { gap: 0.35rem; position: relative; }
     .smartlink-item--release .smartlink-main { align-items: flex-start; }
     .smartlink-item--release .smartlink-cover { width: 84px; height: 84px; }
     .smartlink-item--release .smartlink-title { font-size: 1.05rem; }
     .smartlink-item--release .meta-row { margin-top: 0.15rem; }
+    .smartlink-item__copy { position: absolute; top: 12px; right: 12px; z-index: 2; }
     .smartlink-footer { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.5rem; }
     .copy-btn--ghost { background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; box-shadow: none; border: 1px solid ${THEME.colors.borderSubtle}; padding: 0.5rem 0.65rem; min-height: 0; font-size: 0.92rem; font-weight: 760; width: auto; }
     .copy-btn--ghost:hover { background: rgba(255,255,255,0.08); color: ${THEME.colors.textPrimary}; box-shadow: 0 8px 18px rgba(0,0,0,0.26); }
     .copy-btn--ghost:active { background: rgba(255,255,255,0.06); box-shadow: none; }
-    .copy-btn--ghost::before { content: "⧉"; font-size: 0.9rem; }
+    .copy-btn--icon { width: auto; min-height: 0; padding: 0.45rem 0.55rem; border-radius: 12px; background: rgba(255,255,255,0.04); color: ${THEME.colors.textSecondary}; box-shadow: none; border: 1px solid ${THEME.colors.borderSubtle}; }
+    .copy-btn--icon:hover { background: rgba(255,255,255,0.08); color: ${THEME.colors.textPrimary}; box-shadow: 0 8px 18px rgba(0,0,0,0.22); }
+    .copy-btn--icon:active { background: rgba(255,255,255,0.06); box-shadow: none; }
     .empty-state { padding: 1.4rem; border-radius: 12px; border: 1px dashed ${THEME.colors.border}; background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; }
     .powered-by {
       display: flex;
@@ -1779,7 +1783,7 @@ function htmlPage(
       .smartlink-title-row { align-items: flex-start; }
       .links-grid { grid-template-columns: 1fr; }
       .smartlink-list { grid-template-columns: 1fr; }
-      .copy-btn { width: 100%; }
+      .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
@@ -1991,6 +1995,11 @@ function renderError(): Response {
 
 async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: string): Promise<Response> {
   try {
+    const linkIcon = `<svg class="copy-btn__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.4a5 5 0 0 0 7.07 7.07L14 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>`;
+
     const query = await env.DB.prepare(
       `SELECT
         title,
@@ -2081,6 +2090,9 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
 
       return `
         <article class="smartlink-item smartlink-item--release" data-href="${escapeHtml(canonicalUrl)}" tabindex="0" role="link">
+          <button class="copy-btn copy-btn--icon smartlink-item__copy" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Скопировать ссылку на релиз" title="Скопировать ссылку">
+            ${linkIcon}
+          </button>
           <a class="smartlink-main" href="${escapeHtml(canonicalUrl)}">
             ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "smartlink-cover" })}
             <div class="smartlink-content">
@@ -2102,7 +2114,10 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
               </div>
             </div>
             <div class="artist-actions">
-              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Скопировать ссылку на страницу артиста" title="Скопировать ссылку">Скопировать</button>
+              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+                ${linkIcon}
+                <span>Поделиться</span>
+              </button>
               <span class="copy-toast" role="status" aria-live="polite"></span>
             </div>
           </div>
@@ -2139,16 +2154,20 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
 
           function attachCopyHandlers() {
             document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
-              const toast = button.parentElement?.querySelector('.copy-toast') || document.querySelector('.artist-actions .copy-toast');
+              const container = button.closest('.artist-actions') || button.parentElement;
+              const toast = container?.querySelector('.copy-toast') || null;
 
               button.addEventListener('click', async (event) => {
                 event.stopPropagation();
                 const urlToCopy = button.getAttribute('data-url') || '';
                 const ok = await copyText(urlToCopy);
+                const originalTitle = button.getAttribute('title') || '';
 
                 if (toast) {
                   toast.textContent = ok ? 'Скопировано' : 'Не удалось скопировать';
                   toast.classList.add('visible');
+                } else if (originalTitle) {
+                  button.setAttribute('title', ok ? 'Скопировано' : 'Не удалось скопировать');
                 }
 
                 button.classList.toggle('copied', ok);
@@ -2156,6 +2175,9 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 window.setTimeout(() => {
                   button.classList.remove('copied');
                   toast?.classList.remove('visible');
+                  if (!toast && originalTitle) {
+                    button.setAttribute('title', originalTitle);
+                  }
                 }, ok ? 1500 : 1800);
               });
             });

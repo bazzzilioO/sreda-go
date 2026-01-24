@@ -239,7 +239,7 @@ test("upsert creates a record and normalizes slug", async () => {
     body: JSON.stringify({
       title: "Мой релиз",
       artist_name: "Артист",
-      links: { spotify: "https://spotify.example" },
+      links: { spotify: "https://open.spotify.com/track/0" },
       owner: { tg_user_id: "11" },
     }),
   });
@@ -317,7 +317,7 @@ test("index patch updates owned records", async () => {
       owner_tg_user_id: "1",
       patch: {
         title: "Релиз (обновлено)",
-        links: { vk: "https://vk.example" },
+        links: { vk: "https://vk.com/music/0" },
       },
     }),
   });
@@ -391,7 +391,7 @@ test("artist page shows copy button for empty state", async () => {
   const html = await response.text();
 
   assert.equal(response.status, 200);
-  assert.match(html, /Скопировать ссылку/);
+  assert.match(html, /Поделиться/);
   assert.match(html, /data-url="https:\/\/go\.test\/artist\/ghost"/);
 });
 
