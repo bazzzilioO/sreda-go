@@ -1440,10 +1440,10 @@ function htmlPage(
     body.page-home { align-items: center; padding-top: 3.6rem; padding-bottom: 3.6rem; }
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
     body.page-smartlink .card { 
-      width: min(400px, calc(100% - 32px)); padding: 2rem 1.75rem 1.75rem; 
-      background: rgba(20,20,22,0.75); border: 1px solid rgba(255,255,255,0.06);
+      width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
+      background: rgba(18,18,20,0.85); border: 1px solid rgba(255,255,255,0.08);
       backdrop-filter: blur(40px) saturate(1.4); -webkit-backdrop-filter: blur(40px) saturate(1.4);
-      box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
     }
     .home { display: flex; flex-direction: column; gap: 1.45rem; position: relative; }
     .home::before {
@@ -1566,44 +1566,47 @@ function htmlPage(
     .home-feature-text { color: ${THEME.colors.textSecondary}; line-height: 1.55; }
     .home-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.92rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem; margin-top: 0.3rem; }
     
-    /* Smartlink Release Page - Immersive Cover Design */
-    .smartlink-release { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; max-width: 320px; margin: 0 auto; width: 100%; }
-    .smartlink-release__cover { width: 100%; max-width: 240px; position: relative; }
+    /* Smartlink Release Page - Integrated Cover Design */
+    .smartlink-release { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: 100%; }
+    .smartlink-release__cover { width: 100%; position: relative; line-height: 0; }
     .smartlink-release__cover .cover { 
-      width: 100%; max-width: 240px; max-height: 240px; border-radius: 16px; 
-      box-shadow: 0 25px 60px -10px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
-      transition: transform 200ms ease, box-shadow 200ms ease;
+      width: 100%; max-width: 100%; aspect-ratio: 1/1; border-radius: 0; 
+      box-shadow: none; display: block;
     }
-    .smartlink-release__cover:hover .cover { transform: translateY(-4px) scale(1.02); box-shadow: 0 35px 70px -10px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08); }
-    .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; text-align: center; width: 100%; }
-    .smartlink-release__title { font-size: 1.35rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; letter-spacing: -0.01em; }
+    .smartlink-release__cover::after {
+      content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
+      background: linear-gradient(to top, rgba(18,18,20,1) 0%, rgba(18,18,20,0.8) 40%, transparent 100%);
+      pointer-events: none;
+    }
+    .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 1.5rem; margin-top: -3rem; position: relative; z-index: 1; }
+    .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; width: 100%; }
+    .smartlink-release__title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .smartlink-release__artist { font-size: 0.9rem; }
-    .smartlink-release__artist .artist-link { color: rgba(255,255,255,0.6); font-weight: 500; transition: color 150ms ease; }
+    .smartlink-release__artist .artist-link { color: rgba(255,255,255,0.7); font-weight: 500; transition: color 150ms ease; }
     .smartlink-release__artist .artist-link:hover { color: #fff; }
-    .smartlink-release__date { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
-    .smartlink-release__links { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
+    .smartlink-release__date { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 0.1rem; }
+    .smartlink-release__links { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.25rem; }
     .smartlink-release__links .link-btn { 
-      justify-content: center; padding: 0.75rem 1rem; font-size: 0.92rem; border-radius: 50px; font-weight: 600; 
-      background: rgba(255,255,255,0.08); border: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-      color: #fff; transition: all 180ms ease; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      justify-content: center; padding: 0.75rem 1rem; font-size: 0.92rem; border-radius: 10px; font-weight: 600; 
+      background: rgba(255,255,255,0.08); border: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+      color: #fff; transition: all 180ms ease;
     }
     .smartlink-release__links .link-btn:hover { 
-      background: rgba(255,255,255,0.15); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 8px 24px rgba(0,0,0,0.3); 
-      transform: translateY(-2px);
+      background: rgba(255,255,255,0.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15); 
     }
-    .smartlink-release__links .link-btn:active { transform: translateY(0); }
+    .smartlink-release__links .link-btn:active { background: rgba(255,255,255,0.1); }
     .smartlink-release__links .link-btn::after { display: none; }
     .smartlink-release__empty { color: rgba(255,255,255,0.4); text-align: center; padding: 1rem; }
-    .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin-top: 0.25rem; }
+    .smartlink-release__share { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; margin-top: 0.5rem; }
     .share-btn { 
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; 
-      border: none; border-radius: 50px; background: rgba(255,255,255,0.05); 
-      color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 550; cursor: pointer; transition: all 150ms ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.45rem 0.9rem; 
+      border: none; border-radius: 8px; background: rgba(255,255,255,0.05); 
+      color: rgba(255,255,255,0.45); font-size: 0.8rem; font-weight: 550; cursor: pointer; transition: all 150ms ease;
     }
-    .share-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+    .share-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
     .share-btn.copied { background: rgba(34,197,94,0.2); color: #4ade80; }
-    .share-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-    .smartlink-release .copy-toast { text-align: center; font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+    .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .smartlink-release .copy-toast { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.65); }
     
     /* Legacy styles for backward compatibility */
     .release-grid { display: grid; grid-template-columns: minmax(300px, 360px) minmax(420px, 520px); gap: 1.35rem; align-items: start; justify-content: center; min-width: 0; }
@@ -1895,12 +1898,9 @@ function htmlPage(
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
-      .smartlink-release { gap: 1.25rem; max-width: 100%; }
-      .smartlink-release__cover { max-width: 220px; }
-      .smartlink-release__cover .cover { max-width: 220px; max-height: 220px; border-radius: 14px; }
-      .smartlink-release__links { max-width: 100%; }
+      .smartlink-release__body { padding: 0 1.25rem 1.25rem; margin-top: -2.5rem; gap: 0.9rem; }
       .smartlink-release__links .link-btn { padding: 0.7rem 1rem; font-size: 0.9rem; }
-      body.page-smartlink .card { padding: 1.75rem 1.5rem 1.5rem; }
+      body.page-smartlink .card { width: calc(100% - 20px); }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
@@ -1917,13 +1917,11 @@ function htmlPage(
       .artist-meta { font-size: 0.82rem; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
-      .smartlink-release { gap: 1.1rem; }
-      .smartlink-release__cover { max-width: 200px; }
-      .smartlink-release__cover .cover { max-width: 200px; max-height: 200px; border-radius: 12px; }
-      .smartlink-release__title { font-size: 1.2rem; }
+      .smartlink-release__body { padding: 0 1.1rem 1.1rem; margin-top: -2rem; gap: 0.8rem; }
+      .smartlink-release__title { font-size: 1.25rem; }
       .smartlink-release__artist { font-size: 0.85rem; }
-      .smartlink-release__links .link-btn { padding: 0.65rem 0.9rem; font-size: 0.88rem; border-radius: 40px; }
-      body.page-smartlink .card { padding: 1.5rem 1.25rem 1.25rem; }
+      .smartlink-release__links .link-btn { padding: 0.65rem 0.9rem; font-size: 0.88rem; }
+      body.page-smartlink .card { width: calc(100% - 16px); border-radius: 16px; }
     }
   </style>
 </head>
@@ -2469,22 +2467,24 @@ function renderSmartlink(
       <div class="smartlink-release__cover">
         ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "cover" })}
       </div>
-      <div class="smartlink-release__info">
-        <h1 class="smartlink-release__title">${escapeHtml(title)}</h1>
-        <div class="smartlink-release__artist">
-          ${artistLink}
+      <div class="smartlink-release__body">
+        <div class="smartlink-release__info">
+          <h1 class="smartlink-release__title">${escapeHtml(title)}</h1>
+          <div class="smartlink-release__artist">
+            ${artistLink}
+          </div>
+          ${releaseDate ? `<div class="smartlink-release__date">${escapeHtml(releaseDate)}</div>` : ""}
         </div>
-        ${releaseDate ? `<div class="smartlink-release__date">${escapeHtml(releaseDate)}</div>` : ""}
-      </div>
-      <div class="smartlink-release__links">
-        ${linkButtons || "<span class=\"smartlink-release__empty\">Ссылок пока нет</span>"}
-      </div>
-      <div class="smartlink-release__share">
-        <button class="share-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Поделиться">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          <span>Поделиться</span>
-        </button>
-        <span class="copy-toast" role="status" aria-live="polite"></span>
+        <div class="smartlink-release__links">
+          ${linkButtons || "<span class=\"smartlink-release__empty\">Ссылок пока нет</span>"}
+        </div>
+        <div class="smartlink-release__share">
+          <button class="share-btn" type="button" data-url="${escapeHtml(canonicalUrl)}" aria-label="Поделиться">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>Поделиться</span>
+          </button>
+          <span class="copy-toast" role="status" aria-live="polite"></span>
+        </div>
       </div>
     </div>
     <script>
