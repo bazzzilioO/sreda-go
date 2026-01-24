@@ -1675,8 +1675,9 @@ function htmlPage(
     .smartlink-release__links .link-btn { 
       display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem;
       padding: 0.9rem 1.1rem; font-size: 0.92rem; border-radius: 16px; font-weight: 600; 
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1);
       color: #fff; 
       transition: all 180ms ease;
       text-decoration: none;
@@ -1689,10 +1690,10 @@ function htmlPage(
     .smartlink-release__links .link-btn:nth-child(5) { animation-delay: 0.25s; }
     .smartlink-release__links .link-btn:nth-child(6) { animation-delay: 0.3s; }
     .smartlink-release__links .link-btn:hover { 
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.25);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15);
     }
     .smartlink-release__links .link-btn:active { transform: translateY(0); box-shadow: none; }
     .smartlink-release__links .link-btn::after { display: none; }
