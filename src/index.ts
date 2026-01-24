@@ -1501,7 +1501,6 @@ function htmlPage(
     .home-action--secondary { background: rgba(255,255,255,0.035); color: ${THEME.colors.textPrimary}; border-color: rgba(255,255,255,0.10); }
     .home-action:hover { transform: translateY(-1px); border-color: rgba(245,158,11,0.45); box-shadow: 0 14px 30px rgba(0,0,0,0.34); }
     .home-action:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
-    .home-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.95rem; margin-top: 0.25rem; }
     .home-inline { color: ${THEME.colors.textPrimary}; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .home-inline:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
     .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.25rem; }
@@ -1830,7 +1829,7 @@ function renderHome(): Response {
       <div class="home-hero">
         <div class="home-top">
           <div class="home-badge">SREDA · tools for artists</div>
-          <h1 class="home-title">Инструменты для независимых артистов</h1>
+          <h1 class="home-title">Инструменты для артистов</h1>
           <p class="home-lead">
             Релиз‑план, смартлинки, напоминания, кабинеты артиста и питчинг — в одном месте.
           </p>
@@ -1842,26 +1841,26 @@ function renderHome(): Response {
               Открыть смартлинки (пример)
             </a>
           </div>
-          <div class="home-kicker">
-            <span class="meta-label">Формат ссылок:</span>
-            <strong>go.sreda.pw/&lt;artist&gt;/&lt;slug&gt;</strong>
-            <span class="meta-divider">•</span>
-            <a class="home-inline" href="${escapeHtml(demoSmartlink)}">пример релиза</a>
-          </div>
         </div>
         <div class="home-visual" aria-hidden="true">
-          <svg width="168" height="168" viewBox="0 0 168 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="180" height="180" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="g1" x1="20" y1="10" x2="148" y2="158" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#FBBF24" stop-opacity="0.95"/>
-                <stop offset="1" stop-color="#F59E0B" stop-opacity="0.55"/>
+              <linearGradient id="bolt" x1="50" y1="25" x2="170" y2="195" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FBBF24" stop-opacity="0.98"/>
+                <stop offset="1" stop-color="#F59E0B" stop-opacity="0.92"/>
               </linearGradient>
+              <filter id="ds" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="rgba(0,0,0,0.45)"/>
+              </filter>
             </defs>
-            <circle cx="84" cy="84" r="62" stroke="url(#g1)" stroke-width="2.4" opacity="0.9"/>
-            <circle cx="84" cy="84" r="44" stroke="rgba(255,255,255,0.12)" stroke-width="2.2"/>
-            <path d="M52 106c10-26 54-52 64-22 7 21-12 42-32 42-14 0-24-9-32-20Z" fill="rgba(255,255,255,0.06)"/>
-            <path d="M62 92c8-18 40-36 48-14 5 14-8 30-24 30-10 0-18-6-24-16Z" fill="rgba(245,158,11,0.12)"/>
-            <text x="84" y="88" text-anchor="middle" dominant-baseline="middle" font-family="'Inter','Segoe UI',system-ui" font-size="18" font-weight="800" fill="rgba(255,255,255,0.92)">SREDA</text>
+            <circle cx="110" cy="110" r="78" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+            <circle cx="110" cy="110" r="58" stroke="rgba(245,158,11,0.22)" stroke-width="2"/>
+            <g filter="url(#ds)">
+              <path
+                d="M96 18 L156 86 L124 114 L176 156 L58 202 L78 142 L44 120 Z"
+                fill="url(#bolt)"
+              />
+            </g>
           </svg>
         </div>
       </div>
