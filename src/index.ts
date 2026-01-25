@@ -1516,15 +1516,16 @@ function htmlPage(
     body.page-artist .card { 
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
-      border-radius: 24px;
+      border-top: none;
+      border-radius: 0 0 24px 24px;
       background-clip: padding-box;
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
-      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
-      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4);
+      overflow: visible;
       padding-top: 0;
     }
     body.page-artist .card::before {
-      content: ''; position: absolute; inset: -1px; border-radius: 24px; padding: 1px;
+      content: ''; position: absolute; inset: -1px; top: 0; border-radius: 0 0 24px 24px; padding: 1px;
       background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1925,8 +1926,8 @@ function htmlPage(
     .artist-hero {
       position: relative;
       width: calc(100% + 3rem);
-      margin: -1.5rem -1.5rem 1rem -1.5rem;
-      border-radius: 24px 24px 0 0;
+      margin: 0 -1.5rem 1rem -1.5rem;
+      border-radius: 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
       max-height: 300px;
@@ -2050,7 +2051,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 220px; margin: -1.4rem -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 20px 20px 0 0; }
+      .artist-hero { max-height: 220px; margin: 0 -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 0; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
@@ -2075,7 +2076,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 200px; margin: -1.1rem -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); border-radius: 16px 16px 0 0; }
+      .artist-hero { max-height: 180px; margin: 0 -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); border-radius: 0; }
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
