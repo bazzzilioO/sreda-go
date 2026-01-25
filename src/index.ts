@@ -2091,8 +2091,6 @@ function htmlPage(
       .artist-body { padding: 0 1.4rem 0.85rem; margin-top: -2rem; }
       .artist-name { font-size: 1.5rem; }
       .artist-content { padding: 0 1.4rem 1.4rem 1.4rem; }
-      .artist-hero__content { padding: 0.85rem 1.4rem; }
-      .artist-name { font-size: 1.4rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
