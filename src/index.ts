@@ -1934,9 +1934,9 @@ function htmlPage(
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-hero {
       position: relative;
-      width: 100%;
-      margin: 0 0 0.75rem 0;
-      border-radius: 0;
+      width: calc(100% - 2px);
+      margin: 1px 1px 0.75rem 1px;
+      border-radius: 23px 23px 0 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
       max-height: 300px;
