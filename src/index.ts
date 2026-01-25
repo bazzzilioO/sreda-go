@@ -1695,7 +1695,7 @@ function htmlPage(
       mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
     }
     .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 0.75rem; margin-top: -2rem; position: relative; z-index: 1; }
-    .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; width: 100%; }
+    .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; width: 100%; }
     .smartlink-release__title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.15; letter-spacing: -0.02em; }
     .smartlink-release__artist { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.88rem; font-weight: 500; }
     .smartlink-release__artist .artist-link { 
