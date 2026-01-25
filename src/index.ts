@@ -1514,6 +1514,7 @@ function htmlPage(
     body.page-home { align-items: center; padding-top: 3.6rem; padding-bottom: 3.6rem; }
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
     body.page-artist .card { 
+      position: relative;
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
       border-radius: 24px;
