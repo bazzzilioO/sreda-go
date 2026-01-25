@@ -1888,9 +1888,25 @@ function htmlPage(
       -webkit-backdrop-filter: blur(14px) saturate(1.1);
       box-shadow: 0 10px 24px rgba(0,0,0,0.35);
     }
-    .smartlink-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; margin-top: 0.75rem; }
-    .smartlink-item { width: 100%; }
-    .smartlink-item { display: flex; flex-direction: column; gap: 0; padding: 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); cursor: pointer; transition: all 180ms ease; box-shadow: 0 2px 12px rgba(0,0,0,0.1); overflow: hidden; }
+    .smartlink-list { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+      gap: 0.85rem; 
+      margin-top: 0.75rem; 
+    }
+    .smartlink-item { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 0; 
+      padding: 0; 
+      border-radius: 12px; 
+      border: 1px solid rgba(255,255,255,0.08); 
+      background: rgba(255,255,255,0.04); 
+      cursor: pointer; 
+      transition: all 180ms ease; 
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1); 
+      overflow: hidden; 
+    }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
     .smartlink-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
     .smartlink-item:active { transform: translateY(0); }
@@ -1922,14 +1938,18 @@ function htmlPage(
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 25%;
-      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+      object-position: center 30%;
     }
     .artist-hero__overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(18,18,22,0) 0%, rgba(18,18,22,0.3) 60%, rgba(18,18,22,0.8) 85%, rgba(18,18,22,1) 100%);
+      background: linear-gradient(180deg, 
+        rgba(18,18,22,0) 0%, 
+        rgba(18,18,22,0) 30%,
+        rgba(18,18,22,0.4) 55%, 
+        rgba(18,18,22,0.75) 75%, 
+        rgba(18,18,22,0.92) 90%,
+        rgba(18,18,22,1) 100%);
       pointer-events: none;
     }
     .artist-hero__content {
@@ -1989,9 +2009,6 @@ function htmlPage(
     .powered-by__logo:hover { opacity: 1; transform: translateY(-1px); }
     .powered-by__logo:active { transform: translateY(0); }
     .powered-by__logo svg { width: 100%; height: auto; display: block; }
-    @media (max-width: 1024px) {
-      .smartlink-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-    }
     @media (max-width: 1100px) {
       .links-grid { grid-template-columns: 1fr; }
     }
@@ -2019,13 +2036,12 @@ function htmlPage(
       .cover { max-width: min(92vw, 420px); }
       .smartlink-title-row { align-items: flex-start; }
       .links-grid { grid-template-columns: 1fr; }
-      .smartlink-list { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+      .smartlink-list { gap: 0.6rem; }
       .smartlink-item--release .smartlink-content { padding: 0.5rem 0.6rem; }
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
       .artist-hero { max-height: 220px; margin: -1.4rem -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 20px 20px 0 0; }
-      .smartlink-list { grid-template-columns: repeat(2, 1fr); }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
       .artist-actions { right: 1.4rem; bottom: 0.85rem; }
@@ -2052,7 +2068,6 @@ function htmlPage(
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
       .artist-hero { max-height: 200px; margin: -1.1rem -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); border-radius: 16px 16px 0 0; }
-      .smartlink-list { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
