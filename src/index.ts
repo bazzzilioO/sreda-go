@@ -1516,13 +1516,27 @@ function htmlPage(
     body.page-artist .card { 
       position: relative;
       background: rgba(18,18,22,0.55);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: none;
       border-radius: 24px;
       background-clip: padding-box;
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
-      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4);
       overflow: hidden;
       padding: 0;
+    }
+    body.page-artist .card::after {
+      content: ''; 
+      position: absolute; 
+      inset: 0;
+      border-radius: 24px; 
+      border: 1px solid transparent;
+      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; 
+      mask-composite: exclude;
+      pointer-events: none; 
+      z-index: 100;
     }
     .artist-content {
       padding: 0 1.5rem 1.5rem 1.5rem;
