@@ -1925,12 +1925,12 @@ function htmlPage(
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-hero {
       position: relative;
-      width: calc(100% + 3rem);
-      margin: -1.5rem -1.5rem 0.75rem -1.5rem;
-      border-radius: 24px 24px 0 0;
+      width: 100%;
+      margin: 0 0 0.75rem 0;
+      border-radius: 16px;
       overflow: hidden;
       aspect-ratio: 16 / 9;
-      max-height: 300px;
+      max-height: 280px;
       background: transparent;
     }
     .artist-hero__img {
@@ -1940,6 +1940,8 @@ function htmlPage(
       height: 100%;
       object-fit: cover;
       object-position: center 30%;
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
     }
     .artist-hero__overlay {
       position: absolute;
@@ -2067,7 +2069,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 220px; margin: -1.4rem -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 20px 20px 0 0; }
+      .artist-hero { max-height: 200px; border-radius: 14px; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
@@ -2092,7 +2094,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 180px; margin: -1.1rem -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); border-radius: 16px 16px 0 0; }
+      .artist-hero { max-height: 160px; border-radius: 12px; }
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
