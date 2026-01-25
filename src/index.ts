@@ -1653,34 +1653,80 @@ function htmlPage(
     }
     .artists-search__clear:hover { background: rgba(255,255,255,0.12); color: #fff; }
     .artists-search__clear.visible { display: flex; }
-    .artists-alphabet {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-bottom: 1rem;
-      justify-content: center;
-    }
-    .artists-alphabet__letter {
-      padding: 0.3rem 0.55rem;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 6px;
-      background: transparent;
-      color: rgba(255,255,255,0.5);
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 150ms ease;
-      text-transform: uppercase;
-    }
-    .artists-alphabet__letter:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.15); }
-    .artists-alphabet__letter.active { background: rgba(245,158,11,0.2); color: ${THEME.colors.accent}; border-color: rgba(245,158,11,0.4); }
-    .artists-alphabet__letter.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
     .artists-empty {
       text-align: center;
       padding: 2rem 1rem;
       color: rgba(255,255,255,0.4);
       font-size: 0.95rem;
     }
+    .artists-controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .artists-controls .artists-search {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .artists-letter-select {
+      padding: 0.65rem 2rem 0.65rem 0.85rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: all 150ms ease;
+      min-width: 120px;
+    }
+    .artists-letter-select:hover { border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.06); }
+    .artists-letter-select:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+    .artists-letter-select option { background: #1a1a1f; color: #fff; }
+    .artists-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .artists-filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.65rem;
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: ${THEME.colors.accent};
+    }
+    .artists-filter-tag__remove {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.1);
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.9rem;
+      line-height: 1;
+      transition: background 150ms ease;
+    }
+    .artists-filter-tag__remove:hover { background: rgba(255,255,255,0.2); }
+    .artists-filters__clear {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      margin-left: 0.5rem;
+      transition: color 150ms ease;
+    }
+    .artists-filters__clear:hover { color: #fff; }
     .artists-grid {
       display: flex;
       flex-wrap: wrap;
@@ -1692,7 +1738,31 @@ function htmlPage(
       min-width: 140px;
       max-width: 180px;
     }
-    .artists-grid .smartlink-item[data-hidden="true"] { display: none; }
+    .artists-pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .artists-pagination__btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 150ms ease;
+    }
+    .artists-pagination__btn:hover:not(.disabled) { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); }
+    .artists-pagination__btn.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+    .artists-pagination__info {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+    }
     
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
@@ -2278,7 +2348,10 @@ function htmlPage(
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
       .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
-      .artists-alphabet__letter { padding: 0.25rem 0.45rem; font-size: 0.7rem; }
+      .artists-controls { flex-direction: column; gap: 0.6rem; }
+      .artists-letter-select { width: 100%; }
+      .artists-pagination { gap: 0.6rem; }
+      .artists-pagination__btn { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
@@ -2313,7 +2386,8 @@ function htmlPage(
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
       .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.35rem); min-width: 120px; max-width: 160px; }
-      .artists-alphabet { gap: 0.25rem; }
+      .artists-filter-tag { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
+      .artists-filters__clear { font-size: 0.75rem; }
     }
   </style>
 </head>
@@ -2952,8 +3026,47 @@ function renderSmartlink(
   });
 }
 
-async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Response> {
+async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
+  const PER_PAGE = 60;
+  
   try {
+    // Parse query params
+    const searchQuery = (requestUrl.searchParams.get("q") || "").trim().toLowerCase();
+    const letterFilter = (requestUrl.searchParams.get("letter") || "").trim().toUpperCase();
+    const page = Math.max(1, parseInt(requestUrl.searchParams.get("page") || "1", 10));
+    const offset = (page - 1) * PER_PAGE;
+
+    // Build WHERE clause
+    const conditions: string[] = [];
+    const params: (string | number)[] = [];
+    
+    if (searchQuery) {
+      conditions.push("LOWER(COALESCE(s.artist_name, s.artist_slug)) LIKE ?");
+      params.push(`%${searchQuery}%`);
+    }
+    if (letterFilter) {
+      conditions.push("UPPER(SUBSTR(COALESCE(s.artist_name, s.artist_slug), 1, 1)) = ?");
+      params.push(letterFilter);
+    }
+    
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    // Get total count for pagination
+    const countQuery = await env.DB.prepare(
+      `SELECT COUNT(DISTINCT artist_slug) as total FROM smartlinks s ${whereClause}`
+    ).bind(...params).first<{ total: number }>();
+    const totalCount = countQuery?.total ?? 0;
+    const totalPages = Math.ceil(totalCount / PER_PAGE);
+
+    // Get all unique first letters for alphabet (always from full dataset)
+    const lettersQuery = await env.DB.prepare(
+      `SELECT DISTINCT UPPER(SUBSTR(COALESCE(artist_name, artist_slug), 1, 1)) as letter 
+       FROM smartlinks 
+       ORDER BY letter ASC`
+    ).all<{ letter: string }>();
+    const allLetters = (lettersQuery.results ?? []).map(r => r.letter).filter(Boolean);
+
+    // Get paginated results
     const query = await env.DB.prepare(
       `WITH latest AS (
          SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
@@ -2967,23 +3080,22 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
          s.cover_url AS cover_url,
          s.cover_source AS cover_source,
          s.cover_version AS cover_version,
-         s.updated_at AS updated_at,
          l.cnt AS cnt
        FROM smartlinks s
        JOIN latest l
          ON l.artist_slug = s.artist_slug
         AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
+       ${whereClause}
        GROUP BY s.artist_slug
        ORDER BY LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC
-       LIMIT 600`,
-    ).all<{
+       LIMIT ? OFFSET ?`
+    ).bind(...params, PER_PAGE, offset).all<{
       artist_slug: string;
       slug: string;
       artist_name: string | null;
       cover_url: string | null;
       cover_source: string | null;
       cover_version: number | null;
-      updated_at: string | null;
       cnt: number | null;
     }>();
 
@@ -3013,10 +3125,9 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
             ? "релиза"
             : "релизов";
       const meta = count ? `${count} ${releaseLabel}` : "";
-      const firstLetter = (displayName[0] || "").toUpperCase();
 
       return `
-        <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}" data-letter="${escapeHtml(firstLetter)}">
+        <article class="smartlink-item" role="link">
           <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
             ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
             <div class="smartlink-content">
@@ -3030,28 +3141,51 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
       `;
     });
 
-    // Collect unique first letters for alphabet
-    const letters = new Set<string>();
-    items.forEach((r) => {
-      const name = (r.artist_name || "").trim() || prettifySlug(r.artist_slug);
-      const first = (name[0] || "").toUpperCase();
-      if (first) letters.add(first);
-    });
-    const sortedLetters = Array.from(letters).sort((a, b) => a.localeCompare(b, "ru"));
-    const alphabetHtml = sortedLetters
-      .map((l) => `<button class="artists-alphabet__letter" data-letter="${escapeHtml(l)}">${escapeHtml(l)}</button>`)
+    // Build URL helper
+    const buildUrl = (overrides: { q?: string; letter?: string; page?: number }) => {
+      const params = new URLSearchParams();
+      const q = overrides.q !== undefined ? overrides.q : searchQuery;
+      const l = overrides.letter !== undefined ? overrides.letter : letterFilter;
+      const p = overrides.page !== undefined ? overrides.page : page;
+      if (q) params.set("q", q);
+      if (l) params.set("letter", l);
+      if (p > 1) params.set("page", String(p));
+      const qs = params.toString();
+      return `/artist${qs ? `?${qs}` : ""}`;
+    };
+
+    // Alphabet dropdown
+    const alphabetOptions = allLetters
+      .map((l) => `<option value="${escapeHtml(l)}"${l === letterFilter ? " selected" : ""}>${escapeHtml(l)}</option>`)
       .join("");
 
-    const artistCount = items.length;
     const artistLabel =
-      artistCount % 10 === 1 && artistCount % 100 !== 11
+      totalCount % 10 === 1 && totalCount % 100 !== 11
         ? "артист"
-        : artistCount % 10 >= 2 && artistCount % 10 <= 4 && !(artistCount % 100 >= 12 && artistCount % 100 <= 14)
+        : totalCount % 10 >= 2 && totalCount % 10 <= 4 && !(totalCount % 100 >= 12 && totalCount % 100 <= 14)
           ? "артиста"
           : "артистов";
 
     const searchIcon = `<svg class="artists-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
-    const clearIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+
+    // Active filters display
+    const hasFilters = searchQuery || letterFilter;
+    const filtersHtml = hasFilters ? `
+      <div class="artists-filters">
+        ${searchQuery ? `<span class="artists-filter-tag">«${escapeHtml(searchQuery)}»<a href="${escapeHtml(buildUrl({ q: "" }))}" class="artists-filter-tag__remove">×</a></span>` : ""}
+        ${letterFilter ? `<span class="artists-filter-tag">Буква: ${escapeHtml(letterFilter)}<a href="${escapeHtml(buildUrl({ letter: "" }))}" class="artists-filter-tag__remove">×</a></span>` : ""}
+        <a href="/artist" class="artists-filters__clear">Сбросить всё</a>
+      </div>
+    ` : "";
+
+    // Pagination
+    const paginationHtml = totalPages > 1 ? `
+      <div class="artists-pagination">
+        ${page > 1 ? `<a href="${escapeHtml(buildUrl({ page: page - 1 }))}" class="artists-pagination__btn">← Назад</a>` : `<span class="artists-pagination__btn disabled">← Назад</span>`}
+        <span class="artists-pagination__info">${page} из ${totalPages}</span>
+        ${page < totalPages ? `<a href="${escapeHtml(buildUrl({ page: page + 1 }))}" class="artists-pagination__btn">Вперёд →</a>` : `<span class="artists-pagination__btn disabled">Вперёд →</span>`}
+      </div>
+    ` : "";
 
     const body = `
       <div class="artists-header">
@@ -3059,73 +3193,45 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
           <h1 class="artists-header__title">Артисты</h1>
           <div class="artists-header__subtitle">Выбери артиста — откроется список его релизов</div>
         </div>
-        <div class="artists-header__count">${artistCount} ${artistLabel}</div>
+        <div class="artists-header__count">${totalCount} ${artistLabel}</div>
       </div>
-      <div class="artists-search">
-        ${searchIcon}
-        <input type="text" class="artists-search__input" placeholder="Поиск артиста..." autocomplete="off" />
-        <button class="artists-search__clear" type="button" aria-label="Очистить поиск">${clearIcon}</button>
-      </div>
-      ${sortedLetters.length > 5 ? `<div class="artists-alphabet">${alphabetHtml}</div>` : ""}
+      <form class="artists-controls" method="get" action="/artist">
+        <div class="artists-search">
+          ${searchIcon}
+          <input type="text" name="q" class="artists-search__input" placeholder="Поиск артиста..." value="${escapeHtml(searchQuery)}" autocomplete="off" />
+        </div>
+        ${allLetters.length > 5 ? `
+          <select name="letter" class="artists-letter-select" onchange="this.form.submit()">
+            <option value="">Все буквы</option>
+            ${alphabetOptions}
+          </select>
+        ` : ""}
+      </form>
+      ${filtersHtml}
       ${
         cards.length
-          ? `<div class="artists-grid">${cards.join("\n")}</div><div class="artists-empty" style="display:none;">Ничего не найдено</div>`
-          : `<div class="artists-empty">Пока нет артистов со смартлинками.</div>`
+          ? `<div class="artists-grid">${cards.join("\n")}</div>`
+          : `<div class="artists-empty">${hasFilters ? "Ничего не найдено" : "Пока нет артистов со смартлинками."}</div>`
       }
+      ${paginationHtml}
       <script>
       (function() {
-        const input = document.querySelector('.artists-search__input');
-        const clearBtn = document.querySelector('.artists-search__clear');
-        const grid = document.querySelector('.artists-grid');
-        const emptyState = document.querySelector('.artists-empty');
-        const letterBtns = document.querySelectorAll('.artists-alphabet__letter');
-        const items = grid ? Array.from(grid.querySelectorAll('.smartlink-item')) : [];
+        const form = document.querySelector('.artists-controls');
+        const input = form?.querySelector('input[name="q"]');
+        let debounceTimer;
         
-        let activeFilter = '';
-        
-        function filterItems() {
-          const query = (input?.value || '').toLowerCase().trim();
-          let visibleCount = 0;
-          
-          items.forEach(item => {
-            const name = item.dataset.name || '';
-            const letter = item.dataset.letter || '';
-            const matchesQuery = !query || name.includes(query);
-            const matchesLetter = !activeFilter || letter === activeFilter;
-            const visible = matchesQuery && matchesLetter;
-            item.dataset.hidden = visible ? 'false' : 'true';
-            if (visible) visibleCount++;
-          });
-          
-          if (emptyState) {
-            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-          }
-          if (clearBtn) {
-            clearBtn.classList.toggle('visible', query.length > 0);
-          }
-        }
-        
-        input?.addEventListener('input', filterItems);
-        
-        clearBtn?.addEventListener('click', () => {
-          if (input) input.value = '';
-          filterItems();
-          input?.focus();
+        input?.addEventListener('input', () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            form?.submit();
+          }, 500);
         });
-        
-        letterBtns.forEach(btn => {
-          btn.addEventListener('click', () => {
-            const letter = btn.dataset.letter || '';
-            if (activeFilter === letter) {
-              activeFilter = '';
-              btn.classList.remove('active');
-            } else {
-              letterBtns.forEach(b => b.classList.remove('active'));
-              activeFilter = letter;
-              btn.classList.add('active');
-            }
-            filterItems();
-          });
+
+        input?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            clearTimeout(debounceTimer);
+            form?.submit();
+          }
         });
       })();
       </script>
@@ -4530,7 +4636,7 @@ export default {
     }
 
     if (segments.length === 1 && segments[0] === "artist") {
-      return renderArtistsIndex(env, goIndexBase);
+      return renderArtistsIndex(env, goIndexBase, url);
     }
 
     if (segments.length === 2 && segments[0] === "artist") {
