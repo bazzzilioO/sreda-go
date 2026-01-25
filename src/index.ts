@@ -1697,9 +1697,25 @@ function htmlPage(
     .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 0.75rem; margin-top: -2rem; position: relative; z-index: 1; }
     .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; width: 100%; }
     .smartlink-release__title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.15; letter-spacing: -0.02em; }
-    .smartlink-release__artist { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.95rem; font-weight: 500; }
-    .smartlink-release__artist .artist-link { color: rgba(255,255,255,0.6); font-weight: 500; transition: color 150ms ease; text-decoration: none; }
-    .smartlink-release__artist .artist-link:hover { color: #fff; }
+    .smartlink-release__artist { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.88rem; font-weight: 500; }
+    .smartlink-release__artist .artist-link { 
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 150ms ease;
+    }
+    .smartlink-release__artist .artist-link:hover { 
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      color: #fff;
+    }
     .smartlink-release__date { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 0.15rem; }
     @keyframes fadeInUp { 
       from { opacity: 0; transform: translateY(8px); } 
@@ -1902,10 +1918,16 @@ function htmlPage(
       box-shadow: 0 10px 24px rgba(0,0,0,0.35);
     }
     .smartlink-list { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 0.85rem; 
       margin-top: 0.75rem; 
+    }
+    .smartlink-item--release {
+      flex: 0 1 calc(33.333% - 0.6rem);
+      min-width: 150px;
+      max-width: 220px;
     }
     .smartlink-item { 
       display: flex; 
