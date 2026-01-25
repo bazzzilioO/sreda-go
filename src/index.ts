@@ -1886,7 +1886,7 @@ function htmlPage(
       -webkit-backdrop-filter: blur(14px) saturate(1.1);
       box-shadow: 0 10px 24px rgba(0,0,0,0.35);
     }
-    .smartlink-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.6rem; align-items: stretch; }
+    .smartlink-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem; margin-top: 0.75rem; align-items: stretch; }
     .smartlink-item { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.95rem 1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); cursor: pointer; transition: all 180ms ease; box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 1px rgba(255,255,255,0.15); }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
     .smartlink-item:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15), 0 0 2px rgba(255,255,255,0.2); }
@@ -1932,17 +1932,16 @@ function htmlPage(
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 0 1.5rem 1.5rem 1.5rem;
+      padding: 1.5rem;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
       gap: 1rem;
     }
-    .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+    .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; flex: 1; }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
-    .artist-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
-    .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; flex-shrink: 0; }
+    .artist-actions { display: inline-flex; align-items: center; gap: 0.55rem; flex-shrink: 0; align-self: flex-end; }
     .smartlink-item--release { gap: 0.35rem; position: relative; padding-bottom: 1.25rem; }
     .smartlink-item--release .smartlink-main { align-items: flex-start; }
     .smartlink-item--release .smartlink-cover { width: 84px; height: 84px; }
@@ -2055,8 +2054,10 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.9rem; }
       .smartlink-item--release .meta-row { font-size: 0.75rem; gap: 0.25rem; }
       .artist-hero { max-height: 200px; margin: -1.1rem -1.1rem 1rem -1.1rem; width: calc(100% + 2.2rem); }
+      .artist-hero__content { padding: 1.1rem; flex-wrap: wrap; gap: 0.75rem; }
       .artist-name { font-size: 1.5rem; }
       .artist-meta { font-size: 0.82rem; }
+      .artist-actions { width: 100%; justify-content: flex-start; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
       .smartlink-release__body { padding: 0 1rem 0.6rem; margin-top: -1.25rem; gap: 0.8rem; }
@@ -2355,23 +2356,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
         });
       const canonicalUrl = `${canonicalBase}/${artistSlug}/${record.slug}`;
       const formattedReleaseDate = formatDisplayDate(record.release_date);
-      const formattedUpdatedAt = formatDisplayDate(record.updated_at);
-      const metaParts = [
-        formattedReleaseDate ? escapeHtml(formattedReleaseDate) : null,
-        linkCount
-          ? (() => {
-              const n = linkCount;
-              const label =
-                n % 10 === 1 && n % 100 !== 11
-                  ? "площадка"
-                  : n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14)
-                    ? "площадки"
-                    : "площадок";
-              return `${n} ${label}`;
-            })()
-          : null,
-        formattedUpdatedAt ? `Обновлено ${escapeHtml(formattedUpdatedAt)}` : null,
-      ].filter(Boolean);
+      // Simplified meta: only show release date if available
+      const metaText = formattedReleaseDate ? escapeHtml(formattedReleaseDate) : "";
       const title = record.title ?? "Релиз";
 
       return `
@@ -2384,7 +2370,7 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             ${renderMedia({ src: coverUrlWithVersion, alt: title, className: "smartlink-cover" })}
             <div class="smartlink-content">
               <div class="smartlink-title">${escapeHtml(title)}</div>
-              <div class="meta-row subtle">${metaParts.join('<span class="meta-dot"></span>')}</div>
+              ${metaText ? `<div class="meta-row subtle">${metaText}</div>` : ""}
             </div>
           </a>
         </article>
@@ -2402,15 +2388,13 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 <span>Релизы артиста</span>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="artist-toolbar">
-          <div class="artist-actions">
-            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
-              ${linkIcon}
-              <span>Поделиться</span>
-            </button>
-            <span class="copy-toast" role="status" aria-live="polite"></span>
+            <div class="artist-actions">
+              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+                ${linkIcon}
+                <span>Поделиться</span>
+              </button>
+              <span class="copy-toast" role="status" aria-live="polite"></span>
+            </div>
           </div>
         </div>
         ${
