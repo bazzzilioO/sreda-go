@@ -1697,6 +1697,15 @@ function htmlPage(
       flex: 0 1 calc(25% - 0.65rem);
       min-width: 140px;
       max-width: 180px;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .artists-grid .smartlink-item.hiding {
+      opacity: 0;
+      transform: scale(0.95);
+      pointer-events: none;
+    }
+    .artists-grid .smartlink-item.hidden {
+      display: none;
     }
     .artists-pagination {
       display: flex;
@@ -3176,13 +3185,34 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           
           items.forEach(item => {
             const name = item.dataset.name || '';
-            const visible = !query || name.includes(query);
-            item.style.display = visible ? '' : 'none';
-            if (visible) visibleCount++;
+            const shouldShow = !query || name.includes(query);
+            const isHidden = item.classList.contains('hidden');
+            
+            if (shouldShow && isHidden) {
+              // Show: remove hidden, then remove hiding after frame
+              item.classList.remove('hidden');
+              requestAnimationFrame(() => {
+                item.classList.remove('hiding');
+              });
+              visibleCount++;
+            } else if (!shouldShow && !isHidden) {
+              // Hide: add hiding class, then hidden after animation
+              item.classList.add('hiding');
+              setTimeout(() => {
+                if (item.classList.contains('hiding')) {
+                  item.classList.add('hidden');
+                }
+              }, 200);
+            } else if (shouldShow) {
+              visibleCount++;
+            }
           });
           
           if (noResults) {
-            noResults.style.display = visibleCount === 0 && query ? 'block' : 'none';
+            setTimeout(() => {
+              const stillVisible = items.filter(i => !i.classList.contains('hidden')).length;
+              noResults.style.display = stillVisible === 0 && query ? 'block' : 'none';
+            }, 210);
           }
           
           // Show/hide clear button
