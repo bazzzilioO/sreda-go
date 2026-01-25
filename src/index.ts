@@ -1516,16 +1516,15 @@ function htmlPage(
     body.page-artist .card { 
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
-      border-top: none;
-      border-radius: 0 0 24px 24px;
+      border-radius: 24px;
       background-clip: padding-box;
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
-      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4);
-      overflow: visible;
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: hidden;
       padding-top: 0;
     }
     body.page-artist .card::before {
-      content: ''; position: absolute; inset: -1px; top: 0; border-radius: 0 0 24px 24px; padding: 1px;
+      content: ''; position: absolute; inset: -1px; border-radius: 24px; padding: 1px;
       background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1926,8 +1925,8 @@ function htmlPage(
     .artist-hero {
       position: relative;
       width: calc(100% + 3rem);
-      margin: 0 -1.5rem 1rem -1.5rem;
-      border-radius: 0;
+      margin: -1.5rem -1.5rem 1rem -1.5rem;
+      border-radius: 24px 24px 0 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
       max-height: 300px;
@@ -1955,23 +1954,38 @@ function htmlPage(
     }
     .artist-hero__content {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      inset: 0;
       padding: 1rem 1.5rem;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: flex-end;
-      gap: 1rem;
     }
-    .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; }
+    .artist-hero__top {
+      display: flex;
+      justify-content: flex-start;
+    }
+    .artist-hero__bottom {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
-    .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .artist-meta { 
+      color: rgba(255,255,255,0.85); 
+      font-size: 0.85rem; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 0.35rem;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+    }
     .artist-actions { 
       display: inline-flex; 
       align-items: center; 
       gap: 0.55rem;
-      flex-shrink: 0;
     }
     .smartlink-item--release { position: relative; }
     .smartlink-item--release .smartlink-title { font-size: 0.88rem; line-height: 1.25; font-weight: 600; }
@@ -2051,7 +2065,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 220px; margin: 0 -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 0; }
+      .artist-hero { max-height: 220px; margin: -1.4rem -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 20px 20px 0 0; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
@@ -2076,7 +2090,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 180px; margin: 0 -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); border-radius: 0; }
+      .artist-hero { max-height: 180px; margin: -1.1rem -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); border-radius: 16px 16px 0 0; }
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
@@ -2404,18 +2418,18 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           ${heroImage ? `<img class="artist-hero__img" src="${escapeHtml(heroImage)}" alt="${escapeHtml(displayArtistName)}" />` : ""}
           <div class="artist-hero__overlay"></div>
           <div class="artist-hero__content">
-            <div class="artist-hero__info">
-              <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-              <div class="artist-meta">
-                <span>Релизы артиста</span>
-              </div>
+            <div class="artist-hero__top">
+              <div class="artist-meta">Релизы артиста</div>
             </div>
-            <div class="artist-actions">
-              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
-                ${linkIcon}
-                <span>Поделиться</span>
-              </button>
-              <span class="copy-toast" role="status" aria-live="polite"></span>
+            <div class="artist-hero__bottom">
+              <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+              <div class="artist-actions">
+                <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+                  ${linkIcon}
+                  <span>Поделиться</span>
+                </button>
+                <span class="copy-toast" role="status" aria-live="polite"></span>
+              </div>
             </div>
           </div>
         </div>
