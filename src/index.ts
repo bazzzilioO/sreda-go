@@ -1522,7 +1522,10 @@ function htmlPage(
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
-      padding-top: 0;
+      padding: 0;
+    }
+    .artist-content {
+      padding: 0 1.5rem 1.5rem 1.5rem;
     }
     body.page-artist .card::before {
       content: ''; position: absolute; inset: -1px; border-radius: 24px; padding: 1px;
@@ -1925,9 +1928,9 @@ function htmlPage(
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-hero {
       position: relative;
-      width: calc(100% + 3rem);
-      margin: -1.5rem -1.5rem 0.75rem -1.5rem;
-      border-radius: 0;
+      width: 100%;
+      margin: 0 0 0.75rem 0;
+      border-radius: 24px 24px 0 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
       max-height: 300px;
@@ -2069,7 +2072,8 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 220px; margin: -1.4rem -1.4rem 0.75rem -1.4rem; width: calc(100% + 2.8rem); }
+      .artist-hero { max-height: 220px; border-radius: 20px 20px 0 0; }
+      .artist-content { padding: 0 1.4rem 1.4rem 1.4rem; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
@@ -2094,7 +2098,8 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 180px; margin: -1.1rem -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); }
+      .artist-hero { max-height: 180px; border-radius: 16px 16px 0 0; }
+      .artist-content { padding: 0 1.1rem 1.1rem 1.1rem; }
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
@@ -2437,11 +2442,13 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             </div>
           </div>
         </div>
-        ${
-          cards.length
-          ? `<div class="smartlink-list">${cards.join("\n")}</div>`
-          : `<div class="empty-state">Для артиста пока нет смартлинков.</div>`
-      }
+        <div class="artist-content">
+          ${
+            cards.length
+            ? `<div class="smartlink-list">${cards.join("\n")}</div>`
+            : `<div class="empty-state">Для артиста пока нет смартлинков.</div>`
+          }
+        </div>
       <script>
         (function() {
           async function copyOrShare(url, title) {
