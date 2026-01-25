@@ -1516,7 +1516,7 @@ function htmlPage(
     body.page-artist .card { 
       position: relative;
       background: rgba(18,18,22,0.55);
-      border: 1px solid transparent;
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 24px;
       background-clip: padding-box;
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
@@ -1526,14 +1526,6 @@ function htmlPage(
     }
     .artist-content {
       padding: 0 1.5rem 1.5rem 1.5rem;
-    }
-    body.page-artist .card::before {
-      content: ''; position: absolute; inset: -1px; border-radius: 24px; padding: 1px;
-      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor; mask-composite: exclude;
-      pointer-events: none; z-index: 10;
     }
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
@@ -1930,7 +1922,7 @@ function htmlPage(
       position: relative;
       width: 100%;
       margin: 0 0 0.75rem 0;
-      border-radius: 24px 24px 0 0;
+      border-radius: 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
       max-height: 300px;
@@ -2072,7 +2064,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 220px; border-radius: 20px 20px 0 0; }
+      .artist-hero { max-height: 220px; }
       .artist-content { padding: 0 1.4rem 1.4rem 1.4rem; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
@@ -2098,7 +2090,7 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 180px; border-radius: 16px 16px 0 0; }
+      .artist-hero { max-height: 180px; }
       .artist-content { padding: 0 1.1rem 1.1rem 1.1rem; }
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
