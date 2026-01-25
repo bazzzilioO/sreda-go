@@ -1958,19 +1958,19 @@ function htmlPage(
       left: 0;
       right: 0;
       padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
     }
     .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
-    .artist-header {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 0.5rem;
-    }
     .artist-actions { 
       display: inline-flex; 
       align-items: center; 
-      gap: 0.55rem; 
+      gap: 0.55rem;
+      flex-shrink: 0;
     }
     .smartlink-item--release { position: relative; }
     .smartlink-item--release .smartlink-title { font-size: 0.88rem; line-height: 1.25; font-weight: 600; }
@@ -2409,15 +2409,13 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
                 <span>Релизы артиста</span>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="artist-header">
-          <div class="artist-actions">
-            <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
-              ${linkIcon}
-              <span>Поделиться</span>
-            </button>
-            <span class="copy-toast" role="status" aria-live="polite"></span>
+            <div class="artist-actions">
+              <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+                ${linkIcon}
+                <span>Поделиться</span>
+              </button>
+              <span class="copy-toast" role="status" aria-live="polite"></span>
+            </div>
           </div>
         </div>
         ${
