@@ -1668,7 +1668,7 @@ function htmlPage(
       flex: 1;
       margin-bottom: 0;
     }
-    .artists-letter-select {
+    .artists-sort-select {
       padding: 0.65rem 2rem 0.65rem 0.85rem;
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
@@ -1681,52 +1681,12 @@ function htmlPage(
       appearance: none;
       -webkit-appearance: none;
       transition: all 150ms ease;
-      min-width: 120px;
+      min-width: 130px;
+      flex-shrink: 0;
     }
-    .artists-letter-select:hover { border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.06); }
-    .artists-letter-select:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
-    .artists-letter-select option { background: #1a1a1f; color: #fff; }
-    .artists-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      align-items: center;
-    }
-    .artists-filter-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.35rem 0.65rem;
-      background: rgba(245,158,11,0.15);
-      border: 1px solid rgba(245,158,11,0.3);
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: ${THEME.colors.accent};
-    }
-    .artists-filter-tag__remove {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.1);
-      color: inherit;
-      text-decoration: none;
-      font-size: 0.9rem;
-      line-height: 1;
-      transition: background 150ms ease;
-    }
-    .artists-filter-tag__remove:hover { background: rgba(255,255,255,0.2); }
-    .artists-filters__clear {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.5);
-      text-decoration: none;
-      margin-left: 0.5rem;
-      transition: color 150ms ease;
-    }
-    .artists-filters__clear:hover { color: #fff; }
+    .artists-sort-select:hover { border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.06); }
+    .artists-sort-select:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+    .artists-sort-select option { background: #1a1a1f; color: #fff; }
     .artists-grid {
       display: flex;
       flex-wrap: wrap;
@@ -2349,7 +2309,7 @@ function htmlPage(
       .artists-header__count { align-self: flex-start; }
       .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
-      .artists-letter-select { width: 100%; }
+      .artists-sort-select { width: 100%; }
       .artists-pagination { gap: 0.6rem; }
       .artists-pagination__btn { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
     }
@@ -2386,8 +2346,6 @@ function htmlPage(
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
       .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.35rem); min-width: 120px; max-width: 160px; }
-      .artists-filter-tag { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
-      .artists-filters__clear { font-size: 0.75rem; }
     }
   </style>
 </head>
@@ -3032,7 +2990,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
   try {
     // Parse query params
     const searchQuery = (requestUrl.searchParams.get("q") || "").trim().toLowerCase();
-    const letterFilter = (requestUrl.searchParams.get("letter") || "").trim().toUpperCase();
+    const sortParam = (requestUrl.searchParams.get("sort") || "name_asc").trim();
     const page = Math.max(1, parseInt(requestUrl.searchParams.get("page") || "1", 10));
     const offset = (page - 1) * PER_PAGE;
 
@@ -3044,12 +3002,14 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       conditions.push("LOWER(COALESCE(s.artist_name, s.artist_slug)) LIKE ?");
       params.push(`%${searchQuery}%`);
     }
-    if (letterFilter) {
-      conditions.push("UPPER(SUBSTR(COALESCE(s.artist_name, s.artist_slug), 1, 1)) = ?");
-      params.push(letterFilter);
-    }
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    
+    // Build ORDER BY clause
+    let orderBy = "LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC"; // default: А-Я
+    if (sortParam === "name_desc") orderBy = "LOWER(COALESCE(s.artist_name, s.artist_slug)) DESC";
+    else if (sortParam === "releases_desc") orderBy = "l.cnt DESC, LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC";
+    else if (sortParam === "date_desc") orderBy = "l.max_ts DESC";
 
     // Get total count for pagination
     const countQuery = await env.DB.prepare(
@@ -3057,14 +3017,6 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
     ).bind(...params).first<{ total: number }>();
     const totalCount = countQuery?.total ?? 0;
     const totalPages = Math.ceil(totalCount / PER_PAGE);
-
-    // Get all unique first letters for alphabet (always from full dataset)
-    const lettersQuery = await env.DB.prepare(
-      `SELECT DISTINCT UPPER(SUBSTR(COALESCE(artist_name, artist_slug), 1, 1)) as letter 
-       FROM smartlinks 
-       ORDER BY letter ASC`
-    ).all<{ letter: string }>();
-    const allLetters = (lettersQuery.results ?? []).map(r => r.letter).filter(Boolean);
 
     // Get paginated results
     const query = await env.DB.prepare(
@@ -3080,14 +3032,15 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
          s.cover_url AS cover_url,
          s.cover_source AS cover_source,
          s.cover_version AS cover_version,
-         l.cnt AS cnt
+         l.cnt AS cnt,
+         l.max_ts AS updated_at
        FROM smartlinks s
        JOIN latest l
          ON l.artist_slug = s.artist_slug
         AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
        ${whereClause}
        GROUP BY s.artist_slug
-       ORDER BY LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC
+       ORDER BY ${orderBy}
        LIMIT ? OFFSET ?`
     ).bind(...params, PER_PAGE, offset).all<{
       artist_slug: string;
@@ -3142,21 +3095,27 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
     });
 
     // Build URL helper
-    const buildUrl = (overrides: { q?: string; letter?: string; page?: number }) => {
+    const buildUrl = (overrides: { q?: string; sort?: string; page?: number }) => {
       const params = new URLSearchParams();
       const q = overrides.q !== undefined ? overrides.q : searchQuery;
-      const l = overrides.letter !== undefined ? overrides.letter : letterFilter;
+      const s = overrides.sort !== undefined ? overrides.sort : sortParam;
       const p = overrides.page !== undefined ? overrides.page : page;
       if (q) params.set("q", q);
-      if (l) params.set("letter", l);
+      if (s && s !== "name_asc") params.set("sort", s);
       if (p > 1) params.set("page", String(p));
       const qs = params.toString();
       return `/artist${qs ? `?${qs}` : ""}`;
     };
 
-    // Alphabet dropdown
-    const alphabetOptions = allLetters
-      .map((l) => `<option value="${escapeHtml(l)}"${l === letterFilter ? " selected" : ""}>${escapeHtml(l)}</option>`)
+    // Sort options
+    const sortOptions = [
+      { value: "name_asc", label: "А → Я" },
+      { value: "name_desc", label: "Я → А" },
+      { value: "releases_desc", label: "По релизам" },
+      { value: "date_desc", label: "По дате" },
+    ];
+    const sortOptionsHtml = sortOptions
+      .map((o) => `<option value="${escapeHtml(o.value)}"${o.value === sortParam ? " selected" : ""}>${escapeHtml(o.label)}</option>`)
       .join("");
 
     const artistLabel =
@@ -3167,16 +3126,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           : "артистов";
 
     const searchIcon = `<svg class="artists-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
-
-    // Active filters display
-    const hasFilters = searchQuery || letterFilter;
-    const filtersHtml = hasFilters ? `
-      <div class="artists-filters">
-        ${searchQuery ? `<span class="artists-filter-tag">«${escapeHtml(searchQuery)}»<a href="${escapeHtml(buildUrl({ q: "" }))}" class="artists-filter-tag__remove">×</a></span>` : ""}
-        ${letterFilter ? `<span class="artists-filter-tag">Буква: ${escapeHtml(letterFilter)}<a href="${escapeHtml(buildUrl({ letter: "" }))}" class="artists-filter-tag__remove">×</a></span>` : ""}
-        <a href="/artist" class="artists-filters__clear">Сбросить всё</a>
-      </div>
-    ` : "";
+    const clearIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
 
     // Pagination
     const paginationHtml = totalPages > 1 ? `
@@ -3195,46 +3145,22 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
         </div>
         <div class="artists-header__count">${totalCount} ${artistLabel}</div>
       </div>
-      <form class="artists-controls" method="get" action="/artist">
+      <form class="artists-controls" method="get" action="/artist" id="artists-form">
         <div class="artists-search">
           ${searchIcon}
           <input type="text" name="q" class="artists-search__input" placeholder="Поиск артиста..." value="${escapeHtml(searchQuery)}" autocomplete="off" />
+          ${searchQuery ? `<a href="${escapeHtml(buildUrl({ q: "" }))}" class="artists-search__clear visible" aria-label="Очистить поиск">${clearIcon}</a>` : ""}
         </div>
-        ${allLetters.length > 5 ? `
-          <select name="letter" class="artists-letter-select" onchange="this.form.submit()">
-            <option value="">Все буквы</option>
-            ${alphabetOptions}
-          </select>
-        ` : ""}
+        <select name="sort" class="artists-sort-select" onchange="this.form.submit()">
+          ${sortOptionsHtml}
+        </select>
       </form>
-      ${filtersHtml}
       ${
         cards.length
           ? `<div class="artists-grid">${cards.join("\n")}</div>`
-          : `<div class="artists-empty">${hasFilters ? "Ничего не найдено" : "Пока нет артистов со смартлинками."}</div>`
+          : `<div class="artists-empty">${searchQuery ? "Ничего не найдено" : "Пока нет артистов со смартлинками."}</div>`
       }
       ${paginationHtml}
-      <script>
-      (function() {
-        const form = document.querySelector('.artists-controls');
-        const input = form?.querySelector('input[name="q"]');
-        let debounceTimer;
-        
-        input?.addEventListener('input', () => {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            form?.submit();
-          }, 500);
-        });
-
-        input?.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            clearTimeout(debounceTimer);
-            form?.submit();
-          }
-        });
-      })();
-      </script>
     `;
 
     return new Response(htmlPage(body, { title: "Артисты — SREDA", pageClass: "page-artists" }), {
