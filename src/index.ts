@@ -1514,32 +1514,35 @@ function htmlPage(
     body.page-home { align-items: center; padding-top: 3.6rem; padding-bottom: 3.6rem; }
     body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
     body.page-artist .card { 
+      width: min(640px, calc(100% - 32px));
       position: relative;
       background: rgba(18,18,22,0.55);
-      border: none;
+      border: 1px solid transparent;
       border-radius: 24px;
       background-clip: padding-box;
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
-      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4);
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
       padding: 0;
     }
-    body.page-artist .card::after {
+    body.page-artist .card::before {
       content: ''; 
       position: absolute; 
-      inset: 0;
-      border-radius: 24px; 
-      border: 1px solid transparent;
-      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%) border-box;
-      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      inset: -1px;
+      border-radius: inherit; 
+      padding: 1px;
+      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor; 
       mask-composite: exclude;
       pointer-events: none; 
-      z-index: 100;
+      z-index: 1;
     }
     .artist-content {
       padding: 0 1.5rem 1.5rem 1.5rem;
+      position: relative;
+      z-index: 2;
     }
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
@@ -1934,72 +1937,78 @@ function htmlPage(
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-hero {
       position: relative;
-      width: calc(100% - 2px);
-      margin: 1px 1px 0.75rem 1px;
-      border-radius: 23px 23px 0 0;
-      overflow: hidden;
-      aspect-ratio: 16 / 9;
-      max-height: 300px;
-      background: transparent;
+      width: 100%;
+      line-height: 0;
     }
     .artist-hero__img {
-      position: absolute;
-      inset: 0;
       width: 100%;
-      height: 100%;
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
       object-position: center 30%;
-      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+      display: block;
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
     }
-    .artist-hero__overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, 
-        rgba(18,18,22,0) 0%, 
-        rgba(18,18,22,0) 40%,
-        rgba(18,18,22,0.3) 60%, 
-        rgba(18,18,22,0.65) 80%, 
-        rgba(18,18,22,0.9) 100%);
-      pointer-events: none;
-    }
-    .artist-hero__content {
-      position: absolute;
-      inset: 0;
-      padding: 1rem 1.5rem;
+    .artist-body {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-    }
-    .artist-hero__top {
-      display: flex;
-      justify-content: flex-start;
-    }
-    .artist-hero__bottom {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.25rem;
-    }
-    .artist-hero__title-row {
-      display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 1rem;
+      padding: 0 1.5rem 1rem;
+      margin-top: -2.5rem;
+      position: relative;
+      z-index: 2;
     }
-    .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+    .artist-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      text-align: center;
+      width: 100%;
+    }
+    .artist-name { 
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; 
+      color: #FFFFFF; 
+      font-size: 1.75rem; 
+      font-weight: 700; 
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0;
+    }
     .artist-meta { 
-      color: rgba(255,255,255,0.6); 
-      font-size: 0.9rem; 
+      color: rgba(255,255,255,0.5); 
+      font-size: 0.95rem; 
       font-weight: 500;
-      display: inline-flex; 
-      align-items: center; 
-      gap: 0.3rem;
     }
-    .artist-actions { 
-      display: inline-flex; 
-      align-items: center; 
-      gap: 0.55rem;
+    .artist-share {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      margin-top: 0.25rem;
     }
+    .artist-share .share-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    .artist-share .share-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.7);
+    }
+    .artist-share .share-btn svg { width: 14px; height: 14px; }
     .smartlink-item--release { position: relative; }
     .smartlink-item--release .smartlink-title { font-size: 0.88rem; line-height: 1.25; font-weight: 600; }
     .smartlink-item--release .meta-row { margin-top: 0.05rem; font-size: 0.75rem; }
@@ -2078,7 +2087,9 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 220px; }
+      body.page-artist .card { width: calc(100% - 24px); }
+      .artist-body { padding: 0 1.4rem 0.85rem; margin-top: -2rem; }
+      .artist-name { font-size: 1.5rem; }
       .artist-content { padding: 0 1.4rem 1.4rem 1.4rem; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
@@ -2104,11 +2115,11 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 180px; }
+      body.page-artist .card { width: calc(100% - 16px); border-radius: 20px; }
+      .artist-body { padding: 0 1.1rem 0.75rem; margin-top: -1.5rem; gap: 0.75rem; }
+      .artist-name { font-size: 1.3rem; }
+      .artist-meta { font-size: 0.85rem; }
       .artist-content { padding: 0 1.1rem 1.1rem 1.1rem; }
-      .artist-hero__content { padding: 0.7rem 1.1rem; }
-      .artist-name { font-size: 1.2rem; }
-      .artist-meta { font-size: 0.78rem; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
       .smartlink-release__body { padding: 0 1rem 0.6rem; margin-top: -1.25rem; gap: 0.8rem; }
@@ -2431,21 +2442,18 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
       const body = `
         <div class="artist-hero">
           ${heroImage ? `<img class="artist-hero__img" src="${escapeHtml(heroImage)}" alt="${escapeHtml(displayArtistName)}" />` : ""}
-          <div class="artist-hero__overlay"></div>
-          <div class="artist-hero__content">
-            <div class="artist-hero__top"></div>
-            <div class="artist-hero__bottom">
-              <div class="artist-hero__title-row">
-                <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-                <div class="artist-actions">
-                  <button class="copy-btn copy-btn--icon" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
-                    ${linkIcon}
-                  </button>
-                  <span class="copy-toast" role="status" aria-live="polite"></span>
-                </div>
-              </div>
-              <div class="artist-meta">Релизы артиста</div>
-            </div>
+        </div>
+        <div class="artist-body">
+          <div class="artist-info">
+            <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+            <div class="artist-meta">Релизы артиста</div>
+          </div>
+          <div class="artist-share">
+            <button class="share-btn" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться">
+              ${linkIcon}
+              <span>Поделиться</span>
+            </button>
+            <span class="copy-toast" role="status" aria-live="polite"></span>
           </div>
         </div>
         <div class="artist-content">
