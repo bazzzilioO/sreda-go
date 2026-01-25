@@ -1544,6 +1544,156 @@ function htmlPage(
       position: relative;
       z-index: 2;
     }
+    
+    /* Artists list page */
+    body.page-artists .card {
+      width: min(800px, calc(100% - 32px));
+      position: relative;
+      background: rgba(18,18,22,0.55);
+      border: 1px solid transparent;
+      border-radius: 24px;
+      background-clip: padding-box;
+      backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: hidden;
+      padding: 1.5rem;
+    }
+    body.page-artists .card::before {
+      content: ''; 
+      position: absolute; 
+      inset: -1px;
+      border-radius: inherit; 
+      padding: 1px;
+      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none; 
+      z-index: 1;
+    }
+    .artists-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .artists-header__info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .artists-header__title {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .artists-header__subtitle {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .artists-header__count {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      white-space: nowrap;
+    }
+    .artists-search {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .artists-search__input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 150ms ease;
+    }
+    .artists-search__input::placeholder { color: rgba(255,255,255,0.35); }
+    .artists-search__input:focus {
+      border-color: rgba(245,158,11,0.4);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+    }
+    .artists-search__icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: rgba(255,255,255,0.4);
+      pointer-events: none;
+    }
+    .artists-search__clear {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 150ms ease;
+    }
+    .artists-search__clear:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .artists-search__clear.visible { display: flex; }
+    .artists-alphabet {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+    }
+    .artists-alphabet__letter {
+      padding: 0.3rem 0.55rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      background: transparent;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms ease;
+      text-transform: uppercase;
+    }
+    .artists-alphabet__letter:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.15); }
+    .artists-alphabet__letter.active { background: rgba(245,158,11,0.2); color: ${THEME.colors.accent}; border-color: rgba(245,158,11,0.4); }
+    .artists-alphabet__letter.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+    .artists-empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.95rem;
+    }
+    .artists-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.85rem;
+    }
+    .artists-grid .smartlink-item {
+      flex: 0 1 calc(25% - 0.65rem);
+      min-width: 140px;
+      max-width: 180px;
+    }
+    .artists-grid .smartlink-item[data-hidden="true"] { display: none; }
+    
     body.page-smartlink .card { 
       width: min(360px, calc(100% - 32px)); padding: 0; overflow: hidden;
       background: rgba(18,18,22,0.55);
@@ -2122,6 +2272,13 @@ function htmlPage(
       .share-social { width: 38px; height: 38px; }
       .share-social svg { width: 16px; height: 16px; }
       body.page-smartlink .card { width: calc(100% - 24px); }
+      /* Artists list page mobile */
+      body.page-artists .card { width: calc(100% - 24px); padding: 1.25rem; }
+      .artists-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      .artists-header__title { font-size: 1.5rem; }
+      .artists-header__count { align-self: flex-start; }
+      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
+      .artists-alphabet__letter { padding: 0.25rem 0.45rem; font-size: 0.7rem; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
@@ -2150,6 +2307,13 @@ function htmlPage(
       .share-social { width: 36px; height: 36px; }
       .share-social svg { width: 15px; height: 15px; }
       body.page-smartlink .card { width: calc(100% - 16px); border-radius: 20px; }
+      /* Artists list page small mobile */
+      body.page-artists .card { width: calc(100% - 16px); padding: 1rem; border-radius: 20px; }
+      .artists-header__title { font-size: 1.3rem; }
+      .artists-header__subtitle { font-size: 0.82rem; }
+      .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
+      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.35rem); min-width: 120px; max-width: 160px; }
+      .artists-alphabet { gap: 0.25rem; }
     }
   </style>
 </head>
@@ -2810,7 +2974,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
          ON l.artist_slug = s.artist_slug
         AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
        GROUP BY s.artist_slug
-       ORDER BY datetime(l.max_ts) DESC
+       ORDER BY LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC
        LIMIT 600`,
     ).all<{
       artist_slug: string;
@@ -2842,44 +3006,129 @@ async function renderArtistsIndex(env: Env, goIndexBase: string): Promise<Respon
       });
       const artistUrl = `/artist/${encodeURIComponent(artistSlug)}`;
       const count = Number(record.cnt || 0);
-      const updatedAt = formatDisplayDate(record.updated_at);
       const releaseLabel =
         count % 10 === 1 && count % 100 !== 11
           ? "релиз"
           : count % 10 >= 2 && count % 10 <= 4 && !(count % 100 >= 12 && count % 100 <= 14)
             ? "релиза"
             : "релизов";
-      const meta = [count ? `${count} ${releaseLabel}` : null, updatedAt ? `Обновлено ${escapeHtml(updatedAt)}` : null]
-        .filter(Boolean)
-        .join('<span class="meta-dot"></span>');
+      const meta = count ? `${count} ${releaseLabel}` : "";
+      const firstLetter = (displayName[0] || "").toUpperCase();
 
       return `
-        <article class="smartlink-item" role="link">
+        <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}" data-letter="${escapeHtml(firstLetter)}">
           <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
             ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
             <div class="smartlink-content">
               <div class="smartlink-title-row">
                 <div class="smartlink-title">${escapeHtml(displayName)}</div>
               </div>
-              <div class="meta-row subtle">${meta || ""}</div>
+              ${meta ? `<div class="meta-row subtle">${meta}</div>` : ""}
             </div>
           </a>
         </article>
       `;
     });
 
+    // Collect unique first letters for alphabet
+    const letters = new Set<string>();
+    items.forEach((r) => {
+      const name = (r.artist_name || "").trim() || prettifySlug(r.artist_slug);
+      const first = (name[0] || "").toUpperCase();
+      if (first) letters.add(first);
+    });
+    const sortedLetters = Array.from(letters).sort((a, b) => a.localeCompare(b, "ru"));
+    const alphabetHtml = sortedLetters
+      .map((l) => `<button class="artists-alphabet__letter" data-letter="${escapeHtml(l)}">${escapeHtml(l)}</button>`)
+      .join("");
+
+    const artistCount = items.length;
+    const artistLabel =
+      artistCount % 10 === 1 && artistCount % 100 !== 11
+        ? "артист"
+        : artistCount % 10 >= 2 && artistCount % 10 <= 4 && !(artistCount % 100 >= 12 && artistCount % 100 <= 14)
+          ? "артиста"
+          : "артистов";
+
+    const searchIcon = `<svg class="artists-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
+    const clearIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+
     const body = `
-      <div class="artist-header">
-        <h1 class="artist-name">Артисты</h1>
-        <div class="artist-meta">
-          <span>Выбери артиста — откроется список его релизов.</span>
+      <div class="artists-header">
+        <div class="artists-header__info">
+          <h1 class="artists-header__title">Артисты</h1>
+          <div class="artists-header__subtitle">Выбери артиста — откроется список его релизов</div>
         </div>
+        <div class="artists-header__count">${artistCount} ${artistLabel}</div>
       </div>
+      <div class="artists-search">
+        ${searchIcon}
+        <input type="text" class="artists-search__input" placeholder="Поиск артиста..." autocomplete="off" />
+        <button class="artists-search__clear" type="button" aria-label="Очистить поиск">${clearIcon}</button>
+      </div>
+      ${sortedLetters.length > 5 ? `<div class="artists-alphabet">${alphabetHtml}</div>` : ""}
       ${
         cards.length
-          ? `<div class="smartlink-list">${cards.join("\n")}</div>`
-          : `<div class="empty-state">Пока нет артистов со смартлинками.</div>`
+          ? `<div class="artists-grid">${cards.join("\n")}</div><div class="artists-empty" style="display:none;">Ничего не найдено</div>`
+          : `<div class="artists-empty">Пока нет артистов со смартлинками.</div>`
       }
+      <script>
+      (function() {
+        const input = document.querySelector('.artists-search__input');
+        const clearBtn = document.querySelector('.artists-search__clear');
+        const grid = document.querySelector('.artists-grid');
+        const emptyState = document.querySelector('.artists-empty');
+        const letterBtns = document.querySelectorAll('.artists-alphabet__letter');
+        const items = grid ? Array.from(grid.querySelectorAll('.smartlink-item')) : [];
+        
+        let activeFilter = '';
+        
+        function filterItems() {
+          const query = (input?.value || '').toLowerCase().trim();
+          let visibleCount = 0;
+          
+          items.forEach(item => {
+            const name = item.dataset.name || '';
+            const letter = item.dataset.letter || '';
+            const matchesQuery = !query || name.includes(query);
+            const matchesLetter = !activeFilter || letter === activeFilter;
+            const visible = matchesQuery && matchesLetter;
+            item.dataset.hidden = visible ? 'false' : 'true';
+            if (visible) visibleCount++;
+          });
+          
+          if (emptyState) {
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
+          if (clearBtn) {
+            clearBtn.classList.toggle('visible', query.length > 0);
+          }
+        }
+        
+        input?.addEventListener('input', filterItems);
+        
+        clearBtn?.addEventListener('click', () => {
+          if (input) input.value = '';
+          filterItems();
+          input?.focus();
+        });
+        
+        letterBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const letter = btn.dataset.letter || '';
+            if (activeFilter === letter) {
+              activeFilter = '';
+              btn.classList.remove('active');
+            } else {
+              letterBtns.forEach(b => b.classList.remove('active'));
+              activeFilter = letter;
+              btn.classList.add('active');
+            }
+            filterItems();
+          });
+        });
+      })();
+      </script>
     `;
 
     return new Response(htmlPage(body, { title: "Артисты — SREDA", pageClass: "page-artists" }), {
