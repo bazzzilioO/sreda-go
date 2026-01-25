@@ -1925,7 +1925,7 @@ function htmlPage(
     .artist-hero {
       position: relative;
       width: calc(100% + 3rem);
-      margin: -1.5rem -1.5rem 1rem -1.5rem;
+      margin: -1.5rem -1.5rem 0.75rem -1.5rem;
       border-radius: 24px 24px 0 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
@@ -1945,11 +1945,10 @@ function htmlPage(
       inset: 0;
       background: linear-gradient(180deg, 
         rgba(18,18,22,0) 0%, 
-        rgba(18,18,22,0) 30%,
-        rgba(18,18,22,0.4) 55%, 
-        rgba(18,18,22,0.75) 75%, 
-        rgba(18,18,22,0.92) 90%,
-        rgba(18,18,22,1) 100%);
+        rgba(18,18,22,0) 40%,
+        rgba(18,18,22,0.3) 60%, 
+        rgba(18,18,22,0.65) 80%, 
+        rgba(18,18,22,0.9) 100%);
       pointer-events: none;
     }
     .artist-hero__content {
@@ -1966,21 +1965,23 @@ function htmlPage(
     }
     .artist-hero__bottom {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
     }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { 
-      color: rgba(255,255,255,0.85); 
-      font-size: 0.85rem; 
+      color: rgba(255,255,255,0.8); 
+      font-size: 0.75rem; 
+      font-weight: 500;
       display: inline-flex; 
       align-items: center; 
-      gap: 0.35rem;
-      background: rgba(0,0,0,0.4);
+      gap: 0.3rem;
+      background: rgba(0,0,0,0.35);
       backdrop-filter: blur(8px);
-      padding: 0.35rem 0.65rem;
-      border-radius: 8px;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
     }
     .artist-actions { 
       display: inline-flex; 
@@ -2424,9 +2425,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
             <div class="artist-hero__bottom">
               <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
               <div class="artist-actions">
-                <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+                <button class="copy-btn copy-btn--icon" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
                   ${linkIcon}
-                  <span>Поделиться</span>
                 </button>
                 <span class="copy-toast" role="status" aria-live="polite"></span>
               </div>
