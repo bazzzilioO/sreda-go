@@ -1692,22 +1692,17 @@ function htmlPage(
       flex-wrap: wrap;
       justify-content: center;
       gap: 0.85rem;
+      transition: opacity 200ms ease;
     }
     .artists-grid .smartlink-item {
       flex: 0 1 calc(25% - 0.65rem);
       min-width: 140px;
       max-width: 180px;
-      transition: opacity 180ms ease, transform 180ms ease, flex 250ms ease, min-width 250ms ease, max-width 250ms ease, margin 250ms ease, padding 250ms ease;
+      animation: fadeIn 250ms ease forwards;
     }
-    .artists-grid .smartlink-item.hidden {
-      opacity: 0;
-      transform: scale(0.9);
-      pointer-events: none;
-      flex: 0 0 0;
-      min-width: 0;
-      max-width: 0;
-      margin: 0;
-      overflow: hidden;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .artists-pagination {
       display: flex;
@@ -2995,8 +2990,147 @@ function renderSmartlink(
   });
 }
 
+// Helper to generate artist cards HTML
+function generateArtistCards(
+  items: Array<{
+    artist_slug: string;
+    slug: string;
+    artist_name: string | null;
+    cover_url: string | null;
+    cover_source: string | null;
+    cover_version: number | null;
+    cnt: number | null;
+  }>,
+  goIndexBase: string
+): string[] {
+  return items.map((record) => {
+    const artistSlug = record.artist_slug;
+    const latestSlug = (record.slug || "").trim() || "latest";
+    const displayName = (record.artist_name || "").trim() || prettifySlug(artistSlug);
+    const coverSource = parseCoverSource(record.cover_source, `[artists] ${artistSlug} cover_source`);
+    const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
+    const coverUrlWithVersion = buildDisplayCoverUrl({
+      coverUrl: record.cover_url,
+      coverSource,
+      artistSlug,
+      slug: latestSlug,
+      goIndexBase,
+      coverVersion,
+      context: `[artists] ${artistSlug} cover_display`,
+    });
+    const artistUrl = `/artist/${encodeURIComponent(artistSlug)}`;
+    const count = Number(record.cnt || 0);
+    const releaseLabel =
+      count % 10 === 1 && count % 100 !== 11
+        ? "релиз"
+        : count % 10 >= 2 && count % 10 <= 4 && !(count % 100 >= 12 && count % 100 <= 14)
+          ? "релиза"
+          : "релизов";
+    const meta = count ? `${count} ${releaseLabel}` : "";
+
+    return `
+      <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}">
+        <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
+          ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
+          <div class="smartlink-content">
+            <div class="smartlink-title-row">
+              <div class="smartlink-title">${escapeHtml(displayName)}</div>
+            </div>
+            ${meta ? `<div class="meta-row subtle">${meta}</div>` : ""}
+          </div>
+        </a>
+      </article>
+    `;
+  });
+}
+
+// API endpoint for live search
+async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
+  const PER_PAGE = 12;
+  
+  try {
+    const searchQuery = (requestUrl.searchParams.get("q") || "").trim().toLowerCase();
+    const sortParam = (requestUrl.searchParams.get("sort") || "name_asc").trim();
+    const page = Math.max(1, parseInt(requestUrl.searchParams.get("page") || "1", 10));
+    const offset = (page - 1) * PER_PAGE;
+
+    const conditions: string[] = [];
+    const params: (string | number)[] = [];
+    
+    if (searchQuery) {
+      conditions.push("LOWER(COALESCE(s.artist_name, s.artist_slug)) LIKE ?");
+      params.push(`%${searchQuery}%`);
+    }
+    
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    
+    let orderBy = "LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC";
+    if (sortParam === "name_desc") orderBy = "LOWER(COALESCE(s.artist_name, s.artist_slug)) DESC";
+    else if (sortParam === "releases_desc") orderBy = "l.cnt DESC, LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC";
+    else if (sortParam === "date_desc") orderBy = "l.max_ts DESC";
+
+    const countQuery = await env.DB.prepare(
+      `SELECT COUNT(DISTINCT artist_slug) as total FROM smartlinks s ${whereClause}`
+    ).bind(...params).first<{ total: number }>();
+    const totalCount = countQuery?.total ?? 0;
+    const totalPages = Math.ceil(totalCount / PER_PAGE);
+
+    const query = await env.DB.prepare(
+      `WITH latest AS (
+         SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
+         FROM smartlinks
+         GROUP BY artist_slug
+       )
+       SELECT
+         s.artist_slug AS artist_slug,
+         s.slug AS slug,
+         s.artist_name AS artist_name,
+         s.cover_url AS cover_url,
+         s.cover_source AS cover_source,
+         s.cover_version AS cover_version,
+         l.cnt AS cnt
+       FROM smartlinks s
+       JOIN latest l
+         ON l.artist_slug = s.artist_slug
+        AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
+       ${whereClause}
+       GROUP BY s.artist_slug
+       ORDER BY ${orderBy}
+       LIMIT ? OFFSET ?`
+    ).bind(...params, PER_PAGE, offset).all<{
+      artist_slug: string;
+      slug: string;
+      artist_name: string | null;
+      cover_url: string | null;
+      cover_source: string | null;
+      cover_version: number | null;
+      cnt: number | null;
+    }>();
+
+    const items = query.results ?? [];
+    const cards = generateArtistCards(items, goIndexBase);
+
+    return new Response(JSON.stringify({
+      html: cards.join("\n"),
+      total: totalCount,
+      page,
+      totalPages,
+      hasMore: page < totalPages
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json; charset=UTF-8" },
+    });
+  } catch (error) {
+    console.error("[artists/search] db error", error);
+    return new Response(JSON.stringify({ error: "Database error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json; charset=UTF-8" },
+    });
+  }
+}
+
 async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
-  const PER_PAGE = 60;
+  const PER_PAGE = 12;
   
   try {
     // Parse query params
@@ -3064,46 +3198,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
     }>();
 
     const items = query.results ?? [];
-
-    const cards = items.map((record) => {
-      const artistSlug = record.artist_slug;
-      const latestSlug = (record.slug || "").trim() || "latest";
-      const displayName = (record.artist_name || "").trim() || prettifySlug(artistSlug);
-      const coverSource = parseCoverSource(record.cover_source, `[artists] ${artistSlug} cover_source`);
-      const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
-      const coverUrlWithVersion = buildDisplayCoverUrl({
-        coverUrl: record.cover_url,
-        coverSource,
-        artistSlug,
-        slug: latestSlug,
-        goIndexBase,
-        coverVersion,
-        context: `[artists] ${artistSlug} cover_display`,
-      });
-      const artistUrl = `/artist/${encodeURIComponent(artistSlug)}`;
-      const count = Number(record.cnt || 0);
-      const releaseLabel =
-        count % 10 === 1 && count % 100 !== 11
-          ? "релиз"
-          : count % 10 >= 2 && count % 10 <= 4 && !(count % 100 >= 12 && count % 100 <= 14)
-            ? "релиза"
-            : "релизов";
-      const meta = count ? `${count} ${releaseLabel}` : "";
-
-      return `
-        <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}">
-          <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
-            ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
-            <div class="smartlink-content">
-              <div class="smartlink-title-row">
-                <div class="smartlink-title">${escapeHtml(displayName)}</div>
-              </div>
-              ${meta ? `<div class="meta-row subtle">${meta}</div>` : ""}
-            </div>
-          </a>
-        </article>
-      `;
-    });
+    const cards = generateArtistCards(items, goIndexBase);
 
     // Build URL helper
     const buildUrl = (overrides: { q?: string; sort?: string; page?: number }) => {
@@ -3176,53 +3271,142 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       (function() {
         const form = document.getElementById('artists-form');
         const input = form?.querySelector('input[name="q"]');
+        const sortSelect = form?.querySelector('select[name="sort"]');
         const grid = document.querySelector('.artists-grid');
         const noResults = document.getElementById('no-results');
-        const items = grid ? Array.from(grid.querySelectorAll('.smartlink-item')) : [];
         const clearBtn = form?.querySelector('.artists-search__clear');
+        const countEl = document.querySelector('.artists-header__count');
+        const paginationEl = document.querySelector('.artists-pagination');
         
-        function filterItems() {
-          const query = (input?.value || '').toLowerCase().trim();
-          let visibleCount = 0;
+        let debounceTimer;
+        let currentRequest = null;
+        
+        async function search() {
+          const query = (input?.value || '').trim();
+          const sort = sortSelect?.value || 'name_asc';
           
-          items.forEach(item => {
-            const name = item.dataset.name || '';
-            const shouldShow = !query || name.includes(query);
-            item.classList.toggle('hidden', !shouldShow);
-            if (shouldShow) visibleCount++;
-          });
+          // Cancel previous request
+          if (currentRequest) currentRequest.abort();
           
-          if (noResults) {
-            noResults.style.display = visibleCount === 0 && query ? 'block' : 'none';
-          }
+          const controller = new AbortController();
+          currentRequest = controller;
           
-          // Show/hide clear button
-          if (clearBtn) {
-            clearBtn.classList.toggle('visible', query.length > 0);
+          // Show loading state
+          if (grid) grid.style.opacity = '0.5';
+          
+          try {
+            const params = new URLSearchParams();
+            if (query) params.set('q', query);
+            if (sort !== 'name_asc') params.set('sort', sort);
+            
+            const response = await fetch('/api/artists/search?' + params.toString(), {
+              signal: controller.signal
+            });
+            const data = await response.json();
+            
+            if (grid) {
+              grid.innerHTML = data.html || '';
+              grid.style.opacity = '1';
+              
+              // Re-init media loaders
+              grid.querySelectorAll('.media').forEach(initMediaLoader);
+            }
+            
+            if (noResults) {
+              noResults.style.display = data.total === 0 ? 'block' : 'none';
+            }
+            
+            // Update count
+            if (countEl && data.total !== undefined) {
+              const n = data.total;
+              const label = n % 10 === 1 && n % 100 !== 11 ? 'артист' 
+                : n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14) ? 'артиста' 
+                : 'артистов';
+              countEl.textContent = n + ' ' + label;
+            }
+            
+            // Update pagination
+            if (paginationEl) {
+              if (data.totalPages > 1) {
+                paginationEl.style.display = 'flex';
+                // Could update pagination links here
+              } else {
+                paginationEl.style.display = 'none';
+              }
+            }
+            
+            // Update URL without reload
+            const url = new URL(window.location.href);
+            if (query) url.searchParams.set('q', query);
+            else url.searchParams.delete('q');
+            if (sort !== 'name_asc') url.searchParams.set('sort', sort);
+            else url.searchParams.delete('sort');
+            history.replaceState(null, '', url.toString());
+            
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              console.error('Search error:', err);
+              if (grid) grid.style.opacity = '1';
+            }
           }
         }
         
-        input?.addEventListener('input', filterItems);
+        // Helper to init media lazy loading
+        function initMediaLoader(media) {
+          const img = media.querySelector('.media__img');
+          if (!img || !img.src) return;
+          
+          media.classList.add('media--loading');
+          
+          const handleLoad = async () => {
+            try {
+              if (img.decode) await img.decode();
+            } catch (e) {}
+            media.classList.remove('media--loading');
+            media.classList.add('media--ready');
+          };
+          
+          const handleError = () => {
+            media.classList.remove('media--loading');
+            media.classList.add('media--error');
+          };
+          
+          if (img.complete && img.naturalWidth > 0) {
+            handleLoad();
+          } else {
+            img.addEventListener('load', handleLoad, { once: true });
+            img.addEventListener('error', handleError, { once: true });
+          }
+        }
         
-        // Clear button functionality
+        input?.addEventListener('input', () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(search, 300);
+          
+          // Show/hide clear button
+          if (clearBtn) {
+            clearBtn.classList.toggle('visible', input.value.length > 0);
+          }
+        });
+        
+        sortSelect?.addEventListener('change', search);
+        
+        // Prevent form submit, use AJAX instead
+        form?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          search();
+        });
+        
+        // Clear button
         clearBtn?.addEventListener('click', (e) => {
-          if (input?.value) {
-            e.preventDefault();
+          e.preventDefault();
+          if (input) {
             input.value = '';
-            filterItems();
+            clearBtn.classList.remove('visible');
+            search();
             input.focus();
           }
         });
-        
-        // Submit form on Enter for server-side search
-        input?.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            form?.submit();
-          }
-        });
-        
-        // Initial filter if there's a query
-        if (input?.value) filterItems();
       })();
       </script>
     `;
@@ -4627,6 +4811,11 @@ export default {
 
     if (segments.length === 1 && segments[0] === "artist") {
       return renderArtistsIndex(env, goIndexBase, url);
+    }
+
+    // API endpoint for live artist search
+    if (segments.length === 3 && segments[0] === "api" && segments[1] === "artists" && segments[2] === "search") {
+      return handleArtistsSearch(env, goIndexBase, url);
     }
 
     if (segments.length === 2 && segments[0] === "artist") {
