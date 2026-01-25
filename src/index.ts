@@ -1933,6 +1933,20 @@ function htmlPage(
       max-height: 300px;
       background: transparent;
     }
+    .artist-hero::before {
+      content: ''; 
+      position: absolute; 
+      inset: 0;
+      border-radius: 24px 24px 0 0; 
+      padding: 1px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; 
+      mask-composite: exclude;
+      pointer-events: none; 
+      z-index: 3;
+    }
     .artist-hero__img {
       position: absolute;
       inset: 0;
