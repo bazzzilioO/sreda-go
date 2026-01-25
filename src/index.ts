@@ -1952,8 +1952,9 @@ function htmlPage(
     }
     .artist-body {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
       gap: 1rem;
       padding: 0 1.5rem 1rem;
       margin-top: -2.5rem;
@@ -1963,10 +1964,9 @@ function htmlPage(
     .artist-info {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      text-align: center;
-      width: 100%;
+      align-items: flex-start;
+      gap: 0.15rem;
+      text-align: left;
     }
     .artist-name { 
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; 
@@ -1985,9 +1985,8 @@ function htmlPage(
     .artist-share {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      width: 100%;
-      margin-top: 0.25rem;
+      align-items: flex-end;
+      flex-shrink: 0;
     }
     .artist-share .share-btn {
       display: inline-flex;
