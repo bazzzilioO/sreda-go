@@ -1965,23 +1965,23 @@ function htmlPage(
     }
     .artist-hero__bottom {
       display: flex;
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 1rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+    .artist-hero__title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
     }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { 
-      color: rgba(255,255,255,0.8); 
-      font-size: 0.75rem; 
+      color: rgba(255,255,255,0.6); 
+      font-size: 0.9rem; 
       font-weight: 500;
       display: inline-flex; 
       align-items: center; 
       gap: 0.3rem;
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(8px);
-      padding: 0.3rem 0.55rem;
-      border-radius: 6px;
     }
     .artist-actions { 
       display: inline-flex; 
@@ -2419,17 +2419,18 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
           ${heroImage ? `<img class="artist-hero__img" src="${escapeHtml(heroImage)}" alt="${escapeHtml(displayArtistName)}" />` : ""}
           <div class="artist-hero__overlay"></div>
           <div class="artist-hero__content">
-            <div class="artist-hero__top">
-              <div class="artist-meta">Релизы артиста</div>
-            </div>
+            <div class="artist-hero__top"></div>
             <div class="artist-hero__bottom">
-              <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
-              <div class="artist-actions">
-                <button class="copy-btn copy-btn--icon" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
-                  ${linkIcon}
-                </button>
-                <span class="copy-toast" role="status" aria-live="polite"></span>
+              <div class="artist-hero__title-row">
+                <h1 class="artist-name">${escapeHtml(displayArtistName)}</h1>
+                <div class="artist-actions">
+                  <button class="copy-btn copy-btn--icon" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
+                    ${linkIcon}
+                  </button>
+                  <span class="copy-toast" role="status" aria-live="polite"></span>
+                </div>
               </div>
+              <div class="artist-meta">Релизы артиста</div>
             </div>
           </div>
         </div>
