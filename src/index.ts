@@ -1962,11 +1962,12 @@ function htmlPage(
     .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .artist-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.5rem;
+    }
     .artist-actions { 
-      position: absolute; 
-      right: 0; 
-      bottom: 0; 
-      padding: 1rem 1.5rem;
       display: inline-flex; 
       align-items: center; 
       gap: 0.55rem; 
@@ -2052,7 +2053,6 @@ function htmlPage(
       .artist-hero { max-height: 220px; margin: -1.4rem -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); border-radius: 20px 20px 0 0; }
       .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
-      .artist-actions { padding: 0.85rem 1.4rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
@@ -2079,7 +2079,6 @@ function htmlPage(
       .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
-      .artist-actions { padding: 0.7rem 1.1rem; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
       .smartlink-release__body { padding: 0 1rem 0.6rem; margin-top: -1.25rem; gap: 0.8rem; }
@@ -2411,6 +2410,8 @@ async function renderArtistPage(artistSlug: string, env: Env, goIndexBase: strin
               </div>
             </div>
           </div>
+        </div>
+        <div class="artist-header">
           <div class="artist-actions">
             <button class="copy-btn copy-btn--ghost" type="button" data-url="${escapeHtml(artistCanonicalUrl)}" aria-label="Поделиться ссылкой на страницу артиста" title="Поделиться">
               ${linkIcon}
