@@ -1697,15 +1697,17 @@ function htmlPage(
       flex: 0 1 calc(25% - 0.65rem);
       min-width: 140px;
       max-width: 180px;
-      transition: opacity 200ms ease, transform 200ms ease;
-    }
-    .artists-grid .smartlink-item.hiding {
-      opacity: 0;
-      transform: scale(0.95);
-      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease, flex 250ms ease, min-width 250ms ease, max-width 250ms ease, margin 250ms ease, padding 250ms ease;
     }
     .artists-grid .smartlink-item.hidden {
-      display: none;
+      opacity: 0;
+      transform: scale(0.9);
+      pointer-events: none;
+      flex: 0 0 0;
+      min-width: 0;
+      max-width: 0;
+      margin: 0;
+      overflow: hidden;
     }
     .artists-pagination {
       display: flex;
@@ -3186,33 +3188,12 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           items.forEach(item => {
             const name = item.dataset.name || '';
             const shouldShow = !query || name.includes(query);
-            const isHidden = item.classList.contains('hidden');
-            
-            if (shouldShow && isHidden) {
-              // Show: remove hidden, then remove hiding after frame
-              item.classList.remove('hidden');
-              requestAnimationFrame(() => {
-                item.classList.remove('hiding');
-              });
-              visibleCount++;
-            } else if (!shouldShow && !isHidden) {
-              // Hide: add hiding class, then hidden after animation
-              item.classList.add('hiding');
-              setTimeout(() => {
-                if (item.classList.contains('hiding')) {
-                  item.classList.add('hidden');
-                }
-              }, 200);
-            } else if (shouldShow) {
-              visibleCount++;
-            }
+            item.classList.toggle('hidden', !shouldShow);
+            if (shouldShow) visibleCount++;
           });
           
           if (noResults) {
-            setTimeout(() => {
-              const stillVisible = items.filter(i => !i.classList.contains('hidden')).length;
-              noResults.style.display = stillVisible === 0 && query ? 'block' : 'none';
-            }, 210);
+            noResults.style.display = visibleCount === 0 && query ? 'block' : 'none';
           }
           
           // Show/hide clear button
