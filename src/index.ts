@@ -1886,7 +1886,8 @@ function htmlPage(
       -webkit-backdrop-filter: blur(14px) saturate(1.1);
       box-shadow: 0 10px 24px rgba(0,0,0,0.35);
     }
-    .smartlink-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.75rem; align-items: stretch; }
+    .smartlink-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; align-items: stretch; }
+    .smartlink-item { max-width: 220px; }
     .smartlink-item { display: flex; flex-direction: column; gap: 0; padding: 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); cursor: pointer; transition: all 180ms ease; box-shadow: 0 2px 12px rgba(0,0,0,0.1); overflow: hidden; }
     .smartlink-item:focus-visible { outline: 2px solid ${THEME.colors.accent}; outline-offset: 2px; }
     .smartlink-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
@@ -1905,12 +1906,12 @@ function htmlPage(
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
     .artist-hero {
       position: relative;
-      width: 100%;
-      margin: 0 0 1rem 0;
-      border-radius: 16px;
+      width: calc(100% + 3rem);
+      margin: -1.5rem -1.5rem 1rem -1.5rem;
+      border-radius: 0;
       overflow: hidden;
       aspect-ratio: 16 / 9;
-      max-height: 260px;
+      max-height: 280px;
       background: linear-gradient(180deg, rgba(30,30,30,0.6), rgba(18,18,18,0.95));
     }
     .artist-hero__img {
@@ -1924,7 +1925,7 @@ function htmlPage(
     .artist-hero__overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 50%, rgba(18,18,18,0.85) 80%, rgba(18,18,18,1) 100%);
+      background: linear-gradient(180deg, rgba(18,18,22,0) 0%, rgba(18,18,22,0) 40%, rgba(18,18,22,0.7) 70%, rgba(18,18,22,0.95) 85%, rgba(18,18,22,1) 100%);
       pointer-events: none;
     }
     .artist-hero__content {
@@ -1932,12 +1933,12 @@ function htmlPage(
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1rem 1.25rem;
+      padding: 1rem 1.5rem;
     }
     .artist-hero__info { display: flex; flex-direction: column; gap: 0.25rem; }
     .artist-name { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color: #FFFFFF; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .artist-meta { color: rgba(255,255,255,0.75); font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.35rem; }
-    .artist-actions { position: absolute; right: 1.25rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.55rem; }
+    .artist-actions { position: absolute; right: 1.5rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.55rem; }
     .smartlink-item--release { position: relative; }
     .smartlink-item--release .smartlink-title { font-size: 0.88rem; line-height: 1.25; font-weight: 600; }
     .smartlink-item--release .meta-row { margin-top: 0.05rem; font-size: 0.75rem; }
@@ -2019,10 +2020,10 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.82rem; }
       .smartlink-item--release .meta-row { font-size: 0.7rem; }
       .smartlink-item__copy { right: 5px; top: 5px; padding: 0.3rem 0.35rem; }
-      .artist-hero { max-height: 200px; border-radius: 12px; }
-      .artist-hero__content { padding: 0.85rem 1rem; }
+      .artist-hero { max-height: 200px; margin: -1.4rem -1.4rem 0.85rem -1.4rem; width: calc(100% + 2.8rem); }
+      .artist-hero__content { padding: 0.85rem 1.4rem; }
       .artist-name { font-size: 1.4rem; }
-      .artist-actions { right: 1rem; bottom: 0.85rem; }
+      .artist-actions { right: 1.4rem; bottom: 0.85rem; }
       .copy-toast--floating { bottom: 45px; right: 8px; font-size: 0.75rem; padding: 0.3rem 0.5rem; }
       .copy-btn:not(.copy-btn--ghost):not(.copy-btn--icon) { width: 100%; }
       /* Smartlink release page mobile */
@@ -2045,11 +2046,11 @@ function htmlPage(
       .smartlink-item--release .smartlink-title { font-size: 0.78rem; }
       .smartlink-item--release .meta-row { font-size: 0.65rem; }
       .smartlink-item__copy { padding: 0.25rem 0.3rem; border-radius: 6px; right: 4px; top: 4px; }
-      .artist-hero { max-height: 160px; border-radius: 10px; margin-bottom: 0.75rem; }
-      .artist-hero__content { padding: 0.7rem 0.85rem; }
+      .artist-hero { max-height: 180px; margin: -1.1rem -1.1rem 0.65rem -1.1rem; width: calc(100% + 2.2rem); }
+      .artist-hero__content { padding: 0.7rem 1.1rem; }
       .artist-name { font-size: 1.2rem; }
       .artist-meta { font-size: 0.78rem; }
-      .artist-actions { right: 0.85rem; bottom: 0.7rem; }
+      .artist-actions { right: 1.1rem; bottom: 0.7rem; }
       .copy-btn--ghost { padding: 0.35rem 0.5rem; font-size: 0.82rem; }
       /* Smartlink release page small mobile */
       .smartlink-release__body { padding: 0 1rem 0.6rem; margin-top: -1.25rem; gap: 0.8rem; }
