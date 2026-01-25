@@ -3080,7 +3080,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       const meta = count ? `${count} ${releaseLabel}` : "";
 
       return `
-        <article class="smartlink-item" role="link">
+        <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}">
           <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
             ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
             <div class="smartlink-content">
@@ -3149,7 +3149,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
         <div class="artists-search">
           ${searchIcon}
           <input type="text" name="q" class="artists-search__input" placeholder="Поиск артиста..." value="${escapeHtml(searchQuery)}" autocomplete="off" />
-          ${searchQuery ? `<a href="${escapeHtml(buildUrl({ q: "" }))}" class="artists-search__clear visible" aria-label="Очистить поиск">${clearIcon}</a>` : ""}
+          <button type="button" class="artists-search__clear${searchQuery ? " visible" : ""}" aria-label="Очистить поиск">${clearIcon}</button>
         </div>
         <select name="sort" class="artists-sort-select" onchange="this.form.submit()">
           ${sortOptionsHtml}
@@ -3157,10 +3157,63 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       </form>
       ${
         cards.length
-          ? `<div class="artists-grid">${cards.join("\n")}</div>`
+          ? `<div class="artists-grid">${cards.join("\n")}</div><div class="artists-empty" id="no-results" style="display:none;">Ничего не найдено</div>`
           : `<div class="artists-empty">${searchQuery ? "Ничего не найдено" : "Пока нет артистов со смартлинками."}</div>`
       }
       ${paginationHtml}
+      <script>
+      (function() {
+        const form = document.getElementById('artists-form');
+        const input = form?.querySelector('input[name="q"]');
+        const grid = document.querySelector('.artists-grid');
+        const noResults = document.getElementById('no-results');
+        const items = grid ? Array.from(grid.querySelectorAll('.smartlink-item')) : [];
+        const clearBtn = form?.querySelector('.artists-search__clear');
+        
+        function filterItems() {
+          const query = (input?.value || '').toLowerCase().trim();
+          let visibleCount = 0;
+          
+          items.forEach(item => {
+            const name = item.dataset.name || '';
+            const visible = !query || name.includes(query);
+            item.style.display = visible ? '' : 'none';
+            if (visible) visibleCount++;
+          });
+          
+          if (noResults) {
+            noResults.style.display = visibleCount === 0 && query ? 'block' : 'none';
+          }
+          
+          // Show/hide clear button
+          if (clearBtn) {
+            clearBtn.classList.toggle('visible', query.length > 0);
+          }
+        }
+        
+        input?.addEventListener('input', filterItems);
+        
+        // Clear button functionality
+        clearBtn?.addEventListener('click', (e) => {
+          if (input?.value) {
+            e.preventDefault();
+            input.value = '';
+            filterItems();
+            input.focus();
+          }
+        });
+        
+        // Submit form on Enter for server-side search
+        input?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            form?.submit();
+          }
+        });
+        
+        // Initial filter if there's a query
+        if (input?.value) filterItems();
+      })();
+      </script>
     `;
 
     return new Response(htmlPage(body, { title: "Артисты — SREDA", pageClass: "page-artists" }), {
