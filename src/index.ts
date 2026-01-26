@@ -1615,26 +1615,23 @@ function htmlPage(
     .artists-search__input {
       width: 100%;
       padding: 0.55rem 0.8rem 0.55rem 2.2rem;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 12px;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.03);
       color: #fff;
       font-size: 0.88rem;
       font-family: inherit;
       outline: none;
       transition: all 200ms ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .artists-search__input::placeholder { color: rgba(255,255,255,0.35); }
     .artists-search__input:hover {
-      border-color: rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      border-color: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
     }
     .artists-search__input:focus {
-      border-color: rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.06);
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      border-color: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
     }
     .artists-search__input:focus-visible {
       outline: 2px solid rgba(245,158,11,0.4);
@@ -1688,13 +1685,12 @@ function htmlPage(
     }
     .artists-loading {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 0.65rem;
-      justify-items: center;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 0.75rem;
     }
     .artists-loading-item {
       width: 100%;
-      max-width: 180px;
       aspect-ratio: 4 / 3;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1726,43 +1722,47 @@ function htmlPage(
       margin-bottom: 0;
       display: flex;
       align-items: stretch;
+      max-width: calc(70% - 0.3rem);
     }
     .artists-controls .artists-search__input {
       align-self: stretch;
     }
-    .artists-sort-select {
-      padding: 0.55rem 1.7rem 0.55rem 0.7rem;
+    .artists-sort-buttons {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .artists-sort-btn {
+      padding: 0.55rem 0.75rem;
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.65rem center;
-      color: #fff;
-      font-size: 0.85rem;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.7);
+      font-size: 0.8rem;
       font-family: inherit;
       cursor: pointer;
       outline: none;
-      appearance: none;
-      -webkit-appearance: none;
       transition: all 200ms ease;
-      min-width: 120px;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      align-self: stretch;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
-    .artists-sort-select:hover { 
-      border-color: rgba(255,255,255,0.12); 
-      background-color: rgba(255,255,255,0.05); 
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    .artists-sort-btn:hover {
+      border-color: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-    .artists-sort-select:focus { 
-      border-color: rgba(255,255,255,0.15); 
-      background-color: rgba(255,255,255,0.06);
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    .artists-sort-btn.active {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .artists-sort-select:focus-visible {
+    .artists-sort-btn:focus-visible {
       outline: 2px solid rgba(245,158,11,0.4);
       outline-offset: 2px;
     }
-    .artists-sort-select option { background: #1a1a1f; color: #fff; }
     .artists-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -2361,7 +2361,24 @@ function htmlPage(
     .powered-by {
       display: flex;
       justify-content: center;
-      margin-top: 0.5rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      position: relative;
+    }
+    .powered-by::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 5 L25 30 L20 30 L35 55 L30 40 L50 40 L15 5 Z' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='0.5'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 5 L35 30 L40 30 L25 55 L30 40 L10 40 L45 5 Z' fill='none' stroke='rgba(255,255,255,0.025)' stroke-width='0.5'/%3E%3C/svg%3E");
+      background-size: 60px 60px, 60px 60px;
+      background-position: 0 0, 30px 30px;
+      opacity: 0.4;
+      pointer-events: none;
     }
     .powered-by__stack {
       display: flex;
@@ -2370,6 +2387,8 @@ function htmlPage(
       justify-content: flex-start;
       gap: 0.4rem;
       width: fit-content;
+      position: relative;
+      z-index: 1;
     }
     .powered-by__text {
       color: ${THEME.colors.textMuted};
@@ -2445,8 +2464,10 @@ function htmlPage(
       .artists-header__count { align-self: flex-start; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
       .artists-grid .smartlink-item { width: 100%; max-width: 100%; }
+      .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
-      .artists-sort-select { width: 100%; }
+      .artists-sort-buttons { width: 100%; justify-content: flex-start; }
+      .artists-sort-btn { flex: 1; min-width: 0; }
       .artists-pagination { gap: 0.6rem; }
       .artists-pagination__btn { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
     }
@@ -2484,6 +2505,7 @@ function htmlPage(
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
       .artists-grid .smartlink-item { width: 100%; max-width: 100%; }
+      .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
     }
   </style>
 </head>
@@ -3358,8 +3380,12 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       { value: "releases_desc", label: "По релизам" },
       { value: "date_desc", label: "По дате" },
     ];
-    const sortOptionsHtml = sortOptions
-      .map((o) => `<option value="${escapeHtml(o.value)}"${o.value === sortParam ? " selected" : ""}>${escapeHtml(o.label)}</option>`)
+    const sortButtonsHtml = sortOptions
+      .map((o) => {
+        const isActive = o.value === sortParam;
+        const url = buildUrl({ sort: o.value, page: 1 });
+        return `<a href="${escapeHtml(url)}" class="artists-sort-btn${isActive ? " active" : ""}" data-sort="${escapeHtml(o.value)}">${escapeHtml(o.label)}</a>`;
+      })
       .join("");
 
     const artistLabel =
@@ -3395,9 +3421,9 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           <input type="text" name="q" class="artists-search__input" placeholder="Поиск артиста..." value="${escapeHtml(searchQuery)}" autocomplete="off" aria-label="Поиск артиста" />
           <button type="button" class="artists-search__clear${searchQuery ? " visible" : ""}" aria-label="Очистить поиск">${clearIcon}</button>
         </div>
-        <select name="sort" class="artists-sort-select" onchange="this.form.submit()" aria-label="Сортировка артистов">
-          ${sortOptionsHtml}
-        </select>
+        <div class="artists-sort-buttons" role="group" aria-label="Сортировка артистов">
+          ${sortButtonsHtml}
+        </div>
       </form>
       ${
         cards.length
@@ -3409,7 +3435,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       (function() {
         const form = document.getElementById('artists-form');
         const input = form?.querySelector('input[name="q"]');
-        const sortSelect = form?.querySelector('select[name="sort"]');
+        const sortButtons = form?.querySelectorAll('.artists-sort-btn');
         const grid = document.querySelector('.artists-grid');
         const noResults = document.getElementById('no-results');
         const clearBtn = form?.querySelector('.artists-search__clear');
@@ -3418,10 +3444,17 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
         
         let debounceTimer;
         let currentRequest = null;
+        let currentSort = 'name_asc';
+        
+        // Get current sort from active button
+        const activeSortBtn = form?.querySelector('.artists-sort-btn.active');
+        if (activeSortBtn) {
+          currentSort = activeSortBtn.getAttribute('data-sort') || 'name_asc';
+        }
         
         async function search() {
           const query = (input?.value || '').trim();
-          const sort = sortSelect?.value || 'name_asc';
+          const sort = currentSort;
           const searchContainer = form?.querySelector('.artists-search');
           
           // Cancel previous request
@@ -3430,9 +3463,9 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           const controller = new AbortController();
           currentRequest = controller;
           
-          // Show loading state with skeleton
+          // Show loading state with skeleton (15 items = 3 rows of 5)
           if (grid) {
-            const skeletonCount = Math.min(15, grid.children.length || 15);
+            const skeletonCount = 15;
             grid.innerHTML = Array(skeletonCount).fill(0).map(() => 
               '<div class="artists-loading-item"></div>'
             ).join('');
@@ -3550,7 +3583,20 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           }
         });
         
-        sortSelect?.addEventListener('change', search);
+        // Handle sort button clicks
+        sortButtons?.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sort = btn.getAttribute('data-sort') || 'name_asc';
+            currentSort = sort;
+            
+            // Update active state
+            sortButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            search();
+          });
+        });
         
         // Prevent form submit, use AJAX instead
         form?.addEventListener('submit', (e) => {
