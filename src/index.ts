@@ -1556,7 +1556,7 @@ function htmlPage(
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
-      padding: 0.65rem;
+      padding: 0.6rem;
     }
     body.page-artists .card::before {
       content: ''; 
@@ -1577,8 +1577,8 @@ function htmlPage(
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-end;
-      gap: 0.4rem;
-      margin-bottom: 0.4rem;
+      gap: 0.35rem;
+      margin-bottom: 0.35rem;
     }
     .artists-header__info {
       display: flex;
@@ -1587,11 +1587,12 @@ function htmlPage(
     }
     .artists-header__title {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: #fff;
       margin: 0;
       letter-spacing: -0.02em;
+      line-height: 1.2;
     }
     .artists-header__subtitle {
       font-size: 0.75rem;
@@ -1608,7 +1609,7 @@ function htmlPage(
     }
     .artists-search__input {
       width: 100%;
-      padding: 0.6rem 0.85rem 0.6rem 2.25rem;
+      padding: 0.55rem 0.8rem 0.55rem 2.2rem;
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
       background: rgba(255,255,255,0.04);
@@ -1669,7 +1670,7 @@ function htmlPage(
       margin-bottom: 0;
     }
     .artists-sort-select {
-      padding: 0.6rem 1.75rem 0.6rem 0.75rem;
+      padding: 0.55rem 1.7rem 0.55rem 0.7rem;
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
       background: rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.65rem center;
@@ -1699,6 +1700,22 @@ function htmlPage(
       min-width: 140px;
       max-width: 180px;
       animation: fadeIn 250ms ease forwards;
+      transition: all 200ms ease;
+      cursor: pointer;
+    }
+    .artists-grid .smartlink-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .artists-grid .smartlink-cover {
+      aspect-ratio: 4 / 3;
+      transition: transform 200ms ease;
+    }
+    .artists-grid .smartlink-item:hover .smartlink-cover {
+      transform: scale(1.02);
+    }
+    .artists-grid .smartlink-content {
+      padding: 0.45rem 0.5rem;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
@@ -1709,8 +1726,8 @@ function htmlPage(
       justify-content: center;
       align-items: center;
       gap: 0.75rem;
-      margin-top: 0.4rem;
-      padding-top: 0.75rem;
+      margin-top: 0.35rem;
+      padding-top: 0.65rem;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
     .artists-pagination__btn {
