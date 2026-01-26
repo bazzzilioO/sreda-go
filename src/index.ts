@@ -1690,13 +1690,26 @@ function htmlPage(
     .artists-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 0.3rem;
+      gap: 0.65rem;
       transition: opacity 200ms ease;
     }
     .artists-grid .smartlink-item {
       width: 100%;
-      border-radius: 10px;
+      border-radius: 12px;
       animation: fadeIn 250ms ease forwards;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .artists-grid .smartlink-item:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    .artists-grid .smartlink-cover {
+      aspect-ratio: 4 / 3;
+    }
+    .artists-grid .smartlink-content {
+      padding: 0.5rem 0.6rem;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
