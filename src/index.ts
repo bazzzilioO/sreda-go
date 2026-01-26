@@ -1556,7 +1556,7 @@ function htmlPage(
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
-      padding: 1rem;
+      padding: 0.75rem;
     }
     body.page-artists .card::before {
       content: ''; 
@@ -1577,43 +1577,43 @@ function htmlPage(
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-end;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
     }
     .artists-header__info {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
+      gap: 0.15rem;
     }
     .artists-header__title {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: #fff;
       margin: 0;
       letter-spacing: -0.02em;
     }
     .artists-header__subtitle {
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       color: rgba(255,255,255,0.5);
     }
     .artists-header__count {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: rgba(255,255,255,0.4);
       white-space: nowrap;
     }
     .artists-search {
       position: relative;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
     .artists-search__input {
       width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      padding: 0.6rem 0.85rem 0.6rem 2.25rem;
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
+      border-radius: 10px;
       background: rgba(255,255,255,0.04);
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-family: inherit;
       outline: none;
       transition: all 150ms ease;
@@ -1661,27 +1661,27 @@ function htmlPage(
     }
     .artists-controls {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
     }
     .artists-controls .artists-search {
       flex: 1;
       margin-bottom: 0;
     }
     .artists-sort-select {
-      padding: 0.65rem 2rem 0.65rem 0.85rem;
+      padding: 0.6rem 1.75rem 0.6rem 0.75rem;
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.65rem center;
       color: #fff;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-family: inherit;
       cursor: pointer;
       outline: none;
       appearance: none;
       -webkit-appearance: none;
       transition: all 150ms ease;
-      min-width: 130px;
+      min-width: 120px;
       flex-shrink: 0;
     }
     .artists-sort-select:hover { border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.06); }
@@ -1690,11 +1690,12 @@ function htmlPage(
     .artists-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 0.4rem;
+      gap: 0.3rem;
       transition: opacity 200ms ease;
     }
     .artists-grid .smartlink-item {
       width: 100%;
+      border-radius: 10px;
       animation: fadeIn 250ms ease forwards;
     }
     @keyframes fadeIn {
@@ -1705,8 +1706,8 @@ function htmlPage(
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 1rem;
-      margin-top: 0.75rem;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
       padding-top: 1rem;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
@@ -2130,14 +2131,14 @@ function htmlPage(
     .smartlink-item:active { transform: translateY(0); }
     .smartlink-main { display: flex; flex-direction: column; gap: 0; color: inherit; text-decoration: none; }
     .smartlink-cover { width: 100%; aspect-ratio: 1 / 1; border-radius: 0; border: none; background: rgba(30,30,30,0.5); box-shadow: none; overflow: hidden; position: relative; }
-    .smartlink-content { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem 0.6rem; }
-    .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; }
-    .smartlink-title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: -0.01em; color: ${THEME.colors.textPrimary}; }
+    .smartlink-content { display: flex; flex-direction: column; gap: 0.08rem; padding: 0.4rem 0.5rem; }
+    .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; }
+    .smartlink-title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: -0.01em; color: ${THEME.colors.textPrimary}; line-height: 1.2; }
     .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.55); border: 1px solid ${THEME.colors.borderSubtle}; color: ${THEME.colors.textSecondary}; font-weight: 740; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.3rem; }
     .platform-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 3px rgba(245,158,11,0.08); }
     .meta-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.65rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.9rem; }
     .meta-row.subtle { color: ${THEME.colors.textMuted}; font-size: 0.8rem; }
-    .artists-grid .meta-row.subtle { font-size: 0.75rem; }
+    .artists-grid .meta-row.subtle { font-size: 0.7rem; line-height: 1.3; }
     .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: ${THEME.colors.textFaint}; display: inline-block; }
     .pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: ${THEME.radii.pill}; background: ${THEME.colors.surface}; border: 1px solid ${THEME.colors.border}; color: ${THEME.colors.textSecondary}; font-weight: 700; }
     .pill-soft { background: ${THEME.colors.surfaceMuted}; color: ${THEME.colors.textSecondary}; border-color: ${THEME.colors.border}; }
@@ -3058,9 +3059,11 @@ async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: UR
     const params: (string | number)[] = [];
     
     if (searchQuery) {
-      // Ищем с начала слова или точное совпадение
-      conditions.push("(LOWER(COALESCE(s.artist_name, s.artist_slug)) LIKE ? OR LOWER(COALESCE(s.artist_name, s.artist_slug)) = ?)");
-      params.push(`${searchQuery}%`, searchQuery);
+      // Ищем с начала любого слова в названии или точное совпадение
+      // Ищем: начало строки, после пробела, или точное совпадение
+      const nameField = "LOWER(COALESCE(s.artist_name, s.artist_slug))";
+      conditions.push(`(${nameField} LIKE ? OR ${nameField} LIKE ? OR ${nameField} = ?)`);
+      params.push(`${searchQuery}%`, `% ${searchQuery}%`, searchQuery);
     }
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -3145,9 +3148,11 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
     const params: (string | number)[] = [];
     
     if (searchQuery) {
-      // Ищем с начала слова или точное совпадение
-      conditions.push("(LOWER(COALESCE(s.artist_name, s.artist_slug)) LIKE ? OR LOWER(COALESCE(s.artist_name, s.artist_slug)) = ?)");
-      params.push(`${searchQuery}%`, searchQuery);
+      // Ищем с начала любого слова в названии или точное совпадение
+      // Ищем: начало строки, после пробела, или точное совпадение
+      const nameField = "LOWER(COALESCE(s.artist_name, s.artist_slug))";
+      conditions.push(`(${nameField} LIKE ? OR ${nameField} LIKE ? OR ${nameField} = ?)`);
+      params.push(`${searchQuery}%`, `% ${searchQuery}%`, searchQuery);
     }
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
