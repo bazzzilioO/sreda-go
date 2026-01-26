@@ -1633,6 +1633,13 @@ function htmlPage(
       background: rgba(255,255,255,0.06);
       box-shadow: 0 0 0 3px rgba(245,158,11,0.1), 0 2px 12px rgba(0,0,0,0.08);
     }
+    .artists-search__input:focus-visible {
+      outline: 2px solid rgba(245,158,11,0.5);
+      outline-offset: 2px;
+    }
+    .artists-search--active .artists-search__icon {
+      color: rgba(245,158,11,0.6);
+    }
     .artists-search__icon {
       position: absolute;
       left: 0.85rem;
@@ -1664,9 +1671,37 @@ function htmlPage(
     .artists-search__clear.visible { display: flex; }
     .artists-empty {
       text-align: center;
-      padding: 2rem 1rem;
-      color: rgba(255,255,255,0.4);
+      padding: 3rem 1rem;
+      color: rgba(255,255,255,0.5);
       font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .artists-empty::before {
+      content: '🎵';
+      display: block;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.6;
+    }
+    .artists-loading {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.65rem;
+      justify-items: center;
+    }
+    .artists-loading-item {
+      width: 100%;
+      max-width: 180px;
+      aspect-ratio: 4 / 3;
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
     }
     .artists-controls {
       display: flex;
@@ -1709,7 +1744,7 @@ function htmlPage(
       flex-wrap: wrap;
       justify-content: center;
       gap: 0.65rem;
-      transition: opacity 200ms ease;
+      transition: opacity 300ms ease;
     }
     .artists-grid .smartlink-item {
       flex: 0 1 calc(25% - 0.65rem);
@@ -1725,6 +1760,15 @@ function htmlPage(
       box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       border-color: rgba(255,255,255,0.12);
     }
+    .artists-grid .smartlink-item:focus-visible {
+      outline: 2px solid rgba(245,158,11,0.5);
+      outline-offset: 2px;
+      transform: translateY(-2px);
+    }
+    .artists-grid .smartlink-item:active {
+      transform: translateY(-1px);
+      transition: transform 100ms ease;
+    }
     .artists-grid .smartlink-cover {
       aspect-ratio: 4 / 3;
       transition: transform 200ms ease;
@@ -1736,8 +1780,8 @@ function htmlPage(
       padding: 0.45rem 0.5rem;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
     .artists-pagination {
       display: flex;
@@ -1765,7 +1809,20 @@ function htmlPage(
       box-shadow: 0 2px 12px rgba(0,0,0,0.1);
       transform: translateY(-1px);
     }
-    .artists-pagination__btn.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+    .artists-pagination__btn.disabled { 
+      opacity: 0.35; 
+      cursor: not-allowed; 
+      pointer-events: none;
+      background: rgba(255,255,255,0.02);
+    }
+    .artists-pagination__btn:focus-visible {
+      outline: 2px solid rgba(245,158,11,0.5);
+      outline-offset: 2px;
+    }
+    .artists-sort-select:focus-visible {
+      outline: 2px solid rgba(245,158,11,0.5);
+      outline-offset: 2px;
+    }
     .artists-pagination__info {
       font-size: 0.8rem;
       color: rgba(255,255,255,0.5);
@@ -3302,17 +3359,17 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       <form class="artists-controls" method="get" action="/artist" id="artists-form">
         <div class="artists-search">
           ${searchIcon}
-          <input type="text" name="q" class="artists-search__input" placeholder="Поиск артиста..." value="${escapeHtml(searchQuery)}" autocomplete="off" />
+          <input type="text" name="q" class="artists-search__input" placeholder="Поиск артиста..." value="${escapeHtml(searchQuery)}" autocomplete="off" aria-label="Поиск артиста" />
           <button type="button" class="artists-search__clear${searchQuery ? " visible" : ""}" aria-label="Очистить поиск">${clearIcon}</button>
         </div>
-        <select name="sort" class="artists-sort-select" onchange="this.form.submit()">
+        <select name="sort" class="artists-sort-select" onchange="this.form.submit()" aria-label="Сортировка артистов">
           ${sortOptionsHtml}
         </select>
       </form>
       ${
         cards.length
-          ? `<div class="artists-grid">${cards.join("\n")}</div><div class="artists-empty" id="no-results" style="display:none;">Ничего не найдено</div>`
-          : `<div class="artists-empty">${searchQuery ? "Ничего не найдено" : "Пока нет артистов со смартлинками."}</div>`
+          ? `<div class="artists-grid" role="list" aria-live="polite" aria-label="Список артистов">${cards.join("\n")}</div><div class="artists-empty" id="no-results" style="display:none;" role="status" aria-live="polite">Ничего не найдено</div>`
+          : `<div class="artists-empty" role="status" aria-live="polite">${searchQuery ? "Ничего не найдено" : "Пока нет артистов со смартлинками."}</div>`
       }
       ${paginationHtml}
       <script>
@@ -3332,6 +3389,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
         async function search() {
           const query = (input?.value || '').trim();
           const sort = sortSelect?.value || 'name_asc';
+          const searchContainer = form?.querySelector('.artists-search');
           
           // Cancel previous request
           if (currentRequest) currentRequest.abort();
@@ -3339,8 +3397,21 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           const controller = new AbortController();
           currentRequest = controller;
           
-          // Show loading state
-          if (grid) grid.style.opacity = '0.5';
+          // Show loading state with skeleton
+          if (grid) {
+            const skeletonCount = Math.min(15, grid.children.length || 15);
+            grid.innerHTML = Array(skeletonCount).fill(0).map(() => 
+              '<div class="artists-loading-item"></div>'
+            ).join('');
+            grid.className = 'artists-loading';
+          }
+          
+          // Add active state to search
+          if (searchContainer && query) {
+            searchContainer.classList.add('artists-search--active');
+          } else if (searchContainer) {
+            searchContainer.classList.remove('artists-search--active');
+          }
           
           try {
             const params = new URLSearchParams();
@@ -3353,8 +3424,8 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
             const data = await response.json();
             
             if (grid) {
+              grid.className = 'artists-grid';
               grid.innerHTML = data.html || '';
-              grid.style.opacity = '1';
               
               // Re-init media loaders
               grid.querySelectorAll('.media').forEach(initMediaLoader);
@@ -3394,7 +3465,10 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           } catch (err) {
             if (err.name !== 'AbortError') {
               console.error('Search error:', err);
-              if (grid) grid.style.opacity = '1';
+              if (grid) {
+                grid.className = 'artists-grid';
+                grid.style.opacity = '1';
+              }
             }
           }
         }
@@ -3435,6 +3509,12 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           if (clearBtn) {
             clearBtn.classList.toggle('visible', input.value.length > 0);
           }
+          
+          // Update active state
+          const searchContainer = form?.querySelector('.artists-search');
+          if (searchContainer) {
+            searchContainer.classList.toggle('artists-search--active', input.value.length > 0);
+          }
         });
         
         sortSelect?.addEventListener('change', search);
@@ -3451,6 +3531,10 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           if (input) {
             input.value = '';
             clearBtn.classList.remove('visible');
+            const searchContainer = form?.querySelector('.artists-search');
+            if (searchContainer) {
+              searchContainer.classList.remove('artists-search--active');
+            }
             search();
             input.focus();
           }
