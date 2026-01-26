@@ -1615,23 +1615,32 @@ function htmlPage(
     .artists-search__input {
       width: 100%;
       padding: 0.55rem 0.8rem 0.55rem 2.2rem;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       color: #fff;
       font-size: 0.88rem;
       font-family: inherit;
       outline: none;
       transition: all 200ms ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
     }
     .artists-search__input::placeholder { color: rgba(255,255,255,0.35); }
     .artists-search__input:hover {
-      border-color: rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(25px) saturate(1.3);
+      -webkit-backdrop-filter: blur(25px) saturate(1.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
     }
     .artists-search__input:focus {
-      border-color: rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(30px) saturate(1.4);
+      -webkit-backdrop-filter: blur(30px) saturate(1.4);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
     }
     .artists-search__input:focus-visible {
       outline: 2px solid rgba(245,158,11,0.4);
@@ -1738,6 +1747,8 @@ function htmlPage(
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 10px;
       background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       color: rgba(255,255,255,0.7);
       font-size: 0.8rem;
       font-family: inherit;
@@ -1745,19 +1756,23 @@ function htmlPage(
       outline: none;
       transition: all 200ms ease;
       white-space: nowrap;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
     }
     .artists-sort-btn:hover {
       border-color: rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(25px) saturate(1.3);
+      -webkit-backdrop-filter: blur(25px) saturate(1.3);
       color: rgba(255,255,255,0.9);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
     }
     .artists-sort-btn.active {
       border-color: rgba(255,255,255,0.15);
       background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(30px) saturate(1.4);
+      -webkit-backdrop-filter: blur(30px) saturate(1.4);
       color: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
     }
     .artists-sort-btn:focus-visible {
       outline: 2px solid rgba(245,158,11,0.4);
@@ -2373,12 +2388,14 @@ function htmlPage(
       right: 0;
       bottom: 0;
       background-image: 
-        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 5 L25 30 L20 30 L35 55 L30 40 L50 40 L15 5 Z' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='0.5'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 5 L35 30 L40 30 L25 55 L30 40 L10 40 L45 5 Z' fill='none' stroke='rgba(255,255,255,0.025)' stroke-width='0.5'/%3E%3C/svg%3E");
-      background-size: 60px 60px, 60px 60px;
-      background-position: 0 0, 30px 30px;
-      opacity: 0.4;
+        url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 8 L32 38 L25 38 L42 72 L35 50 L58 50 L20 8 Z' fill='rgba(255,255,255,0.04)' stroke='rgba(255,255,255,0.06)' stroke-width='1'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M65 8 L48 38 L55 38 L38 72 L45 50 L22 50 L60 8 Z' fill='rgba(255,255,255,0.03)' stroke='rgba(255,255,255,0.05)' stroke-width='1'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 5 L55 35 L48 35 L63 70 L56 48 L75 48 L30 5 Z' fill='rgba(255,255,255,0.02)' stroke='rgba(255,255,255,0.04)' stroke-width='0.8'/%3E%3C/svg%3E");
+      background-size: 80px 80px, 80px 80px, 80px 80px;
+      background-position: 0 0, 40px 40px, 20px 20px;
+      opacity: 1;
       pointer-events: none;
+      mix-blend-mode: overlay;
     }
     .powered-by__stack {
       display: flex;
