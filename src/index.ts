@@ -1697,7 +1697,7 @@ function htmlPage(
     }
     .artists-loading {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.8rem;
       margin-bottom: 0.75rem;
     }
@@ -1809,7 +1809,7 @@ function htmlPage(
     }
     .artists-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.8rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.75rem;
