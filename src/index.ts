@@ -3289,7 +3289,7 @@ function generateArtistCards(
 
 // API endpoint for live search
 async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
-  const PER_PAGE = 15;
+  const PER_PAGE = 12;
   
   try {
     const searchQuery = (requestUrl.searchParams.get("q") || "").trim().toLowerCase();
@@ -3376,7 +3376,7 @@ async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: UR
 }
 
 async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
-  const PER_PAGE = 15;
+  const PER_PAGE = 12;
   
   try {
     // Parse query params
@@ -3552,9 +3552,9 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           const controller = new AbortController();
           currentRequest = controller;
           
-          // Show loading state with skeleton (15 items = 3 rows of 5)
+          // Show loading state with skeleton (12 items = 3 rows of 4 or 2 rows of 6)
           if (grid) {
-            const skeletonCount = 15;
+            const skeletonCount = 12;
             grid.innerHTML = Array(skeletonCount).fill(0).map(() => 
               '<div class="artists-loading-item"><div class="artists-loading-item__image"></div><div class="artists-loading-item__text"><div class="artists-loading-item__text-line"></div><div class="artists-loading-item__text-line"></div></div></div>'
             ).join('');
