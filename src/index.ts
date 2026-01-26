@@ -1474,10 +1474,9 @@ function htmlPage(
       pointer-events: none;
       background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 10 L40 48 L32 48 L52 90 L44 62 L72 62 L25 10 Z' fill='rgba(255,255,255,0.025)' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Cpath d='M80 10 L60 48 L68 48 L48 90 L56 62 L28 62 L75 10 Z' fill='rgba(255,255,255,0.02)' stroke='rgba(255,255,255,0.035)' stroke-width='1'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 8 L70 46 L62 46 L82 88 L74 60 L95 60 L40 8 Z' fill='rgba(255,255,255,0.015)' stroke='rgba(255,255,255,0.03)' stroke-width='0.8'/%3E%3Cpath d='M30 12 L50 50 L42 50 L22 92 L30 64 L10 64 L55 12 Z' fill='rgba(255,255,255,0.01)' stroke='rgba(255,255,255,0.025)' stroke-width='0.8'/%3E%3C/svg%3E");
-      background-size: 160px 160px, 100px 100px, 100px 100px;
-      background-position: 0 0, 0 0, 50px 50px;
+        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 10 L40 48 L32 48 L52 90 L44 62 L72 62 L25 10 Z' fill='rgba(255,255,255,0.02)' stroke='rgba(255,255,255,0.035)' stroke-width='0.8'/%3E%3Cpath d='M80 10 L60 48 L68 48 L48 90 L56 62 L28 62 L75 10 Z' fill='rgba(255,255,255,0.015)' stroke='rgba(255,255,255,0.03)' stroke-width='0.8'/%3E%3C/svg%3E");
+      background-size: 160px 160px, 100px 100px;
+      background-position: 0 0, 0 0;
       z-index: -1;
       opacity: 0.5;
       mix-blend-mode: soft-light;
@@ -1850,7 +1849,7 @@ function htmlPage(
     }
     .artists-card-release-count {
       position: absolute;
-      top: 0.5rem;
+      bottom: 0.5rem;
       right: 0.5rem;
       padding: 0.25rem 0.5rem;
       background: rgba(0,0,0,0.6);
@@ -1886,9 +1885,14 @@ function htmlPage(
     .artists-grid .smartlink-item__copy {
       position: absolute;
       right: 0.5rem;
-      bottom: 0.5rem;
+      top: 0.5rem;
       z-index: 3;
-      padding: 0.35rem 0.4rem;
+      padding: 0.35rem;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 8px;
       background: rgba(0,0,0,0.55);
       backdrop-filter: blur(8px);
@@ -1897,6 +1901,10 @@ function htmlPage(
     }
     .artists-grid .smartlink-item__copy:hover {
       background: rgba(0,0,0,0.7);
+    }
+    .artists-grid .smartlink-item__copy .copy-btn__icon {
+      width: 16px;
+      height: 16px;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px) scale(0.98); }
