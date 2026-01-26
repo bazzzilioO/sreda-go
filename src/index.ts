@@ -3045,7 +3045,7 @@ function generateArtistCards(
 
 // API endpoint for live search
 async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
-  const PER_PAGE = 12;
+  const PER_PAGE = 15;
   
   try {
     const searchQuery = (requestUrl.searchParams.get("q") || "").trim().toLowerCase();
@@ -3129,7 +3129,7 @@ async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: UR
 }
 
 async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL): Promise<Response> {
-  const PER_PAGE = 12;
+  const PER_PAGE = 15;
   
   try {
     // Parse query params
