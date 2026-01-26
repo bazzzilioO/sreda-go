@@ -1556,7 +1556,7 @@ function htmlPage(
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
-      padding: 0.6rem;
+      padding: 1rem;
     }
     body.page-artists .card::before {
       content: ''; 
@@ -1578,7 +1578,7 @@ function htmlPage(
       justify-content: space-between;
       align-items: flex-end;
       gap: 0.4rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
     }
     .artists-header__info {
       display: flex;
@@ -1587,7 +1587,7 @@ function htmlPage(
     }
     .artists-header__title {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 1.3rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #fff;
       margin: 0;
@@ -1632,12 +1632,12 @@ function htmlPage(
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
     .artists-search__input:focus {
-      border-color: rgba(245,158,11,0.4);
+      border-color: rgba(255,255,255,0.15);
       background: rgba(255,255,255,0.06);
-      box-shadow: 0 0 0 3px rgba(245,158,11,0.1), 0 2px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
     }
     .artists-search__input:focus-visible {
-      outline: 2px solid rgba(245,158,11,0.5);
+      outline: 2px solid rgba(245,158,11,0.4);
       outline-offset: 2px;
     }
     .artists-search--active .artists-search__icon {
@@ -1710,7 +1710,16 @@ function htmlPage(
       display: flex;
       align-items: stretch;
       gap: 0.6rem;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.75rem;
+      max-width: 100%;
+    }
+    .artists-controls {
+      display: flex;
+      align-items: stretch;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+      max-width: 100%;
+      justify-content: center;
     }
     .artists-controls .artists-search {
       flex: 1;
@@ -1745,21 +1754,25 @@ function htmlPage(
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
     .artists-sort-select:focus { 
-      border-color: rgba(245,158,11,0.4); 
-      box-shadow: 0 0 0 3px rgba(245,158,11,0.1), 0 2px 12px rgba(0,0,0,0.08); 
+      border-color: rgba(255,255,255,0.15); 
+      background-color: rgba(255,255,255,0.06);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    .artists-sort-select:focus-visible {
+      outline: 2px solid rgba(245,158,11,0.4);
+      outline-offset: 2px;
     }
     .artists-sort-select option { background: #1a1a1f; color: #fff; }
     .artists-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.65rem;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
       transition: opacity 300ms ease;
+      margin-bottom: 0.75rem;
     }
     .artists-grid .smartlink-item {
-      flex: 0 1 calc(25% - 0.65rem);
-      min-width: 140px;
-      max-width: 180px;
+      width: 100%;
+      max-width: 100%;
       animation: fadeIn 250ms ease forwards;
       transition: all 200ms ease;
       cursor: pointer;
@@ -1806,8 +1819,8 @@ function htmlPage(
       justify-content: center;
       align-items: center;
       gap: 1rem;
-      margin-top: 0.35rem;
-      padding-top: 0.65rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
     .artists-pagination__btn {
@@ -2430,7 +2443,8 @@ function htmlPage(
       .artists-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
-      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
+      .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+      .artists-grid .smartlink-item { width: 100%; max-width: 100%; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
       .artists-sort-select { width: 100%; }
       .artists-pagination { gap: 0.6rem; }
@@ -2468,7 +2482,8 @@ function htmlPage(
       .artists-header__title { font-size: 1.3rem; }
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
-      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
+      .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+      .artists-grid .smartlink-item { width: 100%; max-width: 100%; }
     }
   </style>
 </head>
