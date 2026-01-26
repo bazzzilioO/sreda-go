@@ -1474,8 +1474,8 @@ function htmlPage(
       pointer-events: none;
       background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 10 L40 48 L32 48 L52 90 L44 62 L72 62 L25 10 Z' fill='rgba(255,255,255,0.02)' stroke='rgba(255,255,255,0.035)' stroke-width='0.8'/%3E%3Cpath d='M80 10 L60 48 L68 48 L48 90 L56 62 L28 62 L75 10 Z' fill='rgba(255,255,255,0.015)' stroke='rgba(255,255,255,0.03)' stroke-width='0.8'/%3E%3C/svg%3E");
-      background-size: 160px 160px, 100px 100px;
+        url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg' viewBox='200 140 600 1200'%3E%3Cpolygon points='504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25' fill='rgba(255,255,255,0.018)' stroke='rgba(255,255,255,0.035)' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-size: 160px 160px, 120px 120px;
       background-position: 0 0, 0 0;
       z-index: -1;
       opacity: 0.5;
