@@ -1547,7 +1547,7 @@ function htmlPage(
     
     /* Artists list page */
     body.page-artists .card {
-      width: min(800px, calc(100% - 32px));
+      width: min(1200px, calc(100% - 32px));
       position: relative;
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
@@ -1688,16 +1688,13 @@ function htmlPage(
     .artists-sort-select:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
     .artists-sort-select option { background: #1a1a1f; color: #fff; }
     .artists-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.85rem;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
       transition: opacity 200ms ease;
     }
     .artists-grid .smartlink-item {
-      flex: 0 1 calc(25% - 0.65rem);
-      min-width: 140px;
-      max-width: 180px;
+      width: 100%;
       animation: fadeIn 250ms ease forwards;
     }
     @keyframes fadeIn {
@@ -2313,7 +2310,8 @@ function htmlPage(
       .artists-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
-      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
+      .artists-grid { grid-template-columns: repeat(2, 1fr); }
+      .artists-grid .smartlink-item { width: 100%; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
       .artists-sort-select { width: 100%; }
       .artists-pagination { gap: 0.6rem; }
@@ -2351,7 +2349,8 @@ function htmlPage(
       .artists-header__title { font-size: 1.3rem; }
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
-      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.35rem); min-width: 120px; max-width: 160px; }
+      .artists-grid { grid-template-columns: repeat(2, 1fr); }
+      .artists-grid .smartlink-item { width: 100%; }
     }
   </style>
 </head>
