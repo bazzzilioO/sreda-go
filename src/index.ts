@@ -1591,6 +1591,7 @@ function htmlPage(
       font-weight: 700;
       color: #fff;
       margin: 0;
+      padding: 0;
       letter-spacing: -0.02em;
       line-height: 1.2;
     }
@@ -1598,6 +1599,8 @@ function htmlPage(
       font-size: 0.8rem;
       color: rgba(255,255,255,0.5);
       line-height: 1.3;
+      margin: 0;
+      padding: 0;
     }
     .artists-header__count {
       font-size: 0.8rem;
@@ -1705,12 +1708,18 @@ function htmlPage(
     }
     .artists-controls {
       display: flex;
+      align-items: stretch;
       gap: 0.6rem;
       margin-bottom: 0.35rem;
     }
     .artists-controls .artists-search {
       flex: 1;
       margin-bottom: 0;
+      display: flex;
+      align-items: stretch;
+    }
+    .artists-controls .artists-search__input {
+      align-self: stretch;
     }
     .artists-sort-select {
       padding: 0.55rem 1.7rem 0.55rem 0.7rem;
@@ -1728,6 +1737,7 @@ function htmlPage(
       min-width: 120px;
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      align-self: stretch;
     }
     .artists-sort-select:hover { 
       border-color: rgba(255,255,255,0.12); 
@@ -1777,7 +1787,15 @@ function htmlPage(
       transform: scale(1.02);
     }
     .artists-grid .smartlink-content {
-      padding: 0.45rem 0.5rem;
+      padding: 0.5rem 0.6rem;
+    }
+    .artists-grid .smartlink-title {
+      margin: 0;
+      padding: 0;
+    }
+    .artists-grid .meta-row {
+      margin: 0;
+      padding: 0;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px) scale(0.98); }
@@ -1787,7 +1805,7 @@ function htmlPage(
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
       margin-top: 0.35rem;
       padding-top: 0.65rem;
       border-top: 1px solid rgba(255,255,255,0.08);
@@ -2330,14 +2348,14 @@ function htmlPage(
     .powered-by {
       display: flex;
       justify-content: center;
-      margin-top: 0.9rem;
+      margin-top: 0.5rem;
     }
     .powered-by__stack {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: 0.6rem;
+      gap: 0.4rem;
       width: fit-content;
     }
     .powered-by__text {
