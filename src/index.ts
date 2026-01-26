@@ -1556,7 +1556,7 @@ function htmlPage(
       backdrop-filter: blur(50px) saturate(1.3); -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
-      padding: 0.75rem;
+      padding: 0.65rem;
     }
     body.page-artists .card::before {
       content: ''; 
@@ -1577,13 +1577,13 @@ function htmlPage(
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-end;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
     }
     .artists-header__info {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.1rem;
     }
     .artists-header__title {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
@@ -1604,7 +1604,7 @@ function htmlPage(
     }
     .artists-search {
       position: relative;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
     .artists-search__input {
       width: 100%;
@@ -1662,7 +1662,7 @@ function htmlPage(
     .artists-controls {
       display: flex;
       gap: 0.6rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
     .artists-controls .artists-search {
       flex: 1;
@@ -1709,8 +1709,8 @@ function htmlPage(
       justify-content: center;
       align-items: center;
       gap: 0.75rem;
-      margin-top: 0.5rem;
-      padding-top: 1rem;
+      margin-top: 0.4rem;
+      padding-top: 0.75rem;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
     .artists-pagination__btn {
