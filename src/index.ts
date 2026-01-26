@@ -1474,11 +1474,10 @@ function htmlPage(
       pointer-events: none;
       background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 8 L32 38 L25 38 L42 72 L35 50 L58 50 L20 8 Z' fill='rgba(255,255,255,0.02)' stroke='rgba(255,255,255,0.03)' stroke-width='0.8'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M65 8 L48 38 L55 38 L38 72 L45 50 L22 50 L60 8 Z' fill='rgba(255,255,255,0.015)' stroke='rgba(255,255,255,0.025)' stroke-width='0.8'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 5 L55 35 L48 35 L63 70 L56 48 L75 48 L30 5 Z' fill='rgba(255,255,255,0.01)' stroke='rgba(255,255,255,0.02)' stroke-width='0.6'/%3E%3C/svg%3E");
-      background-size: 160px 160px, 80px 80px, 80px 80px, 80px 80px;
-      background-position: 0 0, 0 0, 40px 40px, 20px 20px;
+        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 10 L40 48 L32 48 L52 90 L44 62 L72 62 L25 10 Z' fill='rgba(255,255,255,0.025)' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Cpath d='M80 10 L60 48 L68 48 L48 90 L56 62 L28 62 L75 10 Z' fill='rgba(255,255,255,0.02)' stroke='rgba(255,255,255,0.035)' stroke-width='1'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 8 L70 46 L62 46 L82 88 L74 60 L95 60 L40 8 Z' fill='rgba(255,255,255,0.015)' stroke='rgba(255,255,255,0.03)' stroke-width='0.8'/%3E%3Cpath d='M30 12 L50 50 L42 50 L22 92 L30 64 L10 64 L55 12 Z' fill='rgba(255,255,255,0.01)' stroke='rgba(255,255,255,0.025)' stroke-width='0.8'/%3E%3C/svg%3E");
+      background-size: 160px 160px, 100px 100px, 100px 100px;
+      background-position: 0 0, 0 0, 50px 50px;
       z-index: -1;
       opacity: 0.5;
       mix-blend-mode: soft-light;
@@ -1705,12 +1704,38 @@ function htmlPage(
     }
     .artists-loading-item {
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+    }
+    .artists-loading-item__image {
+      width: 100%;
       aspect-ratio: 4 / 3;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .artists-loading-item__text {
+      padding: 0.5rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .artists-loading-item__text-line {
+      height: 0.9rem;
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    .artists-loading-item__text-line:first-child {
+      width: 80%;
+    }
+    .artists-loading-item__text-line:last-child {
+      width: 50%;
     }
     @keyframes shimmer {
       0% { background-position: -200% 0; }
@@ -1812,6 +1837,10 @@ function htmlPage(
       transform: translateY(-1px);
       transition: transform 100ms ease;
     }
+    .artists-grid .smartlink-cover-wrapper {
+      position: relative;
+      width: 100%;
+    }
     .artists-grid .smartlink-cover {
       aspect-ratio: 4 / 3;
       transition: transform 200ms ease;
@@ -1819,8 +1848,32 @@ function htmlPage(
     .artists-grid .smartlink-item:hover .smartlink-cover {
       transform: scale(1.02);
     }
+    .artists-card-release-count {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 2;
+    }
     .artists-grid .smartlink-content {
       padding: 0.5rem 0.6rem;
+    }
+    .artists-card-title {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+      min-height: 2.6em;
     }
     .artists-grid .smartlink-title {
       margin: 0;
@@ -1829,6 +1882,21 @@ function htmlPage(
     .artists-grid .meta-row {
       margin: 0;
       padding: 0;
+    }
+    .artists-grid .smartlink-item__copy {
+      position: absolute;
+      right: 0.5rem;
+      bottom: 0.5rem;
+      z-index: 3;
+      padding: 0.35rem 0.4rem;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: none;
+    }
+    .artists-grid .smartlink-item__copy:hover {
+      background: rgba(0,0,0,0.7);
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px) scale(0.98); }
@@ -3183,16 +3251,27 @@ function generateArtistCards(
           ? "релиза"
           : "релизов";
     const meta = count ? `${count} ${releaseLabel}` : "";
+    const linkIcon = `<svg class="copy-btn__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.4a5 5 0 0 0 7.07 7.07L14 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>`;
+    const fullArtistUrl = `${goIndexBase}${artistUrl}`;
 
     return `
-      <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}">
+      <article class="smartlink-item" role="link" data-name="${escapeHtml(displayName.toLowerCase())}" data-href="${escapeHtml(artistUrl)}" tabindex="0">
+        <button class="copy-btn copy-btn--icon smartlink-item__copy" type="button" data-url="${escapeHtml(fullArtistUrl)}" aria-label="Скопировать ссылку на артиста" title="Скопировать ссылку">
+          ${linkIcon}
+        </button>
+        <span class="copy-toast copy-toast--floating" role="status" aria-live="polite"></span>
         <a class="smartlink-main" href="${escapeHtml(artistUrl)}">
-          ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
+          <div class="smartlink-cover-wrapper">
+            ${renderMedia({ src: coverUrlWithVersion, alt: displayName, className: "smartlink-cover", fallbackLabel: "ARTIST" })}
+            ${meta ? `<div class="artists-card-release-count">${escapeHtml(meta)}</div>` : ""}
+          </div>
           <div class="smartlink-content">
             <div class="smartlink-title-row">
-              <div class="smartlink-title">${escapeHtml(displayName)}</div>
+              <div class="smartlink-title artists-card-title">${escapeHtml(displayName)}</div>
             </div>
-            ${meta ? `<div class="meta-row subtle">${meta}</div>` : ""}
           </div>
         </a>
       </article>
@@ -3469,7 +3548,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
           if (grid) {
             const skeletonCount = 15;
             grid.innerHTML = Array(skeletonCount).fill(0).map(() => 
-              '<div class="artists-loading-item"></div>'
+              '<div class="artists-loading-item"><div class="artists-loading-item__image"></div><div class="artists-loading-item__text"><div class="artists-loading-item__text-line"></div><div class="artists-loading-item__text-line"></div></div></div>'
             ).join('');
             grid.className = 'artists-loading';
           }
@@ -3619,6 +3698,79 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
             search();
             input.focus();
           }
+        });
+        
+        // Copy/share handlers
+        async function copyOrShare(url, title) {
+          if (!url) return { ok: false, shared: false };
+          
+          if (typeof navigator.share === 'function') {
+            try {
+              await navigator.share({ url: url, title: title || 'Поделиться' });
+              return { ok: true, shared: true };
+            } catch (e) {
+              if (e.name === 'AbortError') return { ok: false, shared: true };
+            }
+          }
+          
+          try {
+            await navigator.clipboard.writeText(url);
+            return { ok: true, shared: false };
+          } catch (error) {
+            return { ok: false, shared: false };
+          }
+        }
+        
+        function attachCopyHandlers() {
+          document.querySelectorAll('.copy-btn[data-url]').forEach((button) => {
+            const container = button.closest('.smartlink-item');
+            const toast = container?.querySelector('.copy-toast');
+            
+            button.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+            button.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
+            
+            button.addEventListener('click', async (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              
+              const urlToCopy = button.getAttribute('data-url') || '';
+              const cardTitle = container?.querySelector('.smartlink-title')?.textContent || '';
+              const result = await copyOrShare(urlToCopy, cardTitle);
+              
+              if (toast) {
+                toast.textContent = result.ok ? (result.shared ? 'Поделено!' : 'Скопировано!') : 'Ошибка';
+                toast.classList.add('visible');
+                setTimeout(() => {
+                  toast.classList.remove('visible');
+                }, result.ok ? 1500 : 1800);
+              }
+            });
+          });
+        }
+        
+        attachCopyHandlers();
+        
+        // Card navigation
+        document.querySelectorAll('.smartlink-item[data-href]').forEach((card) => {
+          const href = card.getAttribute('data-href');
+          if (!href) return;
+          
+          const navigate = () => {
+            window.location.href = href;
+          };
+          
+          card.addEventListener('click', (event) => {
+            const target = event.target;
+            if (target && target.closest && (target.closest('button') || target.closest('a'))) return;
+            navigate();
+          });
+          
+          card.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              navigate();
+            }
+          });
         });
       })();
       </script>
