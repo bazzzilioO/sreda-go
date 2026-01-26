@@ -1688,28 +1688,17 @@ function htmlPage(
     .artists-sort-select:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
     .artists-sort-select option { background: #1a1a1f; color: #fff; }
     .artists-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 0.65rem;
       transition: opacity 200ms ease;
     }
     .artists-grid .smartlink-item {
-      width: 100%;
-      border-radius: 12px;
+      flex: 0 1 calc(25% - 0.65rem);
+      min-width: 140px;
+      max-width: 180px;
       animation: fadeIn 250ms ease forwards;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    }
-    .artists-grid .smartlink-item:hover {
-      border-color: rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.07);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-    }
-    .artists-grid .smartlink-cover {
-      aspect-ratio: 4 / 3;
-    }
-    .artists-grid .smartlink-content {
-      padding: 0.5rem 0.6rem;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
@@ -2325,8 +2314,7 @@ function htmlPage(
       .artists-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
-      .artists-grid { grid-template-columns: repeat(2, 1fr); }
-      .artists-grid .smartlink-item { width: 100%; }
+      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
       .artists-sort-select { width: 100%; }
       .artists-pagination { gap: 0.6rem; }
@@ -2364,8 +2352,7 @@ function htmlPage(
       .artists-header__title { font-size: 1.3rem; }
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
-      .artists-grid { grid-template-columns: repeat(2, 1fr); }
-      .artists-grid .smartlink-item { width: 100%; }
+      .artists-grid .smartlink-item { flex: 0 1 calc(50% - 0.45rem); min-width: 130px; }
     }
   </style>
 </head>
