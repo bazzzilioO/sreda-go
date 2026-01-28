@@ -1716,13 +1716,15 @@ function htmlPage(
       width: 100%;
       display: flex;
       flex-direction: column;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
       overflow: hidden;
       background: rgba(255,255,255,0.04);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
     }
     .artists-loading-item__image {
-      width: 100%;
+      width: calc(100% - 1rem);
+      margin: 0.5rem auto 0;
       aspect-ratio: 1 / 1;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1837,15 +1839,17 @@ function htmlPage(
     }
     .artists-grid .smartlink-item {
       width: 100%;
+      border-radius: 10px;
+      border-color: rgba(255,255,255,0.06);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
       animation: fadeIn 250ms ease forwards;
       transition: all 200ms ease;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .artists-grid .smartlink-item:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      border-color: rgba(255,255,255,0.12);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      border-color: rgba(255,255,255,0.1);
     }
     .artists-grid .smartlink-item:focus-visible {
       outline: 2px solid rgba(245,158,11,0.5);
@@ -1859,6 +1863,8 @@ function htmlPage(
     .artists-grid .smartlink-cover-wrapper {
       position: relative;
       width: 100%;
+      padding: 0.5rem;
+      padding-bottom: 0;
     }
     .artists-grid .smartlink-cover {
       aspect-ratio: 1 / 1;
@@ -1883,7 +1889,7 @@ function htmlPage(
       z-index: 2;
     }
     .artists-grid .smartlink-content {
-      padding: 0.35rem 0.42rem;
+      padding: 0.3rem 0.35rem;
     }
     .artists-card-title {
       display: -webkit-box;
