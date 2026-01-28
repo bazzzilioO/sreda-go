@@ -1515,8 +1515,37 @@ function htmlPage(
     .card > * { position: relative; z-index: 1; }
 
     /* ==================== Home page ==================== */
-    body.page-home { align-items: center; padding-top: 3.6rem; padding-bottom: 3.6rem; }
-    body.page-home .card { width: min(980px, calc(100% - 24px)); padding: 2.05rem; }
+    body.page-home { align-items: center; padding-top: 2rem; padding-bottom: 2rem; }
+    body.page-home .card {
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+      background: rgba(18,18,22,0.55);
+      border: 1px solid transparent;
+      border-radius: 24px;
+      background-clip: padding-box;
+      backdrop-filter: blur(50px) saturate(1.3);
+      -webkit-backdrop-filter: blur(50px) saturate(1.3);
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: hidden;
+      padding: 1rem;
+    }
+    body.page-home .card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 1;
+    }
+    body.page-home .card > * { position: relative; z-index: 1; }
     body.page-artist .card { 
       width: min(640px, calc(100% - 32px));
       position: relative;
@@ -2025,66 +2054,35 @@ function htmlPage(
       -webkit-mask-composite: xor; mask-composite: exclude;
       pointer-events: none; z-index: 1;
     }
-    .home { display: flex; flex-direction: column; gap: 1.45rem; position: relative; }
-    .home::before {
-      content: "";
-      position: absolute;
-      inset: -80px -80px auto auto;
-      width: 520px;
-      height: 520px;
-      background: radial-gradient(circle at 35% 35%, rgba(245,158,11,0.28), transparent 60%),
-                  radial-gradient(circle at 55% 55%, rgba(255,255,255,0.08), transparent 58%);
-      filter: blur(18px);
-      opacity: 0.9;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .home > * { position: relative; z-index: 1; }
-    .home-hero { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 1.25rem; align-items: start; }
-    .home-top { display: flex; flex-direction: column; gap: 0.85rem; max-width: 720px; text-align: left; }
-    .home-visual {
-      width: 250px;
-      height: 250px;
-      border-radius: 24px;
-      border: 1px solid ${THEME.colors.borderSubtle};
-      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
-      box-shadow: 0 18px 46px rgba(0,0,0,0.38);
+    .home { display: flex; flex-direction: column; gap: 1.5rem; }
+    .home-hero { display: flex; flex-direction: column; gap: 0.5rem; }
+    .home-top { display: flex; flex-direction: column; gap: 0.5rem; }
+    .home-visual { display: none; }
+    .home-badge { display: none; }
+    .home-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin: 0;
+      color: #fff;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      overflow: hidden;
-      position: relative;
+      gap: 0.5rem;
     }
-    .home-visual::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 40% 30%, rgba(245,158,11,0.26), transparent 55%),
-                  radial-gradient(circle at 70% 65%, rgba(255,255,255,0.06), transparent 60%);
-      opacity: 0.95;
-      pointer-events: none;
+    .home-title-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
     }
-    .home-visual svg { position: relative; z-index: 1; display: block; }
-    .home-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      width: fit-content;
-      padding: 0.25rem 0.75rem;
-      border-radius: ${THEME.radii.pill};
-      border: 1px solid ${THEME.colors.borderSubtle};
-      background: rgba(255,255,255,0.04);
-      color: ${THEME.colors.textSecondary};
-      font-weight: 760;
-      letter-spacing: 0.02em;
-      font-size: 0.92rem;
+    .home-lead {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.4;
+      margin: 0;
     }
-    .home-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 4px rgba(245,158,11,0.09); }
-    .home-title { font-size: 2.55rem; line-height: 1.1; letter-spacing: 0.012em; margin: 0; }
-    .home-lead { font-size: 1.08rem; color: ${THEME.colors.textSecondary}; max-width: 58ch; }
-    .home-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.25rem; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
     .home-action {
       display: inline-flex;
       align-items: center;
@@ -2106,45 +2104,55 @@ function htmlPage(
     .home-action:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
     .home-inline { color: ${THEME.colors.textPrimary}; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .home-inline:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 0.25rem; }
+    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
     .home-feature {
-      display: grid;
-      grid-template-columns: 40px 1fr;
-      gap: 0.85rem;
-      padding: 1.05rem 1.1rem;
-      border-radius: 16px;
-      border: 1px solid ${THEME.colors.borderSubtle};
-      background: linear-gradient(180deg, rgba(30,30,30,0.62), rgba(24,24,24,0.54));
-      box-shadow: ${THEME.shadows.gridCard};
-      transition: transform 130ms ease, border-color 140ms ease, box-shadow 160ms ease;
-    }
-    .home-feature:hover { transform: translateY(-2px); border-color: rgba(245,158,11,0.34); box-shadow: 0 18px 44px rgba(0,0,0,0.42); }
-    .home-feature-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.04);
-      display: grid;
-      place-items: center;
-      color: ${THEME.colors.textPrimary};
-      font-weight: 900;
-      letter-spacing: 0.02em;
-      box-shadow: 0 10px 18px rgba(0,0,0,0.22);
-      position: relative;
-      overflow: hidden;
+      transition: border-color 120ms ease, background 120ms ease;
     }
-    .home-feature-icon::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 35% 30%, rgba(245,158,11,0.28), transparent 60%);
-      opacity: 0.9;
+    .home-feature:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); }
+    .home-feature-icon {
+      width: 24px;
+      height: 24px;
+      opacity: 0.5;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .home-feature-icon > span { position: relative; z-index: 1; }
-    .home-feature-title { font-weight: 850; letter-spacing: 0.01em; margin-bottom: 0.3rem; color: ${THEME.colors.textPrimary}; }
-    .home-feature-text { color: ${THEME.colors.textSecondary}; line-height: 1.55; }
-    .home-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; color: ${THEME.colors.textMuted}; font-size: 0.92rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem; margin-top: 0.3rem; }
+    .home-feature-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .home-feature-text {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.4;
+      margin: 0;
+    }
+    .home-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 0.75rem;
+      margin-top: 0.5rem;
+    }
     
     /* Smartlink Release Page - Integrated Cover Design */
     .smartlink-release { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: 100%; }
@@ -2559,8 +2567,10 @@ function htmlPage(
       .home-actions { justify-content: center; }
       .home-features { grid-template-columns: 1fr; }
       .home-footer { justify-content: center; }
-      .home-hero { grid-template-columns: 1fr; justify-items: center; }
-      .home-visual { width: min(260px, 100%); height: auto; aspect-ratio: 1 / 1; }
+      .home-title { font-size: 1.75rem; }
+      .home-lead { font-size: 0.9rem; }
+      .home-actions { flex-direction: column; }
+      .home-action { width: 100%; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
@@ -2655,14 +2665,14 @@ function htmlPage(
   <main class="card release-card">
     ${body}
   </main>
-  <footer class="powered-by" aria-label="powered by SREDA">
+  ${pageClass === "page-home" ? "" : `<footer class="powered-by" aria-label="powered by SREDA">
     <div class="powered-by__stack">
       <div class="powered-by__text">powered by <strong>SREDA</strong></div>
       <a class="powered-by__logo" href="/" aria-label="SREDA">
         ${poweredLogo}
       </a>
     </div>
-  </footer>
+  </footer>`}
   <script>
     (function() {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -2750,15 +2760,16 @@ function renderHome(): Response {
   const telegramUrl = "https://t.me/iskramusic_bot";
   const demoArtist = "/artist/boris";
   const demoSmartlink = "/boris/heavy-rain";
-  const body = `
+    const iskraIcon = `<svg class="home-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+    const body = `
     <section class="home">
       <div class="home-hero">
         <div class="home-top">
-          <div class="home-badge">SREDA · tools for artists</div>
-          <h1 class="home-title">Инструменты для артистов</h1>
-          <p class="home-lead">
-            Релиз‑план, смартлинки, напоминания, кабинеты артиста и питчинг — в одном месте.
-          </p>
+          <h1 class="home-title">
+            ${iskraIcon}
+            ИСКРА
+          </h1>
+          <p class="home-lead">Инструменты для артистов: смартлинки, релиз‑план, напоминания.</p>
           <div class="home-actions">
             <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
               Открыть ИСКРУ в Telegram
@@ -2768,62 +2779,33 @@ function renderHome(): Response {
             </a>
           </div>
         </div>
-        <div class="home-visual" aria-hidden="true">
-          <!-- Official SREDA logo (from provided SVG) -->
-          <svg width="140" height="140" viewBox="160 120 1240 1260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-            <defs>
-              <filter id="logoShadow" x="-30%" y="-20%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="rgba(0,0,0,0.45)"/>
-              </filter>
-            </defs>
-            <g filter="url(#logoShadow)">
-              <polygon fill="#F9A600" points="504.67 149.25 802.96 560.18 654.86 750 805.04 900.19 204.29 1350.75 354.48 900.19 204.29 750 504.67 149.25"/>
-              <g fill="#FFFFFF" opacity="0.92">
-                <path d="M622.08,1248.19h-54.74c-1.89-9.12-13.84-17.93-27.06-17.93s-21.71,3.78-21.71,11.96c0,24.54,105.39-.32,105.39,58.52,0,28.94-30.2,50.02-79.28,50.02-39.95,0-76.13-19.51-86.51-51.6v-9.75h54.74c3.46,11.33,16.99,18.88,30.2,18.88,15.42,0,23.91-5.66,23.91-12.27,0-19.19-104.13,1.57-104.13-58.2,0-28.31,31.46-51.91,76.76-51.91s72.99,22.97,82.43,52.54v9.75Z"/>
-                <path d="M653.54,1189.67h52.85v16.36c11.64-12.58,28-20.13,46.88-20.13v54.74c-4.09-.94-11.01-1.57-16.04-1.57-14.16,0-27.37,7.55-30.83,21.39v86.51h-52.85v-157.3Z"/>
-                <path d="M942.96,1287.83v10.07c-9.75,29.89-42.79,52.85-85.57,52.85-50.02,0-86.83-32.09-86.83-82.43s36.81-82.43,86.83-82.43c47.19,0,81.17,28.31,85.57,69.84v19.51h-118.6c2.52,17.3,15.1,27.68,33.03,27.68,12.9,0,24.22-4.72,30.2-15.1h55.37ZM827.51,1247.24h59.77c-5.35-11.01-15.1-17.3-29.89-17.3-13.84,0-24.54,6.29-29.89,17.3Z"/>
-                <path d="M1135.49,1346.97h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-78.02h52.85v220.22ZM1019.09,1268.32c0,20.45,12.9,32.72,32.72,32.72s32.72-12.27,32.72-32.72-12.9-32.72-32.72-32.72-32.72,12.27-32.72,32.72Z"/>
-                <path d="M1336.83,1346.97h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-15.1h52.85v157.3ZM1285.86,1268.32c0-20.45-12.9-32.72-32.72-32.72s-32.72,12.27-32.72,32.72,12.9,32.72,32.72,32.72,32.72-12.27,32.72-32.72Z"/>
-              </g>
-            </g>
-          </svg>
-        </div>
       </div>
 
       <div class="home-features" role="list">
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>⚡</span></div>
-          <div>
-            <div class="home-feature-title">Смартлинк за минуту</div>
-            <div class="home-feature-text">Вставь ссылку на релиз — соберём площадки и сделаем аккуратную карточку.</div>
-          </div>
+          <div class="home-feature-title">Смартлинк за минуту</div>
+          <div class="home-feature-text">Вставь ссылку — соберём площадки и сделаем карточку.</div>
         </div>
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>↗</span></div>
-          <div>
-            <div class="home-feature-title">Можно пересылать</div>
-            <div class="home-feature-text">Карточка без “техкнопок”. Управление — отдельным меню только для владельца.</div>
-          </div>
+          <div class="home-feature-title">Можно пересылать</div>
+          <div class="home-feature-text">Карточка без техкнопок, управление отдельным меню.</div>
         </div>
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>🔔</span></div>
-          <div>
-            <div class="home-feature-title">Напоминания о релизе</div>
-            <div class="home-feature-text">Поставь напоминания до и в день релиза — чтобы не забыть про промо.</div>
-          </div>
+          <div class="home-feature-title">Напоминания о релизе</div>
+          <div class="home-feature-text">Напоминания до и в день релиза для промо.</div>
         </div>
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>✏️</span></div>
-          <div>
-            <div class="home-feature-title">Редактирование после создания</div>
-            <div class="home-feature-text">Меняй обложку и ссылки, обновляй карточку и удаляй смартлинки из бота.</div>
-          </div>
+          <div class="home-feature-title">Редактирование</div>
+          <div class="home-feature-text">Меняй обложку и ссылки, обновляй карточку.</div>
         </div>
       </div>
 
       <div class="home-footer">
         <span>© SREDA</span>
-        <span class="meta-divider">•</span>
         <a class="home-inline" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">Telegram</a>
       </div>
     </section>
