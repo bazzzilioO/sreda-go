@@ -2067,23 +2067,16 @@ function htmlPage(
     .home-visual { display: none; }
     .home-badge { display: none; }
     .home-title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 1.75rem;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
       margin: 0;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      display: block;
+      line-height: 1;
     }
     .home-title-icon {
-      height: 19px;
+      height: 1.75rem;
       width: auto;
-      flex-shrink: 0;
-      opacity: 0.85;
       display: block;
+      opacity: 0.92;
+      color: #fff;
     }
     .home-lead {
       font-size: 0.9rem;
@@ -2602,8 +2595,7 @@ function htmlPage(
       .home-actions { justify-content: center; }
       .home-features { grid-template-columns: 1fr; }
       .home-footer { justify-content: center; }
-      .home-title { font-size: 1.5rem; }
-      .home-title-icon { height: 18px; }
+      .home-title-icon { height: 1.5rem; }
       .home-lead { font-size: 0.85rem; }
       .home-actions { flex-direction: column; }
       .home-action { width: 100%; }
@@ -2811,7 +2803,6 @@ function renderHome(): Response {
         <div class="home-top">
           <h1 class="home-title">
             ${iskraIcon}
-            ИСКРА
           </h1>
           <p class="home-lead">Инструменты для артистов: смартлинки, релиз‑план, напоминания.</p>
           <div class="home-actions">
