@@ -2586,18 +2586,21 @@ function htmlPage(
       .share-social svg { width: 16px; height: 16px; }
       body.page-smartlink .card { width: calc(100% - 24px); }
       /* Artists list page mobile */
-      body.page-artists .card { width: calc(100% - 24px); padding: 1.25rem; }
-      .artists-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      body.page-artists .card { width: calc(100% - 24px); padding: 1rem; }
+      .artists-header { flex-direction: column; align-items: flex-start; gap: 0.35rem; margin-bottom: 0.5rem; }
       .artists-header__title { font-size: 1.5rem; }
+      .artists-header__subtitle { display: none; }
       .artists-header__count { align-self: flex-start; }
-      .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+      .artists-controls { flex-direction: row; gap: 0.4rem; margin-bottom: 0.5rem; padding: 0.4rem 0.75rem; }
+      .artists-controls .artists-search { max-width: 100%; flex: 1; }
+      .artists-sort-buttons { flex-shrink: 0; gap: 0.3rem; }
+      .artists-sort-btn { padding: 0.5rem 0.6rem; font-size: 0.75rem; }
+      .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; margin-bottom: 0.4rem; }
       .artists-grid .smartlink-item { width: 100%; }
-      .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .artists-controls { flex-direction: column; gap: 0.6rem; }
-      .artists-sort-buttons { width: 100%; justify-content: flex-start; }
-      .artists-sort-btn { flex: 1; min-width: 0; }
-      .artists-pagination { gap: 0.6rem; }
-      .artists-pagination__btn { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
+      .artists-grid .smartlink-content { padding: 0.25rem 0.3rem; }
+      .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; margin-bottom: 0.4rem; }
+      .artists-pagination { gap: 0.5rem; margin-top: 0.4rem; }
+      .artists-pagination__btn { padding: 0.4rem 0.7rem; font-size: 0.75rem; }
     }
     @media (max-width: 480px) {
       body { padding: 1rem 0.85rem; }
