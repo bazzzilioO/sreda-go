@@ -1700,13 +1700,13 @@ function htmlPage(
       grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
       margin-bottom: 0.5rem;
-      margin-left: auto;
-      margin-right: auto;
-      max-width: calc(100% - 7.5%);
-      justify-items: center;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      max-width: calc(100% - 2rem);
+      justify-items: stretch;
     }
     .artists-loading-item {
-      width: 85%;
+      width: 100%;
       display: flex;
       flex-direction: column;
       border-radius: 12px;
@@ -1715,8 +1715,7 @@ function htmlPage(
       background: rgba(255,255,255,0.04);
     }
     .artists-loading-item__image {
-      width: 82.35%;
-      margin: 0 auto;
+      width: 100%;
       aspect-ratio: 1 / 1;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1818,14 +1817,13 @@ function htmlPage(
       gap: 0.5rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.5rem;
-      margin-left: auto;
-      margin-right: auto;
-      max-width: calc(100% - 7.5%);
-      justify-items: center;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      max-width: calc(100% - 2rem);
+      justify-items: stretch;
     }
     .artists-grid .smartlink-item {
-      width: 85%;
-      max-width: 85%;
+      width: 100%;
       animation: fadeIn 250ms ease forwards;
       transition: all 200ms ease;
       cursor: pointer;
@@ -1847,8 +1845,7 @@ function htmlPage(
     }
     .artists-grid .smartlink-cover-wrapper {
       position: relative;
-      width: 82.35%;
-      margin: 0 auto;
+      width: 100%;
     }
     .artists-grid .smartlink-cover {
       aspect-ratio: 1 / 1;
@@ -2551,7 +2548,7 @@ function htmlPage(
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .artists-grid .smartlink-item { width: 85%; max-width: 85%; }
+      .artists-grid .smartlink-item { width: 100%; }
       .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
       .artists-sort-buttons { width: 100%; justify-content: flex-start; }
@@ -2592,7 +2589,7 @@ function htmlPage(
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .artists-grid .smartlink-item { width: 85%; max-width: 85%; }
+      .artists-grid .smartlink-item { width: 100%; }
       .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
     }
   </style>
