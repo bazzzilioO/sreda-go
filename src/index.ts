@@ -1583,6 +1583,11 @@ function htmlPage(
       align-items: flex-end;
       gap: 0.4rem;
       margin-bottom: 0.75rem;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 900px;
+      padding-left: 1rem;
+      padding-right: 1rem;
     }
     .artists-header__info {
       display: flex;
@@ -1697,12 +1702,12 @@ function htmlPage(
     }
     .artists-loading {
       display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
-      gap: 0.5rem;
+      grid-template-columns: repeat(4, minmax(176px, 1fr));
+      gap: 0.4rem;
       margin-bottom: 0.5rem;
       margin-left: auto;
       margin-right: auto;
-      max-width: 1120px;
+      max-width: 900px;
       padding-left: 1rem;
       padding-right: 1rem;
       justify-items: stretch;
@@ -1758,7 +1763,11 @@ function htmlPage(
       align-items: stretch;
       gap: 0.6rem;
       margin-bottom: 0.75rem;
-      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 900px;
+      padding-left: 1rem;
+      padding-right: 1rem;
       justify-content: center;
     }
     .artists-controls .artists-search {
@@ -1815,13 +1824,13 @@ function htmlPage(
     }
     .artists-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
-      gap: 0.5rem;
+      grid-template-columns: repeat(4, minmax(176px, 1fr));
+      gap: 0.4rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.5rem;
       margin-left: auto;
       margin-right: auto;
-      max-width: 1120px;
+      max-width: 900px;
       padding-left: 1rem;
       padding-right: 1rem;
       justify-items: stretch;
