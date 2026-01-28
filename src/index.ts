@@ -1700,6 +1700,9 @@ function htmlPage(
       grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
       margin-bottom: 0.5rem;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: calc(100% - 7.5%);
       justify-items: center;
     }
     .artists-loading-item {
@@ -1815,6 +1818,9 @@ function htmlPage(
       gap: 0.5rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.5rem;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: calc(100% - 7.5%);
       justify-items: center;
     }
     .artists-grid .smartlink-item {
