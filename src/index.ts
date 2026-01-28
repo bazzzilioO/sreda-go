@@ -1698,7 +1698,7 @@ function htmlPage(
     .artists-loading {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+      gap: 0.5rem;
       margin-bottom: 0.75rem;
     }
     .artists-loading-item {
@@ -1811,7 +1811,7 @@ function htmlPage(
     .artists-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+      gap: 0.5rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.75rem;
     }
