@@ -1731,7 +1731,8 @@ function htmlPage(
       display: block;
       border-top-left-radius: inherit;
       border-top-right-radius: inherit;
-      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
+      background: rgba(30,30,30,0.4);
+      background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
     }
@@ -1881,6 +1882,16 @@ function htmlPage(
       display: block;
       object-fit: cover;
       transition: transform 200ms ease;
+    }
+    .artists-grid .smartlink-cover .media {
+      background: rgba(30,30,30,0.4);
+    }
+    .artists-grid .smartlink-cover .media__fallback {
+      background: transparent;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
     }
     .artists-grid .smartlink-item:hover .smartlink-cover {
       transform: scale(1.02);
