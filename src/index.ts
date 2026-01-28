@@ -1551,7 +1551,9 @@ function htmlPage(
     
     /* Artists list page */
     body.page-artists .card {
-      width: min(1200px, calc(100% - 32px));
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
       position: relative;
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
