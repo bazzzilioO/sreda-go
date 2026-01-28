@@ -1725,9 +1725,12 @@ function htmlPage(
       box-shadow: 0 1px 6px rgba(0,0,0,0.06);
     }
     .artists-loading-item__image {
-      width: calc(100% - 1rem);
-      margin: 0.5rem auto 0;
+      width: 100%;
+      margin: 0;
       aspect-ratio: 1 / 1;
+      display: block;
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
@@ -1867,11 +1870,16 @@ function htmlPage(
     .artists-grid .smartlink-cover-wrapper {
       position: relative;
       width: 100%;
-      padding: 0.5rem;
-      padding-bottom: 0;
+      padding: 0;
+      overflow: hidden;
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
     }
     .artists-grid .smartlink-cover {
+      width: 100%;
       aspect-ratio: 1 / 1;
+      display: block;
+      object-fit: cover;
       transition: transform 200ms ease;
     }
     .artists-grid .smartlink-item:hover .smartlink-cover {
@@ -1881,6 +1889,7 @@ function htmlPage(
       position: absolute;
       bottom: 0.5rem;
       right: 0.5rem;
+      left: auto;
       padding: 0.25rem 0.5rem;
       background: rgba(0,0,0,0.6);
       backdrop-filter: blur(8px);
