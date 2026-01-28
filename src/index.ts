@@ -1698,12 +1698,11 @@ function htmlPage(
     .artists-loading {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+      gap: 0.6rem;
       margin-bottom: 0.75rem;
     }
     .artists-loading-item {
-      width: 70%;
-      margin: 0 auto;
+      width: 100%;
       display: flex;
       flex-direction: column;
       border-radius: 12px;
@@ -1712,7 +1711,8 @@ function htmlPage(
       background: rgba(255,255,255,0.04);
     }
     .artists-loading-item__image {
-      width: 100%;
+      width: 75%;
+      margin: 0 auto;
       aspect-ratio: 1 / 1;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1761,7 +1761,7 @@ function htmlPage(
       margin-bottom: 0;
       display: flex;
       align-items: stretch;
-      max-width: calc(70% - 0.3rem);
+      max-width: calc(55% - 0.3rem);
     }
     .artists-controls .artists-search__input {
       align-self: stretch;
@@ -1811,14 +1811,13 @@ function htmlPage(
     .artists-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+      gap: 0.6rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.75rem;
     }
     .artists-grid .smartlink-item {
-      width: 70%;
-      max-width: 70%;
-      margin: 0 auto;
+      width: 100%;
+      max-width: 100%;
       animation: fadeIn 250ms ease forwards;
       transition: all 200ms ease;
       cursor: pointer;
@@ -1840,7 +1839,8 @@ function htmlPage(
     }
     .artists-grid .smartlink-cover-wrapper {
       position: relative;
-      width: 100%;
+      width: 75%;
+      margin: 0 auto;
     }
     .artists-grid .smartlink-cover {
       aspect-ratio: 1 / 1;
@@ -2543,7 +2543,7 @@ function htmlPage(
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
-      .artists-grid .smartlink-item { width: 70%; max-width: 70%; margin: 0 auto; }
+      .artists-grid .smartlink-item { width: 100%; max-width: 100%; }
       .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
       .artists-sort-buttons { width: 100%; justify-content: flex-start; }
@@ -2584,7 +2584,7 @@ function htmlPage(
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .artists-grid .smartlink-item { width: 70%; max-width: 70%; margin: 0 auto; }
+      .artists-grid .smartlink-item { width: 100%; max-width: 100%; }
       .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
     }
   </style>
