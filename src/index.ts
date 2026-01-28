@@ -2573,7 +2573,7 @@ function htmlPage(
       color: ${THEME.colors.textMuted};
       font-size: 0.75rem;
       letter-spacing: 0.01em;
-      opacity: 0.7;
+      opacity: 0.4;
       white-space: nowrap;
     }
     .powered-by__text strong { color: ${THEME.colors.textSecondary}; font-weight: 860; }
@@ -2582,7 +2582,7 @@ function htmlPage(
       align-items: center;
       justify-content: center;
       color: rgba(255,255,255,0.8);
-      opacity: 0.7;
+      opacity: 0.4;
       transition: opacity 140ms ease, transform 120ms ease;
       width: 45%;
       max-width: 72px;
