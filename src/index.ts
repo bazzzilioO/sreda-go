@@ -1584,7 +1584,7 @@ function htmlPage(
       justify-content: space-between;
       align-items: flex-end;
       gap: 0.4rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.65rem;
       margin-left: auto;
       margin-right: auto;
       max-width: 900px;
@@ -1594,7 +1594,7 @@ function htmlPage(
     .artists-header__info {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.13rem;
     }
     .artists-header__title {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
@@ -1765,14 +1765,16 @@ function htmlPage(
     .artists-controls {
       display: flex;
       align-items: stretch;
-      gap: 0.6rem;
-      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
       margin-left: auto;
       margin-right: auto;
       max-width: 900px;
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding: 0.5rem 1rem;
       justify-content: center;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
     }
     .artists-controls .artists-search {
       flex: 1;
@@ -1845,13 +1847,13 @@ function htmlPage(
       border-color: rgba(255,255,255,0.06);
       box-shadow: 0 1px 6px rgba(0,0,0,0.06);
       animation: fadeIn 250ms ease forwards;
-      transition: all 200ms ease;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
       cursor: pointer;
     }
     .artists-grid .smartlink-item:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      border-color: rgba(255,255,255,0.09);
     }
     .artists-grid .smartlink-item:focus-visible {
       outline: 2px solid rgba(245,158,11,0.5);
@@ -1891,7 +1893,7 @@ function htmlPage(
       z-index: 2;
     }
     .artists-grid .smartlink-content {
-      padding: 0.3rem 0.35rem;
+      padding: 0.28rem 0.33rem;
     }
     .artists-card-title {
       display: -webkit-box;
