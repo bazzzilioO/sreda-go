@@ -1522,7 +1522,7 @@ function htmlPage(
     .card > * { position: relative; z-index: 1; }
 
     /* ==================== Home page ==================== */
-    body.page-home { align-items: center; padding-top: 2rem; padding-bottom: 2rem; }
+    body.page-home { align-items: flex-start; padding-top: 1.5rem; padding-bottom: 1.5rem; }
     body.page-home .card {
       max-width: 900px;
       margin-left: auto;
@@ -2061,14 +2061,14 @@ function htmlPage(
       -webkit-mask-composite: xor; mask-composite: exclude;
       pointer-events: none; z-index: 1;
     }
-    .home { display: flex; flex-direction: column; gap: 1.5rem; }
-    .home-hero { display: flex; flex-direction: column; gap: 0.5rem; }
-    .home-top { display: flex; flex-direction: column; gap: 0.5rem; }
+    .home { display: flex; flex-direction: column; gap: 1rem; }
+    .home-hero { display: flex; flex-direction: column; gap: 0.4rem; }
+    .home-top { display: flex; flex-direction: column; gap: 0.4rem; }
     .home-visual { display: none; }
     .home-badge { display: none; }
     .home-title {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 2rem;
+      font-size: 1.75rem;
       font-weight: 700;
       line-height: 1.2;
       letter-spacing: -0.02em;
@@ -2079,63 +2079,80 @@ function htmlPage(
       gap: 0.5rem;
     }
     .home-title-icon {
-      width: 20px;
-      height: 20px;
+      height: 19px;
+      width: auto;
       flex-shrink: 0;
-      opacity: 0.88;
+      opacity: 0.85;
+      display: block;
     }
     .home-lead {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: rgba(255,255,255,0.6);
-      line-height: 1.3;
+      line-height: 1.25;
       margin: 0;
-      margin-bottom: 0.1rem;
     }
-    .home-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
     .home-action {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.55rem;
-      min-height: 46px;
-      padding: 0.75rem 1.05rem;
-      border-radius: ${THEME.radii.button};
-      border: 1px solid ${THEME.colors.borderSubtle};
-      font-weight: 820;
+      gap: 0.5rem;
+      min-height: 44px;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      font-weight: 700;
       letter-spacing: 0.01em;
-      transition: transform 120ms ease, box-shadow 160ms ease, border-color 140ms ease, background 140ms ease;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
       white-space: nowrap;
+      font-size: 0.9rem;
     }
-    .home-action:focus-visible { outline: 2px solid rgba(245,158,11,0.5); outline-offset: 3px; }
-    .home-action--primary { background: linear-gradient(125deg, rgba(245,158,11,0.95), rgba(251,191,36,0.92)); color: #0b0b0b; box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18); }
-    .home-action--secondary { background: rgba(255,255,255,0.035); color: ${THEME.colors.textPrimary}; border-color: rgba(255,255,255,0.10); }
-    .home-action:hover { transform: translateY(-1px); border-color: rgba(245,158,11,0.45); box-shadow: 0 14px 30px rgba(0,0,0,0.34); }
-    .home-action:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
+    .home-action:focus-visible { outline: 2px solid rgba(245,158,11,0.5); outline-offset: 2px; }
+    .home-action--primary {
+      background: linear-gradient(125deg, rgba(245,158,11,0.95), rgba(251,191,36,0.92));
+      color: #0b0b0b;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18);
+    }
+    .home-action--secondary {
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      border-color: rgba(255,255,255,0.06);
+    }
+    .home-action:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.09);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .home-action--primary:hover {
+      border-color: rgba(245,158,11,0.45);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.34);
+    }
+    .home-action:active { transform: translateY(-1px); }
+    .home-action--primary:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
     .home-inline { color: ${THEME.colors.textPrimary}; border-bottom: 1px solid transparent; transition: color 120ms ease, border-color 120ms ease; }
     .home-inline:hover { color: ${THEME.colors.accent}; border-bottom-color: ${THEME.colors.accent}; }
-    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+    .home-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem; margin-top: 0.5rem; }
     .home-feature {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.4rem;
       padding: 0.75rem;
-      border-radius: ${THEME.radii.feature};
-      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
       background: rgba(255,255,255,0.04);
-      transition: border-color 120ms ease, background 120ms ease;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
-    .home-feature:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); }
-    .home-feature:first-child .home-feature-title {
-      font-weight: 750;
-    }
-    .home-feature:first-child .home-feature-icon {
-      opacity: 0.65;
+    .home-feature:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      border-color: rgba(255,255,255,0.09);
     }
     .home-feature-icon {
-      width: 24px;
-      height: 24px;
-      opacity: 0.5;
-      font-size: 1.1rem;
+      width: 20px;
+      height: 20px;
+      opacity: 0.6;
+      font-size: 1rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2585,8 +2602,9 @@ function htmlPage(
       .home-actions { justify-content: center; }
       .home-features { grid-template-columns: 1fr; }
       .home-footer { justify-content: center; }
-      .home-title { font-size: 1.75rem; }
-      .home-lead { font-size: 0.9rem; }
+      .home-title { font-size: 1.5rem; }
+      .home-title-icon { height: 18px; }
+      .home-lead { font-size: 0.85rem; }
       .home-actions { flex-direction: column; }
       .home-action { width: 100%; }
     }
@@ -2779,7 +2797,8 @@ function renderHome(): Response {
   const demoArtist = "/artist/boris";
   const demoSmartlink = "/boris/heavy-rain";
     // TODO: Replace with actual ISKRA SVG logo from d:\SREDA\.mediasreda\искра\iskra b.svg
-    // Placeholder: reduced size (20px) and opacity (0.88) for clean UI
+    // Current: placeholder icon, height: 19px, opacity: 0.85 (matches requirements)
+    // When SVG is provided, insert inline: <svg class="home-title-icon">...</svg>
     const iskraIcon = `<svg class="home-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
     const body = `
     <section class="home">
