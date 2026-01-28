@@ -1551,7 +1551,7 @@ function htmlPage(
     
     /* Artists list page */
     body.page-artists .card {
-      width: min(1000px, calc(100% - 32px));
+      width: min(1200px, calc(100% - 32px));
       position: relative;
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
@@ -1698,7 +1698,7 @@ function htmlPage(
     .artists-loading {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.5rem;
+      gap: 0.8rem;
       margin-bottom: 0.75rem;
     }
     .artists-loading-item {
@@ -1761,7 +1761,7 @@ function htmlPage(
       margin-bottom: 0;
       display: flex;
       align-items: stretch;
-      max-width: calc(45% - 0.3rem);
+      max-width: calc(70% - 0.3rem);
     }
     .artists-controls .artists-search__input {
       align-self: stretch;
@@ -1811,7 +1811,7 @@ function htmlPage(
     .artists-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.5rem;
+      gap: 0.8rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.75rem;
     }
