@@ -1796,6 +1796,9 @@ function htmlPage(
       flex-wrap: wrap;
       flex-shrink: 0;
     }
+    .artists-sort-toggle {
+      display: none;
+    }
     .artists-sort-btn {
       padding: 0.55rem 0.75rem;
       border: 1px solid rgba(255,255,255,0.08);
@@ -2597,10 +2600,7 @@ function htmlPage(
       .artists-sort-buttons.mobile-expanded { display: flex; position: absolute; top: 100%; left: 0; right: 0; background: rgba(18,18,22,0.98); backdrop-filter: blur(20px); border-radius: 12px; padding: 0.5rem; margin-top: 0.4rem; flex-direction: column; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
       .artists-sort-buttons.mobile-expanded .artists-sort-btn { width: 100%; justify-content: flex-start; }
       .artists-controls { position: relative; }
-      .artists-sort-toggle { display: none; }
-      @media (max-width: 640px) {
-        .artists-sort-toggle { display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 0.6rem; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.9); cursor: pointer; white-space: nowrap; }
-      }
+      .artists-sort-toggle { display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 0.6rem; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.9); cursor: pointer; white-space: nowrap; }
       .artists-sort-btn { padding: 0.5rem 0.6rem; font-size: 0.75rem; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; margin-bottom: 0.4rem; }
       .artists-grid .smartlink-item { width: 100%; }
