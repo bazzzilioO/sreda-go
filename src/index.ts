@@ -1551,7 +1551,7 @@ function htmlPage(
     
     /* Artists list page */
     body.page-artists .card {
-      width: min(900px, calc(100% - 32px));
+      width: min(1200px, calc(100% - 32px));
       position: relative;
       background: rgba(18,18,22,0.55);
       border: 1px solid transparent;
@@ -1761,7 +1761,7 @@ function htmlPage(
       margin-bottom: 0;
       display: flex;
       align-items: stretch;
-      max-width: calc(50% - 0.3rem);
+      max-width: calc(70% - 0.3rem);
     }
     .artists-controls .artists-search__input {
       align-self: stretch;
