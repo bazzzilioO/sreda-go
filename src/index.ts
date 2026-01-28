@@ -1702,7 +1702,8 @@ function htmlPage(
       margin-bottom: 0.75rem;
     }
     .artists-loading-item {
-      width: 100%;
+      width: 70%;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       border-radius: 12px;
@@ -1711,8 +1712,7 @@ function htmlPage(
       background: rgba(255,255,255,0.04);
     }
     .artists-loading-item__image {
-      width: 70%;
-      margin: 0 auto;
+      width: 100%;
       aspect-ratio: 1 / 1;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1816,8 +1816,9 @@ function htmlPage(
       margin-bottom: 0.75rem;
     }
     .artists-grid .smartlink-item {
-      width: 100%;
-      max-width: 100%;
+      width: 70%;
+      max-width: 70%;
+      margin: 0 auto;
       animation: fadeIn 250ms ease forwards;
       transition: all 200ms ease;
       cursor: pointer;
@@ -1839,8 +1840,7 @@ function htmlPage(
     }
     .artists-grid .smartlink-cover-wrapper {
       position: relative;
-      width: 70%;
-      margin: 0 auto;
+      width: 100%;
     }
     .artists-grid .smartlink-cover {
       aspect-ratio: 1 / 1;
