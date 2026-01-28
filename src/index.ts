@@ -2086,6 +2086,17 @@ function htmlPage(
       margin: 0;
     }
     .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
+    .home-nav-link {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+    .home-nav-link:hover {
+      color: rgba(255,255,255,0.9);
+    }
     .home-action {
       display: inline-flex;
       align-items: center;
@@ -2785,10 +2796,26 @@ function htmlPage(
 </html>`;
 }
 
-function renderHome(): Response {
+async function renderHome(env: Env): Promise<Response> {
   const telegramUrl = "https://t.me/iskramusic_bot";
-  const demoArtist = "/artist/boris";
-  const demoSmartlink = "/boris/heavy-rain";
+  
+  // Get most recently created artist
+  let demoArtist = "/artist/boris"; // fallback
+  try {
+    const latestArtistQuery = await env.DB.prepare(
+      `SELECT artist_slug, slug
+       FROM smartlinks
+       ORDER BY created_at DESC
+       LIMIT 1`
+    ).first<{ artist_slug: string; slug: string }>();
+    
+    if (latestArtistQuery) {
+      demoArtist = `/artist/${encodeURIComponent(latestArtistQuery.artist_slug)}`;
+    }
+  } catch (error) {
+    // Fallback to default if query fails
+    console.error("Failed to get latest artist:", error);
+  }
     const iskraIcon = `<svg class="home-title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024" fill="currentColor">
   <polygon points="674.51 449.09 674.53 560.34 643.75 560.5 643.44 487.29 573.21 560.34 540.02 560.43 540.17 449.1 571.21 449.13 571.14 522.4 581.82 511.33 642.54 449.08 674.51 449.09"/>
   <path d="M737.58,525.36c5.75,16.58,50.44,12.29,63.97,10.41,7.03-.98,12.22-5.73,14.57-12.48l31.99.88c-2.96,21.5-16.95,33.65-37.22,36.35-22.91,3.06-57.09,4.47-78.76-2.78-12.19-4.08-21.85-12.89-25.73-25.63-5.36-17.56-5.11-36.95.1-54.45,3.77-12.66,12.76-21.13,24.86-25.02,23.54-7.56,63.66-7.32,87.75-1.23,16.29,4.12,27.05,16.94,27.95,33.93l-30.47.3c-2.08-6.45-7.88-10.76-15.15-11.68-12.4-1.58-56.18-5.01-62.77,8.69-6.4,13.3-5.84,28.96-1.07,42.69Z"/>
@@ -2814,6 +2841,7 @@ function renderHome(): Response {
               Посмотреть пример смартлинка
             </a>
           </div>
+          <a class="home-nav-link" href="/artist">Все артисты →</a>
         </div>
       </div>
 
@@ -5293,13 +5321,17 @@ export default {
       return handleArtistsSearch(env, goIndexBase, url);
     }
 
+    if (segments.length === 1 && segments[0] === "artist") {
+      return renderArtistsIndex(env, goIndexBase, url);
+    }
+
     if (segments.length === 2 && segments[0] === "artist") {
       const artistSlug = decodeURIComponent(segments[1]);
       return renderArtistPage(artistSlug, env, goIndexBase);
     }
 
     if (segments.length === 0) {
-      return renderHome();
+      return renderHome(env);
     }
 
     if (segments.length === 1) {
