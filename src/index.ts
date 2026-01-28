@@ -1697,18 +1697,18 @@ function htmlPage(
     }
     .artists-loading {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
       gap: 0.5rem;
       margin-bottom: 0.5rem;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 1120px;
       padding-left: 1rem;
       padding-right: 1rem;
-      max-width: calc(100% - 2rem);
       justify-items: stretch;
     }
     .artists-loading-item {
-      width: 85%;
-      max-width: 250px;
-      margin: 0 auto;
+      width: 100%;
       display: flex;
       flex-direction: column;
       border-radius: 12px;
@@ -1815,19 +1815,19 @@ function htmlPage(
     }
     .artists-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
       gap: 0.5rem;
       transition: opacity 300ms ease;
       margin-bottom: 0.5rem;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 1120px;
       padding-left: 1rem;
       padding-right: 1rem;
-      max-width: calc(100% - 2rem);
       justify-items: stretch;
     }
     .artists-grid .smartlink-item {
-      width: 85%;
-      max-width: 250px;
-      margin: 0 auto;
+      width: 100%;
       animation: fadeIn 250ms ease forwards;
       transition: all 200ms ease;
       cursor: pointer;
@@ -2552,7 +2552,7 @@ function htmlPage(
       .artists-header__title { font-size: 1.5rem; }
       .artists-header__count { align-self: flex-start; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .artists-grid .smartlink-item { width: 85%; max-width: 250px; margin: 0 auto; }
+      .artists-grid .smartlink-item { width: 100%; }
       .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
       .artists-controls { flex-direction: column; gap: 0.6rem; }
       .artists-sort-buttons { width: 100%; justify-content: flex-start; }
@@ -2593,7 +2593,7 @@ function htmlPage(
       .artists-header__subtitle { font-size: 0.82rem; }
       .artists-search__input { padding: 0.65rem 0.9rem 0.65rem 2.25rem; font-size: 0.9rem; }
       .artists-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-      .artists-grid .smartlink-item { width: 85%; max-width: 250px; margin: 0 auto; }
+      .artists-grid .smartlink-item { width: 100%; }
       .artists-loading { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
     }
   </style>
