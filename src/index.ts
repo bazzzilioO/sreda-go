@@ -1761,7 +1761,7 @@ function htmlPage(
       margin-bottom: 0;
       display: flex;
       align-items: stretch;
-      max-width: calc(70% - 0.3rem);
+      max-width: calc(49% - 0.3rem);
     }
     .artists-controls .artists-search__input {
       align-self: stretch;
