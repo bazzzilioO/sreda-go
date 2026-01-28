@@ -1292,6 +1292,13 @@ const THEME = {
     cover: "18px",
     pill: "999px",
     glass: "20px",
+    button: "14px",
+    feature: "12px",
+  },
+  spacing: {
+    gapSmall: "0.4rem",
+    gapMedium: "0.5rem",
+    gapLarge: "0.6rem",
   },
   shadows: {
     card: "0 18px 48px rgba(0,0,0,0.4)",
@@ -1656,7 +1663,7 @@ function htmlPage(
       width: 100%;
       padding: 0.55rem 0.8rem 0.55rem 2.2rem;
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
+      border-radius: ${THEME.radii.feature};
       background: rgba(255,255,255,0.04);
       backdrop-filter: blur(20px) saturate(1.2);
       -webkit-backdrop-filter: blur(20px) saturate(1.2);
@@ -1807,7 +1814,7 @@ function htmlPage(
       justify-content: center;
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 12px;
+      border-radius: ${THEME.radii.feature};
     }
     .artists-controls .artists-search {
       flex: 1;
@@ -2072,17 +2079,19 @@ function htmlPage(
       gap: 0.5rem;
     }
     .home-title-icon {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       flex-shrink: 0;
+      opacity: 0.88;
     }
     .home-lead {
       font-size: 0.95rem;
       color: rgba(255,255,255,0.6);
-      line-height: 1.4;
+      line-height: 1.3;
       margin: 0;
+      margin-bottom: 0.1rem;
     }
-    .home-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem; }
     .home-action {
       display: inline-flex;
       align-items: center;
@@ -2090,7 +2099,7 @@ function htmlPage(
       gap: 0.55rem;
       min-height: 46px;
       padding: 0.75rem 1.05rem;
-      border-radius: 14px;
+      border-radius: ${THEME.radii.button};
       border: 1px solid ${THEME.colors.borderSubtle};
       font-weight: 820;
       letter-spacing: 0.01em;
@@ -2110,12 +2119,18 @@ function htmlPage(
       flex-direction: column;
       gap: 0.5rem;
       padding: 0.75rem;
-      border-radius: 12px;
+      border-radius: ${THEME.radii.feature};
       border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.04);
       transition: border-color 120ms ease, background 120ms ease;
     }
     .home-feature:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); }
+    .home-feature:first-child .home-feature-title {
+      font-weight: 750;
+    }
+    .home-feature:first-child .home-feature-icon {
+      opacity: 0.65;
+    }
     .home-feature-icon {
       width: 24px;
       height: 24px;
@@ -2147,11 +2162,14 @@ function htmlPage(
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
-      color: rgba(255,255,255,0.5);
-      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.8rem;
       border-top: 1px solid rgba(255,255,255,0.06);
       padding-top: 0.75rem;
       margin-top: 0.5rem;
+    }
+    .home-inline {
+      opacity: 0.6;
     }
     
     /* Smartlink Release Page - Integrated Cover Design */
@@ -2348,7 +2366,7 @@ function htmlPage(
       padding: 0.7rem 0.9rem;
       min-height: 44px;
       width: 100%;
-      border-radius: 12px;
+      border-radius: ${THEME.radii.feature};
       border: 1px solid ${THEME.colors.borderSubtle};
       background: ${THEME.colors.surfaceMuted};
       color: ${THEME.colors.textPrimary};
@@ -2406,7 +2424,7 @@ function htmlPage(
       flex-direction: column; 
       gap: 0; 
       padding: 0; 
-      border-radius: 12px; 
+      border-radius: ${THEME.radii.feature}; 
       border: 1px solid rgba(255,255,255,0.08); 
       background: rgba(255,255,255,0.04); 
       cursor: pointer; 
@@ -2760,6 +2778,8 @@ function renderHome(): Response {
   const telegramUrl = "https://t.me/iskramusic_bot";
   const demoArtist = "/artist/boris";
   const demoSmartlink = "/boris/heavy-rain";
+    // TODO: Replace with actual ISKRA SVG logo from d:\SREDA\.mediasreda\искра\iskra b.svg
+    // Placeholder: reduced size (20px) and opacity (0.88) for clean UI
     const iskraIcon = `<svg class="home-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
     const body = `
     <section class="home">
