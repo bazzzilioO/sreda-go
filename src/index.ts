@@ -1711,7 +1711,8 @@ function htmlPage(
       background: rgba(255,255,255,0.04);
     }
     .artists-loading-item__image {
-      width: 100%;
+      width: 70%;
+      margin: 0 auto;
       aspect-ratio: 1 / 1;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1838,7 +1839,8 @@ function htmlPage(
     }
     .artists-grid .smartlink-cover-wrapper {
       position: relative;
-      width: 100%;
+      width: 70%;
+      margin: 0 auto;
     }
     .artists-grid .smartlink-cover {
       aspect-ratio: 1 / 1;
