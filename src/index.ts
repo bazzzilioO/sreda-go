@@ -2072,7 +2072,7 @@ function htmlPage(
       line-height: 1;
     }
     .home-title-icon {
-      height: 1.75rem;
+      height: 2.25rem;
       width: auto;
       display: block;
       opacity: 0.92;
@@ -2595,7 +2595,7 @@ function htmlPage(
       .home-actions { justify-content: center; }
       .home-features { grid-template-columns: 1fr; }
       .home-footer { justify-content: center; }
-      .home-title-icon { height: 1.5rem; }
+      .home-title-icon { height: 1.9rem; }
       .home-lead { font-size: 0.85rem; }
       .home-actions { flex-direction: column; }
       .home-action { width: 100%; }
