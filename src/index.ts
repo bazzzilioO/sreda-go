@@ -2805,13 +2805,13 @@ function renderHome(): Response {
           <h1 class="home-title">
             ${iskraIcon}
           </h1>
-          <p class="home-lead">Инструменты для артистов: смартлинки, релиз‑план, напоминания.</p>
+          <p class="home-lead">Инфраструктура смартлинков и релизов для артистов.</p>
           <div class="home-actions">
             <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
               Открыть ИСКРУ в Telegram
             </a>
             <a class="home-action home-action--secondary" href="${escapeHtml(demoArtist)}">
-              Открыть смартлинки (пример)
+              Посмотреть пример смартлинка
             </a>
           </div>
         </div>
@@ -2820,29 +2820,29 @@ function renderHome(): Response {
       <div class="home-features" role="list">
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>⚡</span></div>
-          <div class="home-feature-title">Смартлинк за минуту</div>
-          <div class="home-feature-text">Вставь ссылку — соберём площадки и сделаем карточку.</div>
+          <div class="home-feature-title">Смартлинк для релиза</div>
+          <div class="home-feature-text">Одна ссылка для всех площадок. Обновляется и не ломается со временем.</div>
         </div>
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>↗</span></div>
-          <div class="home-feature-title">Можно пересылать</div>
-          <div class="home-feature-text">Карточка без техкнопок, управление отдельным меню.</div>
+          <div class="home-feature-title">Артисты и релизы</div>
+          <div class="home-feature-text">Каждый артист и каждый релиз — отдельная сущность со своей историей.</div>
         </div>
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>🔔</span></div>
-          <div class="home-feature-title">Напоминания о релизе</div>
-          <div class="home-feature-text">Напоминания до и в день релиза для промо.</div>
+          <div class="home-feature-title">Управление после публикации</div>
+          <div class="home-feature-text">Меняй ссылки, обложки и порядок платформ — ссылка остаётся той же.</div>
         </div>
         <div class="home-feature" role="listitem">
           <div class="home-feature-icon" aria-hidden="true"><span>✏️</span></div>
-          <div class="home-feature-title">Редактирование</div>
-          <div class="home-feature-text">Меняй обложку и ссылки, обновляй карточку.</div>
+          <div class="home-feature-title">Удобно делиться</div>
+          <div class="home-feature-text">Ссылку можно пересылать куда угодно — она всегда ведёт к актуальной версии.</div>
         </div>
       </div>
 
       <div class="home-footer">
         <span>© SREDA</span>
-        <a class="home-inline" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">Telegram</a>
+        <span>Инфраструктура для артистов</span>
       </div>
     </section>
   `;
@@ -3581,7 +3581,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       <div class="artists-header">
         <div class="artists-header__info">
           <h1 class="artists-header__title">Артисты</h1>
-          <div class="artists-header__subtitle">Выбери артиста — откроется список его релизов</div>
+          <div class="artists-header__subtitle">Смартлинки и релизы в одном списке.</div>
         </div>
         <div class="artists-header__count">${totalCount} ${artistLabel}</div>
       </div>
