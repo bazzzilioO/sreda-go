@@ -2068,6 +2068,7 @@ function htmlPage(
     .home-badge { display: none; }
     .home-title {
       margin: 0;
+      margin-bottom: 0.15rem;
       display: block;
       line-height: 1;
     }
@@ -2081,7 +2082,7 @@ function htmlPage(
     .home-lead {
       font-size: 0.9rem;
       color: rgba(255,255,255,0.6);
-      line-height: 1.25;
+      line-height: 1.21;
       margin: 0;
     }
     .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
@@ -2107,9 +2108,9 @@ function htmlPage(
       box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 0 1px rgba(245,158,11,0.18);
     }
     .home-action--secondary {
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.055);
       color: #fff;
-      border-color: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.09);
     }
     .home-action:hover {
       transform: translateY(-2px);
@@ -2144,7 +2145,7 @@ function htmlPage(
     .home-feature-icon {
       width: 20px;
       height: 20px;
-      opacity: 0.6;
+      opacity: 0.54;
       font-size: 1rem;
       display: flex;
       align-items: center;
