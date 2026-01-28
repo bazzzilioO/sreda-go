@@ -1712,7 +1712,7 @@ function htmlPage(
     }
     .artists-loading-item__image {
       width: 70%;
-      margin: 0 auto;
+      margin: 0.5rem auto 0 auto;
       aspect-ratio: 1 / 1;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -1841,6 +1841,7 @@ function htmlPage(
       position: relative;
       width: 70%;
       margin: 0 auto;
+      padding-top: 0.5rem;
     }
     .artists-grid .smartlink-cover {
       aspect-ratio: 1 / 1;
@@ -1865,7 +1866,7 @@ function htmlPage(
       z-index: 2;
     }
     .artists-grid .smartlink-content {
-      padding: 0.5rem 0.6rem;
+      padding: 0.35rem 0.5rem;
     }
     .artists-card-title {
       display: -webkit-box;
