@@ -2074,7 +2074,7 @@ function htmlPage(
       align-items: center;
     }
     .home-logo {
-      height: 3rem;
+      height: 9rem;
       width: auto;
       display: block;
     }
