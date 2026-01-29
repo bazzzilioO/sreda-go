@@ -1505,6 +1505,10 @@ function htmlPage(
       opacity: 0.5;
       mix-blend-mode: soft-light;
     }
+    body.page-artist .noise-layer,
+    body.page-smartlink .noise-layer {
+      display: none;
+    }
     .card {
       width: min(960px, calc(100% - 24px));
       background: ${THEME.colors.surface};
