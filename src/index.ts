@@ -2141,6 +2141,22 @@ function htmlPage(
     .home-action--primary:hover {
       border-color: rgba(245,158,11,0.45);
       box-shadow: 0 14px 30px rgba(0,0,0,0.34);
+      position: relative;
+      overflow: hidden;
+    }
+    .home-action--primary:hover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      animation: loading-shimmer 1.5s infinite;
+    }
+    @keyframes loading-shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
     }
     .home-action:active { transform: translateY(-1px); }
     .home-action--primary:active { transform: translateY(0); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
