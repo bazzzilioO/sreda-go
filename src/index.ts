@@ -2982,10 +2982,10 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
           <h1 class="home-title">${sredaLogo}</h1>
           <p class="home-lead">Инфраструктура музыкальной экосистемы.</p>
           <p class="home-description">SREDA — это инфраструктурный слой для работы с артистами, релизами, ссылками, площадками и продвижением.</p>
-          <p class="home-status">Проект находится в разработке.<br>Сейчас доступен инфраструктурный модуль ISKRA.</p>
+          <p class="home-status">Проект находится в разработке.<br>Сейчас доступен инфраструктурный модуль ИСКРА.</p>
           <div class="home-actions">
             <a class="home-action home-action--primary" href="${escapeHtml(goBaseUrl)}">
-              Перейти в ISKRA
+              Перейти в ИСКРА
             </a>
           </div>
         </div>
@@ -2993,10 +2993,10 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
 
       <div class="home-cards">
         <h2 class="home-cards-title">Доступный модуль</h2>
-        <p class="home-cards-subtitle">ISKRA</p>
+        <p class="home-cards-subtitle">ИСКРА</p>
         <div class="home-cards-grid">
           <div class="home-card">
-            <h3 class="home-card-title">ISKRA Smartlinks</h3>
+            <h3 class="home-card-title">ИСКРА Smartlinks</h3>
             <p class="home-card-text">Одна ссылка на релиз для всех площадок. Не ломается со временем.</p>
           </div>
           <div class="home-card">
