@@ -1436,7 +1436,10 @@ function htmlPage(
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
-    html { height: 100%; }
+    html { 
+      height: 100%; 
+      background: ${THEME.colors.background};
+    }
     body {
       margin: 0;
       min-height: 100vh;
