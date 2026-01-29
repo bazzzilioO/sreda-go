@@ -2895,6 +2895,7 @@ async function renderHome(env: Env): Promise<Response> {
 }
 
 async function renderSredaBrandLanding(env: Env): Promise<Response> {
+  console.log("[renderSredaBrandLanding] Called - rendering SREDA brand landing");
   const telegramUrl = "https://t.me/iskramusic_bot";
   const iskraUrl = "https://go.sreda.pw/";
   const updatesUrl = "/updates";
