@@ -1453,6 +1453,11 @@ function htmlPage(
       padding: 2rem 1.25rem 2.75rem;
       background: ${THEME.colors.background};
       isolation: isolate;
+      opacity: 1;
+      transition: opacity 300ms ease-in-out;
+    }
+    body.page-transition {
+      opacity: 0;
     }
     body::before,
     body::after {
@@ -2872,6 +2877,42 @@ function htmlPage(
         };
         loader.src = bgImage;
       }
+    })();
+    
+    // Page transition
+    (function() {
+      const links = document.querySelectorAll('a[href]');
+      
+      links.forEach(function(link) {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        
+        // Skip external links and anchors
+        if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+        if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
+        
+        link.addEventListener('click', function(e) {
+          // Only apply transition for same-origin navigation
+          if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
+          
+          // Apply fade-out
+          document.body.classList.add('page-transition');
+          
+          // Small delay to allow fade-out animation
+          setTimeout(function() {
+            // Navigation will happen naturally
+          }, 250);
+        });
+      });
+      
+      // Fade-in on page load
+      window.addEventListener('load', function() {
+        document.body.style.opacity = '0';
+        requestAnimationFrame(function() {
+          document.body.style.transition = 'opacity 300ms ease-in-out';
+          document.body.style.opacity = '1';
+        });
+      });
     })();
   </script>
 </body>
