@@ -4013,53 +4013,53 @@ async function handleGo(request: Request, env: Env): Promise<Response> {
   const segments = normalizedPath.split("/").filter(Boolean);
 
   if (normalizedPath === "/api/index/upsert") {
-      if (request.method === "GET") {
-        return new Response("OK: /api/index/upsert жив. Используй POST + X-API-Key + JSON body.", {
-          status: 200,
-          headers: { "Content-Type": "text/plain; charset=UTF-8" },
-        });
-      }
+    if (request.method === "GET") {
+      return new Response("OK: /api/index/upsert жив. Используй POST + X-API-Key + JSON body.", {
+        status: 200,
+        headers: { "Content-Type": "text/plain; charset=UTF-8" },
+      });
+    }
 
-      if (request.method !== "POST") {
-        return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
-      }
+    if (request.method !== "POST") {
+      return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
+    }
 
-      const apiKey = env.SMARTLINK_API_KEY;
-      const apiKeyError = requireEnvValue(
-        apiKey,
-        "SMARTLINK_API_KEY",
-        "Настройте SMARTLINK_API_KEY для доступа к /api/index/upsert.",
-      );
-      if (apiKeyError) {
-        return apiKeyError;
-      }
+    const apiKey = env.SMARTLINK_API_KEY;
+    const apiKeyError = requireEnvValue(
+      apiKey,
+      "SMARTLINK_API_KEY",
+      "Настройте SMARTLINK_API_KEY для доступа к /api/index/upsert.",
+    );
+    if (apiKeyError) {
+      return apiKeyError;
+    }
 
-      const providedKey = request.headers.get("X-API-Key");
-      const isAuthed = providedKey === apiKey;
-      if (!isAuthed) {
-        return jsonResponse({ ok: false, error: "unauthorized" }, 401);
-      }
+    const providedKey = request.headers.get("X-API-Key");
+    const isAuthed = providedKey === apiKey;
+    if (!isAuthed) {
+      return jsonResponse({ ok: false, error: "unauthorized" }, 401);
+    }
 
-      const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "");
-      const goIndexBaseError = requireEnvValue(
-        goIndexBase,
-        "GO_INDEX_BASE",
-        "Настройте GO_INDEX_BASE для формирования канонических ссылок.",
-      );
-      if (goIndexBaseError) {
-        return goIndexBaseError;
-      }
+    const goIndexBase = env.GO_INDEX_BASE?.replace(/\/$/, "");
+    const goIndexBaseError = requireEnvValue(
+      goIndexBase,
+      "GO_INDEX_BASE",
+      "Настройте GO_INDEX_BASE для формирования канонических ссылок.",
+    );
+    if (goIndexBaseError) {
+      return goIndexBaseError;
+    }
 
-      await ensureSchema(env.DB);
+    await ensureSchema(env.DB);
 
+    try {
+      let payload: UpsertRequest;
       try {
-        let payload: UpsertRequest;
-        try {
-          payload = (await request.json()) as UpsertRequest;
-        } catch (error) {
-          console.error("upsert parse error", error);
-          return jsonResponse({ ok: false, error: "bad_request", details: "invalid_json" }, 400);
-        }
+        payload = (await request.json()) as UpsertRequest;
+      } catch (error) {
+        console.error("upsert parse error", error);
+        return jsonResponse({ ok: false, error: "bad_request", details: "invalid_json" }, 400);
+      }
 
         const {
           id,
