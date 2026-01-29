@@ -3981,13 +3981,18 @@ export default {
     const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
     const segments = normalizedPath.split("/").filter(Boolean);
 
+    // Debug: log hostname for troubleshooting
+    console.log("[routing] hostname:", hostname, "path:", normalizedPath, "segments:", segments);
+
     // Separate routing for sreda.pw (umbrella brand) vs go.sreda.pw (ISKRA product)
     // Check hostname: if it's sreda.pw (not go.sreda.pw), show brand landing
     if (hostname === "sreda.pw" || hostname === "www.sreda.pw") {
       // Only root path for brand landing, everything else 404
       if (segments.length === 0) {
+        console.log("[routing] Rendering SREDA brand landing for", hostname);
         return renderSredaBrandLanding(env);
       }
+      console.log("[routing] 404 for", hostname, "path:", normalizedPath);
       return new Response("Not Found", { status: 404 });
     }
 
@@ -5393,6 +5398,13 @@ export default {
 
     // Only renderHome for go.sreda.pw domain, not for sreda.pw (which should be handled above)
     if (segments.length === 0 && hostname === "go.sreda.pw") {
+      console.log("[routing] Rendering ISKRA home for", hostname);
+      return renderHome(env);
+    }
+    
+    // Fallback: if we reach here and segments.length === 0, something went wrong
+    if (segments.length === 0) {
+      console.warn("[routing] WARNING: Root path reached but no hostname match. hostname:", hostname, "rendering home as fallback");
       return renderHome(env);
     }
 
