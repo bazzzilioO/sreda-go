@@ -2068,14 +2068,15 @@ function htmlPage(
     .home-visual { display: none; }
     .home-badge { display: none; }
     .home-title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 2.5rem;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
       margin: 0;
       margin-bottom: 0.4rem;
-      color: #fff;
+      display: flex;
+      align-items: center;
+    }
+    .home-logo {
+      height: 3rem;
+      width: auto;
+      display: block;
     }
     .home-title-icon {
       height: 9rem;
@@ -2953,11 +2954,32 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
   console.log("[renderSredaBrandLanding] Called - rendering SREDA brand landing");
   const goBaseUrl = "https://go.sreda.pw";
   
+  const sredaLogo = `<svg class="home-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1132.53 1201.5">
+  <defs>
+    <style>
+      .logo-cls-1 {
+        fill: #f9a600;
+      }
+      .logo-cls-2 {
+        fill: #ffffff;
+      }
+    </style>
+  </defs>
+  <polygon class="logo-cls-1" points="300.37 0 598.66 410.93 450.56 600.75 600.75 750.94 0 1201.5 150.19 750.94 0 600.75 300.37 0"/>
+  <g>
+    <path class="logo-cls-2" d="M417.79,1098.94h-54.74c-1.89-9.12-13.84-17.93-27.06-17.93s-21.71,3.78-21.71,11.96c0,24.54,105.39-.32,105.39,58.52,0,28.94-30.2,50.02-79.28,50.02-39.95,0-76.13-19.51-86.51-51.6v-9.75h54.74c3.46,11.33,16.99,18.88,30.2,18.88,15.42,0,23.91-5.66,23.91-12.27,0-19.19-104.13,1.57-104.13-58.2,0-28.31,31.46-51.91,76.76-51.91s72.99,22.97,82.43,52.54v9.75Z"/>
+    <path class="logo-cls-2" d="M449.24,1040.42h52.85v16.36c11.64-12.58,28-20.13,46.88-20.13v54.74c-4.09-.94-11.01-1.57-16.04-1.57-14.16,0-27.37,7.55-30.83,21.39v86.51h-52.85v-157.3Z"/>
+    <path class="logo-cls-2" d="M738.67,1138.58v10.07c-9.75,29.89-42.79,52.85-85.57,52.85-50.02,0-86.83-32.09-86.83-82.43s36.81-82.43,86.83-82.43c47.19,0,81.17,28.31,85.57,69.84v19.51h-118.6c2.52,17.3,15.1,27.68,33.03,27.68,12.9,0,24.22-4.72,30.2-15.1h55.37ZM623.21,1097.99h59.77c-5.35-11.01-15.1-17.3-29.89-17.3-13.84,0-24.54,6.29-29.89,17.3Z"/>
+    <path class="logo-cls-2" d="M931.19,1197.72h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-78.02h52.85v220.22ZM814.79,1119.07c0,20.45,12.9,32.72,32.72,32.72s32.72-12.27,32.72-32.72-12.9-32.72-32.72-32.72-32.72,12.27-32.72,32.72Z"/>
+    <path class="logo-cls-2" d="M1132.53,1197.72h-52.85v-14.79c-12.27,11.96-28.31,18.56-46.88,18.56-40.58,0-70.16-32.09-70.16-82.43s29.57-82.43,70.16-82.43c18.56,0,34.61,6.92,46.88,18.88v-15.1h52.85v157.3ZM1081.57,1119.07c0-20.45-12.9-32.72-32.72-32.72s-32.72,12.27-32.72,32.72,12.9,32.72,32.72,32.72,32.72-12.27,32.72-32.72Z"/>
+  </g>
+</svg>`;
+  
   const body = `
     <section class="home">
       <div class="home-hero">
         <div class="home-top">
-          <h1 class="home-title">SREDA</h1>
+          <h1 class="home-title">${sredaLogo}</h1>
           <p class="home-lead">Инфраструктура музыкальной экосистемы.</p>
           <p class="home-description">SREDA — это инфраструктурный слой для работы с артистами, релизами, ссылками, площадками и продвижением.</p>
           <p class="home-status">Проект находится в разработке.<br>Сейчас доступен инфраструктурный модуль ISKRA.</p>
