@@ -2890,7 +2890,11 @@ async function renderHome(env: Env): Promise<Response> {
   `;
   return new Response(htmlPage(body, { title: "SREDA", pageClass: "page-home" }), {
     status: 200,
-    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+    headers: { 
+      "Content-Type": "text/html; charset=UTF-8",
+      "X-Debug-Renderer": "renderHome",
+      ...CACHE_HEADERS 
+    },
   });
 }
 
@@ -2927,7 +2931,11 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
   `;
   return new Response(htmlPage(body, { title: "SREDA", pageClass: "page-home" }), {
     status: 200,
-    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+    headers: { 
+      "Content-Type": "text/html; charset=UTF-8",
+      "X-Debug-Renderer": "renderSredaBrandLanding",
+      ...CACHE_HEADERS 
+    },
   });
 }
 
