@@ -1464,7 +1464,7 @@ function htmlPage(
     }
     body::before {
       background: ${THEME.colors.gradient};
-      opacity: 0.92;
+      opacity: 0.6;
     }
     body::after {
       background-image: var(--page-bg-image);
@@ -1523,9 +1523,9 @@ function htmlPage(
     .card > * { position: relative; z-index: 1; }
 
     /* ==================== Home page ==================== */
-    body.page-home { align-items: flex-start; padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    body.page-home { align-items: flex-start; padding-top: 2rem; padding-bottom: 2rem; }
     body.page-home .card {
-      max-width: 900px;
+      max-width: 1000px;
       margin-left: auto;
       margin-right: auto;
       position: relative;
@@ -1537,7 +1537,7 @@ function htmlPage(
       -webkit-backdrop-filter: blur(50px) saturate(1.3);
       box-shadow: 0 25px 60px -15px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: hidden;
-      padding: 1rem;
+      padding: 2rem;
     }
     body.page-home .card::before {
       content: '';
@@ -2114,8 +2114,8 @@ function htmlPage(
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      min-height: 44px;
-      padding: 0.7rem 1rem;
+      height: 44px;
+      padding: 0 1rem;
       border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.06);
       font-weight: 700;
@@ -2190,6 +2190,49 @@ function htmlPage(
       line-height: 1.4;
       margin: 0;
     }
+    .home-cards {
+      margin-top: 2.5rem;
+    }
+    .home-cards-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0 0 1rem 0;
+      color: #fff;
+    }
+    .home-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+    .home-card {
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+    .home-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      border-color: rgba(255,255,255,0.09);
+    }
+    .home-card-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0 0 0.4rem 0;
+      color: #fff;
+      line-height: 1.3;
+    }
+    .home-card-text {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.4;
+      margin: 0;
+    }
     .home-footer {
       display: flex;
       flex-wrap: wrap;
@@ -2199,12 +2242,17 @@ function htmlPage(
       color: rgba(255,255,255,0.4);
       font-size: 0.75rem;
       border-top: 1px solid rgba(255,255,255,0.06);
-      padding-top: 0.75rem;
-      margin-top: 1rem;
+      padding-top: 1rem;
+      margin-top: 2rem;
     }
     .home-beta {
       opacity: 0.5;
       font-size: 0.7rem;
+    }
+    @media (max-width: 640px) {
+      .home-cards-grid {
+        grid-template-columns: 1fr;
+      }
     }
     .home-inline {
       opacity: 0.6;
@@ -2901,8 +2949,25 @@ async function renderHome(env: Env): Promise<Response> {
 async function renderSredaBrandLanding(env: Env): Promise<Response> {
   console.log("[renderSredaBrandLanding] Called - rendering SREDA brand landing");
   const telegramUrl = "https://t.me/iskramusic_bot";
-  const iskraUrl = "https://go.sreda.pw/";
+  const goBaseUrl = "https://go.sreda.pw";
   const updatesUrl = "https://t.me/sreda_music";
+  
+  // Get most recently created artist for demo link
+  let demoUrl = `${goBaseUrl}/artist/boris`; // fallback
+  try {
+    const latestArtistQuery = await env.DB.prepare(
+      `SELECT artist_slug
+       FROM smartlinks
+       ORDER BY created_at DESC
+       LIMIT 1`
+    ).first<{ artist_slug: string }>();
+    
+    if (latestArtistQuery) {
+      demoUrl = `${goBaseUrl}/artist/${encodeURIComponent(latestArtistQuery.artist_slug)}`;
+    }
+  } catch (error) {
+    console.error("Failed to get latest artist:", error);
+  }
   
   const body = `
     <section class="home">
@@ -2911,15 +2976,36 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
           <h1 class="home-title">SREDA</h1>
           <p class="home-lead">Инфраструктура для инструментов независимых артистов.<br>ИСКРА — первый запущенный продукт.</p>
           <div class="home-actions">
-            <a class="home-action home-action--primary" href="${escapeHtml(iskraUrl)}">
-              Перейти к ИСКРЕ
-            </a>
-            <a class="home-action home-action--secondary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
+            <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
               Открыть ИСКРУ в Telegram
+            </a>
+            <a class="home-action home-action--secondary" href="${escapeHtml(demoUrl)}">
+              Посмотреть пример смартлинка
             </a>
           </div>
           <a class="home-nav-link" href="${escapeHtml(updatesUrl)}" target="_blank" rel="noopener noreferrer">Обновления проекта</a>
-          <p class="home-status">SREDA находится в разработке. Новые инструменты запускаются постепенно.</p>
+        </div>
+      </div>
+
+      <div class="home-cards">
+        <h2 class="home-cards-title">Что уже работает</h2>
+        <div class="home-cards-grid">
+          <div class="home-card">
+            <h3 class="home-card-title">ISKRA Smartlinks</h3>
+            <p class="home-card-text">Одна ссылка на релиз для всех площадок. Не ломается со временем.</p>
+          </div>
+          <div class="home-card">
+            <h3 class="home-card-title">Артисты и релизы</h3>
+            <p class="home-card-text">Каждый артист и каждый релиз — отдельная сущность со своей историей.</p>
+          </div>
+          <div class="home-card">
+            <h3 class="home-card-title">Управление после публикации</h3>
+            <p class="home-card-text">Меняй ссылки, обложки и порядок платформ — URL остаётся тем же.</p>
+          </div>
+          <div class="home-card">
+            <h3 class="home-card-title">Удобно делиться</h3>
+            <p class="home-card-text">Copy link вместо мусорного URL. Пересылается куда угодно.</p>
+          </div>
         </div>
       </div>
 
