@@ -3982,9 +3982,10 @@ export default {
     const segments = normalizedPath.split("/").filter(Boolean);
 
     // Separate routing for sreda.pw (umbrella brand) vs go.sreda.pw (ISKRA product)
-    const isGoDomain = hostname === "go.sreda.pw" || hostname.startsWith("go.");
-    if (!isGoDomain && (hostname === "sreda.pw" || hostname === "www.sreda.pw" || hostname.endsWith(".sreda.pw"))) {
-      // Only root path for brand landing, everything else 404
+    // Check if this is go.sreda.pw domain first
+    const isGoDomain = hostname === "go.sreda.pw" || hostname.includes("go.sreda.pw");
+    // If it's sreda.pw (but not go.sreda.pw), show brand landing only on root
+    if (!isGoDomain && (hostname === "sreda.pw" || hostname === "www.sreda.pw")) {
       if (segments.length === 0) {
         return renderSredaBrandLanding(env);
       }
