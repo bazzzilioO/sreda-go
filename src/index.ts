@@ -5163,6 +5163,11 @@ async function handleGo(request: Request, env: Env): Promise<Response> {
       console.warn("[env] GO_INDEX_BASE missing, falling back to request origin");
     }
 
+    // Root path for go.sreda.pw renders ISKRA home (check early, before other routes)
+    if (segments.length === 0) {
+      return renderHome(env);
+    }
+
     if (segments.length >= 3 && segments[0] === "api" && segments[1] === "cover") {
       if (segments.length === 3) {
         const canonicalId = decodeURIComponent(segments[2]);
@@ -5410,11 +5415,6 @@ async function handleGo(request: Request, env: Env): Promise<Response> {
     if (segments.length === 2 && segments[0] === "artist") {
       const artistSlug = decodeURIComponent(segments[1]);
       return renderArtistPage(artistSlug, env, goIndexBase);
-    }
-
-    // Root path for go.sreda.pw renders ISKRA home
-    if (segments.length === 0) {
-      return renderHome(env);
     }
 
     if (segments.length === 1) {
