@@ -2888,7 +2888,7 @@ async function renderHome(env: Env): Promise<Response> {
       </div>
     </section>
   `;
-  return new Response(htmlPage(body, { title: "SREDA — tools for artists", pageClass: "page-home" }), {
+  return new Response(htmlPage(body, { title: "SREDA", pageClass: "page-home" }), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
