@@ -2068,39 +2068,35 @@ function htmlPage(
     .home-visual { display: none; }
     .home-badge { display: none; }
     .home-title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-      font-size: 2.5rem;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
       margin: 0;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.15rem;
+      display: block;
+      line-height: 1;
+    }
+    .home-title-icon {
+      height: 9rem;
+      width: auto;
+      display: block;
+      opacity: 0.92;
       color: #fff;
     }
     .home-lead {
-      font-size: 1rem;
-      color: rgba(255,255,255,0.7);
-      line-height: 1.4;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.21;
       margin: 0;
-      margin-bottom: 0.5rem;
     }
     .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
     .home-nav-link {
       display: inline-block;
-      margin-top: 0.4rem;
+      margin-top: 0.5rem;
       font-size: 0.85rem;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.6);
       text-decoration: none;
       transition: color 120ms ease;
     }
     .home-nav-link:hover {
-      color: rgba(255,255,255,0.8);
-    }
-    .home-status {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.45);
-      line-height: 1.4;
-      margin: 0.6rem 0 0 0;
+      color: rgba(255,255,255,0.9);
     }
     .home-action {
       display: inline-flex;
@@ -2190,14 +2186,10 @@ function htmlPage(
       justify-content: space-between;
       gap: 0.5rem;
       color: rgba(255,255,255,0.4);
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       border-top: 1px solid rgba(255,255,255,0.06);
       padding-top: 0.75rem;
-      margin-top: 1rem;
-    }
-    .home-beta {
-      opacity: 0.5;
-      font-size: 0.7rem;
+      margin-top: 0.5rem;
     }
     .home-inline {
       opacity: 0.6;
@@ -2612,11 +2604,14 @@ function htmlPage(
       .links-grid { grid-template-columns: 1fr; }
       .smartlink-footer { grid-template-columns: 1fr; }
       .home-top { text-align: center; align-items: center; }
-      .home-title { font-size: 2rem; }
-      .home-lead { font-size: 0.95rem; }
-      .home-actions { flex-direction: column; justify-content: center; }
-      .home-action { width: 100%; }
+      .home-badge { margin: 0 auto; }
+      .home-actions { justify-content: center; }
+      .home-features { grid-template-columns: 1fr; }
       .home-footer { justify-content: center; }
+      .home-title-icon { height: 7.6rem; }
+      .home-lead { font-size: 0.85rem; }
+      .home-actions { flex-direction: column; }
+      .home-action { width: 100%; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
@@ -2804,31 +2799,79 @@ function htmlPage(
 
 async function renderHome(env: Env): Promise<Response> {
   const telegramUrl = "https://t.me/iskramusic_bot";
-  const iskraUrl = "https://go.sreda.pw/";
-  const updatesUrl = "/updates";
   
-  const body = `
+  // Get most recently created artist
+  let demoArtist = "/artist/boris"; // fallback
+  try {
+    const latestArtistQuery = await env.DB.prepare(
+      `SELECT artist_slug, slug
+       FROM smartlinks
+       ORDER BY created_at DESC
+       LIMIT 1`
+    ).first<{ artist_slug: string; slug: string }>();
+    
+    if (latestArtistQuery) {
+      demoArtist = `/artist/${encodeURIComponent(latestArtistQuery.artist_slug)}`;
+    }
+  } catch (error) {
+    // Fallback to default if query fails
+    console.error("Failed to get latest artist:", error);
+  }
+    const iskraIcon = `<svg class="home-title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024" fill="currentColor">
+  <polygon points="674.51 449.09 674.53 560.34 643.75 560.5 643.44 487.29 573.21 560.34 540.02 560.43 540.17 449.1 571.21 449.13 571.14 522.4 581.82 511.33 642.54 449.08 674.51 449.09"/>
+  <path d="M737.58,525.36c5.75,16.58,50.44,12.29,63.97,10.41,7.03-.98,12.22-5.73,14.57-12.48l31.99.88c-2.96,21.5-16.95,33.65-37.22,36.35-22.91,3.06-57.09,4.47-78.76-2.78-12.19-4.08-21.85-12.89-25.73-25.63-5.36-17.56-5.11-36.95.1-54.45,3.77-12.66,12.76-21.13,24.86-25.02,23.54-7.56,63.66-7.32,87.75-1.23,16.29,4.12,27.05,16.94,27.95,33.93l-30.47.3c-2.08-6.45-7.88-10.76-15.15-11.68-12.4-1.58-56.18-5.01-62.77,8.69-6.4,13.3-5.84,28.96-1.07,42.69Z"/>
+  <polygon points="953.41 502.54 1016.02 559.96 974.29 560.49 925.84 515.54 905.42 515.3 905.24 560.46 874.06 560.38 874.13 449.06 905.29 449.14 905.51 491.17 926.82 491.01 971.91 449.2 1013.65 449.46 953.41 502.54"/>
+  <path d="M1154.91,452.66c-6.82-1.63-14.27-3.52-21.71-3.52l-93.73-.04-.06,111.26,30.5.12.23-31.75,48.92.02c21.59,0,49.45-1.13,54.95-27.8,3.82-18.55.99-39.84-19.11-48.28ZM1128.99,504.34l-58.73.29-.03-30.96,59,.09c8.77.01,14.66,5.51,14.73,14.64.07,8.73-5.73,15.88-14.97,15.93Z"/>
+  <path d="M1271.41,448.99l-39.67.18-59.4,111.07,34.06.27,11.07-21.38h68.47s11.69,21.45,11.69,21.45l34.04-.27-60.26-111.31ZM1228.98,516.66l22.6-43.13,22.71,43.09-45.31.04Z"/>
+  <path d="M276.78,695.95c13.25-37.19,39.19-95.74,39.67-134.48.21-17.12-10.5-30.52-27.01-34.36-14.72-3.43-29.51-5.3-44.79-5.9l-51.82-2.03c33.26-4.34,55.52-3.14,89.15-9.5,33.55-6.34,54.03-22.16,72.93-50.3,13.09-19.51,23.97-39.51,32.11-61.56l26.32-71.38-10.96,57.25c-6.33,33.09-14.56,61.02-11.29,96.38,1.41,15.29,11.66,26.25,26.46,30.72,19.15,5.79,39.22,6.84,59.57,7.34,5.1.13,9.77.78,14.16,2.13-75.82,3.48-102.96,7.32-149.04,70.03-24.58,33.52-44.06,68.82-65.44,105.66Z"/>
+  <path d="M301.22,480.7c-1.75-18.02-12.05-27.83-30.55-28.53,23.04-6.28,24.72-9.14,30.53-30.27,3.63,20.62,8.29,25.14,28.37,30.25-17.65,1.14-26.91,11.44-28.35,28.56Z"/>
+</svg>`;
+    const body = `
     <section class="home">
       <div class="home-hero">
         <div class="home-top">
-          <h1 class="home-title">SREDA</h1>
-          <p class="home-lead">Инфраструктура для инструментов независимых артистов.<br>ИСКРА — первый запущенный продукт.</p>
+          <h1 class="home-title">
+            ${iskraIcon}
+          </h1>
+          <p class="home-lead">Инфраструктура смартлинков и релизов для артистов.</p>
           <div class="home-actions">
-            <a class="home-action home-action--primary" href="${escapeHtml(iskraUrl)}">
-              Перейти к ИСКРЕ
-            </a>
-            <a class="home-action home-action--secondary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
+            <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
               Открыть ИСКРУ в Telegram
             </a>
+            <a class="home-action home-action--secondary" href="${escapeHtml(demoArtist)}">
+              Посмотреть пример смартлинка
+            </a>
           </div>
-          <a class="home-nav-link" href="${escapeHtml(updatesUrl)}">Обновления проекта</a>
-          <p class="home-status">SREDA находится в разработке. Новые инструменты запускаются постепенно.</p>
+          <a class="home-nav-link" href="/artist">Все артисты →</a>
+        </div>
+      </div>
+
+      <div class="home-features" role="list">
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-icon" aria-hidden="true"><span>⚡</span></div>
+          <div class="home-feature-title">Смартлинк для релиза</div>
+          <div class="home-feature-text">Одна ссылка для всех площадок. Обновляется и не ломается со временем.</div>
+        </div>
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-icon" aria-hidden="true"><span>↗</span></div>
+          <div class="home-feature-title">Артисты и релизы</div>
+          <div class="home-feature-text">Каждый артист и каждый релиз — отдельная сущность со своей историей.</div>
+        </div>
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-icon" aria-hidden="true"><span>🔔</span></div>
+          <div class="home-feature-title">Управление после публикации</div>
+          <div class="home-feature-text">Меняй ссылки, обложки и порядок платформ — ссылка остаётся той же.</div>
+        </div>
+        <div class="home-feature" role="listitem">
+          <div class="home-feature-icon" aria-hidden="true"><span>✏️</span></div>
+          <div class="home-feature-title">Удобно делиться</div>
+          <div class="home-feature-text">Ссылку можно пересылать куда угодно — она всегда ведёт к актуальной версии.</div>
         </div>
       </div>
 
       <div class="home-footer">
         <span>© SREDA</span>
-        <span class="home-beta">beta</span>
+        <span>Инфраструктура для артистов</span>
       </div>
     </section>
   `;
