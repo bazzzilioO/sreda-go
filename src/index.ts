@@ -1454,10 +1454,21 @@ function htmlPage(
       background: ${THEME.colors.background};
       isolation: isolate;
       opacity: 1;
-      transition: opacity 300ms ease-in-out;
+      transition: opacity 300ms ease-in-out, transform 300ms ease-out;
+      transform: translateY(0);
     }
     body.page-transition {
       opacity: 0;
+      transform: translateY(8px);
+    }
+    body.page-enter {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    body.page-enter-active {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 400ms ease-out, transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
     }
     body::before,
     body::after {
@@ -2905,14 +2916,22 @@ function htmlPage(
         });
       });
       
-      // Fade-in on page load
-      window.addEventListener('load', function() {
-        document.body.style.opacity = '0';
+      // Beautiful page enter animation
+      (function() {
+        document.body.classList.add('page-enter');
+        
         requestAnimationFrame(function() {
-          document.body.style.transition = 'opacity 300ms ease-in-out';
-          document.body.style.opacity = '1';
+          requestAnimationFrame(function() {
+            document.body.classList.add('page-enter-active');
+            document.body.classList.remove('page-enter');
+            
+            // Remove transition class after animation completes
+            setTimeout(function() {
+              document.body.classList.remove('page-enter-active');
+            }, 400);
+          });
         });
-      });
+      })();
     })();
   </script>
 </body>
