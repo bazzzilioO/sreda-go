@@ -2068,10 +2068,14 @@ function htmlPage(
     .home-visual { display: none; }
     .home-badge { display: none; }
     .home-title {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
       margin: 0;
-      margin-bottom: 0.15rem;
-      display: block;
-      line-height: 1;
+      margin-bottom: 0.4rem;
+      color: #fff;
     }
     .home-title-icon {
       height: 9rem;
@@ -2081,22 +2085,29 @@ function htmlPage(
       color: #fff;
     }
     .home-lead {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.6);
-      line-height: 1.21;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.4;
       margin: 0;
+      margin-bottom: 0.5rem;
     }
     .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
     .home-nav-link {
       display: inline-block;
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
       font-size: 0.85rem;
-      color: rgba(255,255,255,0.6);
+      color: rgba(255,255,255,0.5);
       text-decoration: none;
       transition: color 120ms ease;
     }
     .home-nav-link:hover {
-      color: rgba(255,255,255,0.9);
+      color: rgba(255,255,255,0.8);
+    }
+    .home-status {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.4;
+      margin: 0.6rem 0 0 0;
     }
     .home-action {
       display: inline-flex;
@@ -2186,10 +2197,14 @@ function htmlPage(
       justify-content: space-between;
       gap: 0.5rem;
       color: rgba(255,255,255,0.4);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       border-top: 1px solid rgba(255,255,255,0.06);
       padding-top: 0.75rem;
-      margin-top: 0.5rem;
+      margin-top: 1rem;
+    }
+    .home-beta {
+      opacity: 0.5;
+      font-size: 0.7rem;
     }
     .home-inline {
       opacity: 0.6;
@@ -2605,13 +2620,11 @@ function htmlPage(
       .smartlink-footer { grid-template-columns: 1fr; }
       .home-top { text-align: center; align-items: center; }
       .home-badge { margin: 0 auto; }
-      .home-actions { justify-content: center; }
-      .home-features { grid-template-columns: 1fr; }
-      .home-footer { justify-content: center; }
-      .home-title-icon { height: 7.6rem; }
-      .home-lead { font-size: 0.85rem; }
-      .home-actions { flex-direction: column; }
+      .home-title { font-size: 2rem; }
+      .home-lead { font-size: 0.95rem; }
+      .home-actions { flex-direction: column; justify-content: center; }
       .home-action { width: 100%; }
+      .home-footer { justify-content: center; }
     }
     @media (max-width: 640px) {
       body { padding: 1.25rem; }
@@ -2876,6 +2889,42 @@ async function renderHome(env: Env): Promise<Response> {
     </section>
   `;
   return new Response(htmlPage(body, { title: "SREDA — tools for artists", pageClass: "page-home" }), {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
+  });
+}
+
+async function renderSredaBrandLanding(env: Env): Promise<Response> {
+  const telegramUrl = "https://t.me/iskramusic_bot";
+  const iskraUrl = "https://go.sreda.pw/";
+  const updatesUrl = "/updates";
+  
+  const body = `
+    <section class="home">
+      <div class="home-hero">
+        <div class="home-top">
+          <h1 class="home-title">SREDA</h1>
+          <p class="home-lead">Инфраструктура для инструментов независимых артистов.<br>ИСКРА — первый запущенный продукт.</p>
+          <div class="home-actions">
+            <a class="home-action home-action--primary" href="${escapeHtml(iskraUrl)}">
+              Перейти к ИСКРЕ
+            </a>
+            <a class="home-action home-action--secondary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
+              Открыть ИСКРУ в Telegram
+            </a>
+          </div>
+          <a class="home-nav-link" href="${escapeHtml(updatesUrl)}">Обновления проекта</a>
+          <p class="home-status">SREDA находится в разработке. Новые инструменты запускаются постепенно.</p>
+        </div>
+      </div>
+
+      <div class="home-footer">
+        <span>© SREDA</span>
+        <span class="home-beta">beta</span>
+      </div>
+    </section>
+  `;
+  return new Response(htmlPage(body, { title: "SREDA", pageClass: "page-home" }), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8", ...CACHE_HEADERS },
   });
@@ -3928,8 +3977,18 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const hostname = url.hostname.toLowerCase();
     const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
     const segments = normalizedPath.split("/").filter(Boolean);
+
+    // Separate routing for sreda.pw (umbrella brand) vs go.sreda.pw (ISKRA product)
+    if (hostname === "sreda.pw" || hostname === "www.sreda.pw") {
+      // Only root path for brand landing, everything else 404
+      if (segments.length === 0) {
+        return renderSredaBrandLanding(env);
+      }
+      return new Response("Not Found", { status: 404 });
+    }
 
     if (normalizedPath === "/api/index/upsert") {
       if (request.method === "GET") {
