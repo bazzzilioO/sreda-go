@@ -2089,26 +2089,23 @@ function htmlPage(
       color: rgba(255,255,255,0.7);
       line-height: 1.4;
       margin: 0;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
-    .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
-    .home-nav-link {
-      display: inline-block;
-      margin-top: 0.4rem;
-      font-size: 0.85rem;
-      color: rgba(255,255,255,0.5);
-      text-decoration: none;
-      transition: color 120ms ease;
-    }
-    .home-nav-link:hover {
-      color: rgba(255,255,255,0.8);
+    .home-description {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+      margin: 0;
+      margin-bottom: 1rem;
     }
     .home-status {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.45);
-      line-height: 1.4;
-      margin: 0.6rem 0 0 0;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+      margin: 0;
+      margin-bottom: 1.5rem;
     }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0; }
     .home-action {
       display: inline-flex;
       align-items: center;
@@ -2198,8 +2195,14 @@ function htmlPage(
       font-size: 1.1rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      margin: 0 0 1rem 0;
+      margin: 0 0 0.5rem 0;
       color: #fff;
+    }
+    .home-cards-subtitle {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+      margin: 0 0 1rem 0;
+      font-weight: 500;
     }
     .home-cards-grid {
       display: grid;
@@ -2948,47 +2951,27 @@ async function renderHome(env: Env): Promise<Response> {
 
 async function renderSredaBrandLanding(env: Env): Promise<Response> {
   console.log("[renderSredaBrandLanding] Called - rendering SREDA brand landing");
-  const telegramUrl = "https://t.me/iskramusic_bot";
   const goBaseUrl = "https://go.sreda.pw";
-  const updatesUrl = "https://t.me/sreda_music";
-  
-  // Get most recently created artist for demo link
-  let demoUrl = `${goBaseUrl}/artist/boris`; // fallback
-  try {
-    const latestArtistQuery = await env.DB.prepare(
-      `SELECT artist_slug
-       FROM smartlinks
-       ORDER BY created_at DESC
-       LIMIT 1`
-    ).first<{ artist_slug: string }>();
-    
-    if (latestArtistQuery) {
-      demoUrl = `${goBaseUrl}/artist/${encodeURIComponent(latestArtistQuery.artist_slug)}`;
-    }
-  } catch (error) {
-    console.error("Failed to get latest artist:", error);
-  }
   
   const body = `
     <section class="home">
       <div class="home-hero">
         <div class="home-top">
           <h1 class="home-title">SREDA</h1>
-          <p class="home-lead">Инфраструктура для инструментов независимых артистов.<br>ИСКРА — первый запущенный продукт.</p>
+          <p class="home-lead">Инфраструктура музыкальной экосистемы.</p>
+          <p class="home-description">SREDA — это инфраструктурный слой для работы с артистами, релизами, ссылками, площадками и продвижением.</p>
+          <p class="home-status">Проект находится в разработке.<br>Сейчас доступен инфраструктурный модуль ISKRA.</p>
           <div class="home-actions">
-            <a class="home-action home-action--primary" href="${escapeHtml(telegramUrl)}" target="_blank" rel="noopener noreferrer">
-              Открыть ИСКРУ в Telegram
-            </a>
-            <a class="home-action home-action--secondary" href="${escapeHtml(demoUrl)}">
-              Посмотреть пример смартлинка
+            <a class="home-action home-action--primary" href="${escapeHtml(goBaseUrl)}">
+              Перейти в ISKRA
             </a>
           </div>
-          <a class="home-nav-link" href="${escapeHtml(updatesUrl)}" target="_blank" rel="noopener noreferrer">Обновления проекта</a>
         </div>
       </div>
 
       <div class="home-cards">
-        <h2 class="home-cards-title">Что уже работает</h2>
+        <h2 class="home-cards-title">Доступный модуль</h2>
+        <p class="home-cards-subtitle">ISKRA</p>
         <div class="home-cards-grid">
           <div class="home-card">
             <h3 class="home-card-title">ISKRA Smartlinks</h3>
@@ -3000,11 +2983,11 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
           </div>
           <div class="home-card">
             <h3 class="home-card-title">Управление после публикации</h3>
-            <p class="home-card-text">Меняй ссылки, обложки и порядок платформ — URL остаётся тем же.</p>
+            <p class="home-card-text">Изменение ссылок, обложек и порядка платформ без изменения URL.</p>
           </div>
           <div class="home-card">
             <h3 class="home-card-title">Удобно делиться</h3>
-            <p class="home-card-text">Copy link вместо мусорного URL. Пересылается куда угодно.</p>
+            <p class="home-card-text">Copy link вместо сырого URL. Пересылается куда угодно.</p>
           </div>
         </div>
       </div>
