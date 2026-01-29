@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3] - 2026-01-27
+## [1.3] - 2026-01-29
 
 ### 🎯 Major Changes
 
@@ -57,10 +57,20 @@
 - Fixed black bar at bottom of page (added background to html element)
 - Fixed noise pattern disappearing (removed conditional hiding)
 
+### 🎨 Artists List Page Improvements
+- **Artist photos**: Cards now display `artist_photo_url` from artist page header instead of release cover
+- **Fallback logic**: If `artist_photo_url` is not available, falls back to latest release cover
+- **SQL optimization**: Added CTE to efficiently fetch artist photos from any smartlink record
+
+### 🗑️ Database Cleanup
+- **Removed test data**: Deleted all artists except "AUNT TABBY" (aunt-tabby) and "был(а) давно" (byla-davno)
+- **22 records deleted**: Cleaned up test artists and demo data
+
 ### 📝 Technical Details
 - **Routes**: Added explicit routes for `sreda.pw/*` and `www.sreda.pw/*` in `wrangler.toml`
 - **Code structure**: Separated domain handling logic for better maintainability
 - **Cache headers**: Standardized to 5 minutes for HTML responses
+- **SQL queries**: Optimized artist list queries with CTEs for better performance
 
 ---
 
