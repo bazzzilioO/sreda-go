@@ -1431,6 +1431,7 @@ function htmlPage(
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='540 449 135 112'%3E%3Cpolygon fill='%23fff' points='674.51 449.09 674.53 560.34 643.75 560.5 643.44 487.29 573.21 560.34 540.02 560.43 540.17 449.1 571.21 449.13 571.14 522.4 581.82 511.33 642.54 449.08 674.51 449.09'/%3E%3C/svg%3E">
   <title>${escapeHtml(title)}</title>
   <style>
     :root { color-scheme: dark; }
