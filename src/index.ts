@@ -5685,6 +5685,18 @@ export default {
     const url = new URL(request.url);
     const hostname = url.hostname.toLowerCase();
 
+    // Debug: log Cloudflare headers for troubleshooting geo-blocking
+    const cfCountry = request.headers.get("CF-IPCountry");
+    const cfRay = request.headers.get("CF-RAY");
+    const userAgent = request.headers.get("User-Agent");
+    console.log("[geo-debug]", {
+      hostname,
+      path: url.pathname,
+      country: cfCountry,
+      ray: cfRay,
+      ua: userAgent?.substring(0, 50),
+    });
+
     // Strict domain separation: sreda.pw vs go.sreda.pw
     if (hostname === "sreda.pw" || hostname === "www.sreda.pw") {
       return handleSreda(request, env);
