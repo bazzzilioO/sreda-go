@@ -2106,7 +2106,7 @@ function htmlPage(
       margin: 0;
       margin-bottom: 1.5rem;
     }
-    .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0; margin-bottom: 1rem; }
     .home-action {
       display: inline-flex;
       align-items: center;
@@ -2249,7 +2249,7 @@ function htmlPage(
     }
     .home-card-text {
       font-size: 0.85rem;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.55);
       line-height: 1.4;
       margin: 0;
     }
@@ -2997,22 +2997,22 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
         <div class="home-top">
           <h1 class="home-title">${sredaLogo}</h1>
           <p class="home-lead">Инфраструктура музыкальной экосистемы.</p>
-          <p class="home-description">SREDA — это инфраструктурный слой для работы с артистами, релизами, ссылками, площадками и продвижением.</p>
-          <p class="home-status">Проект находится в разработке.<br>Сейчас доступен инфраструктурный модуль ИСКРА.</p>
+          <p class="home-description">SREDA — инфраструктурный слой для работы с артистами, релизами, ссылками, площадками и процессами продвижения.</p>
+          <p class="home-status">Проект находится в разработке.<br>Доступен инфраструктурный модуль ISKRA.</p>
           <div class="home-actions">
             <a class="home-action home-action--primary" href="${escapeHtml(goBaseUrl)}">
-              Перейти в ИСКРА
+              Перейти в ISKRA
             </a>
           </div>
         </div>
       </div>
 
       <div class="home-cards">
-        <h2 class="home-cards-title">Доступный модуль</h2>
-        <p class="home-cards-subtitle">ИСКРА</p>
+        <h2 class="home-cards-title">Инфраструктурный модуль</h2>
+        <p class="home-cards-subtitle">ISKRA</p>
         <div class="home-cards-grid">
           <div class="home-card">
-            <h3 class="home-card-title">ИСКРА Smartlinks</h3>
+            <h3 class="home-card-title">ISKRA Smartlinks</h3>
             <p class="home-card-text">Одна ссылка на релиз для всех площадок. Не ломается со временем.</p>
           </div>
           <div class="home-card">
