@@ -2274,40 +2274,6 @@ function htmlPage(
         grid-template-columns: 1fr;
       }
     }
-    
-    /* Page loader */
-    .page-loader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 200ms ease;
-    }
-    .page-loader--active {
-      opacity: 1;
-      pointer-events: all;
-    }
-    .page-loader-spinner {
-      width: 48px;
-      height: 48px;
-      border: 3px solid rgba(249, 166, 0, 0.2);
-      border-top-color: #f9a600;
-      border-radius: 50%;
-      animation: spinner-rotate 0.8s linear infinite;
-    }
-    @keyframes spinner-rotate {
-      to { transform: rotate(360deg); }
-    }
     .home-inline {
       opacity: 0.6;
     }
@@ -2907,18 +2873,6 @@ function htmlPage(
         loader.src = bgImage;
       }
     })();
-    
-    // Page loading indicator
-    (function() {
-      const loader = document.getElementById('page-loader');
-      const primaryLink = document.querySelector('.home-action--primary');
-      
-      if (primaryLink && loader) {
-        primaryLink.addEventListener('click', function(e) {
-          loader.classList.add('page-loader--active');
-        });
-      }
-    })();
   </script>
 </body>
 </html>`;
@@ -3081,9 +3035,6 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
         <span class="home-beta">beta</span>
       </div>
     </section>
-    <div id="page-loader" class="page-loader">
-      <div class="page-loader-spinner"></div>
-    </div>
   `;
   return new Response(htmlPage(body, { title: "SREDA", pageClass: "page-home" }), {
     status: 200,
