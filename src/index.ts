@@ -3983,29 +3983,36 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
   }
 }
 
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    const hostname = url.hostname.toLowerCase();
-    const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
-    const segments = normalizedPath.split("/").filter(Boolean);
+// Handle SREDA brand domain (sreda.pw, www.sreda.pw)
+async function handleSreda(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
+  const segments = normalizedPath.split("/").filter(Boolean);
 
-    // Debug: log hostname for troubleshooting
-    console.log("[routing] hostname:", hostname, "path:", normalizedPath, "segments:", segments);
+  // Allow only root path and static assets
+  if (segments.length === 0) {
+    return renderSredaBrandLanding(env);
+  }
 
-    // Separate routing for sreda.pw (umbrella brand) vs go.sreda.pw (ISKRA product)
-    // Check hostname: if it's sreda.pw (not go.sreda.pw), show brand landing
-    if (hostname === "sreda.pw" || hostname === "www.sreda.pw") {
-      // Only root path for brand landing, everything else 404
-      if (segments.length === 0) {
-        console.log("[routing] Rendering SREDA brand landing for", hostname);
-        return renderSredaBrandLanding(env);
-      }
-      console.log("[routing] 404 for", hostname, "path:", normalizedPath);
-      return new Response("Not Found", { status: 404 });
-    }
+  // Allow static assets if they exist (for future use)
+  if (normalizedPath.startsWith("/assets/") || normalizedPath.startsWith("/static/")) {
+    // If you have a serveAsset function, use it here
+    // return serveAsset(request, env);
+    return new Response("Not Found", { status: 404 });
+  }
 
-    if (normalizedPath === "/api/index/upsert") {
+  // Everything else returns 404
+  return new Response("Not Found", { status: 404 });
+}
+
+// Handle GO domain (go.sreda.pw) - all existing smartlink routing logic
+async function handleGo(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const hostname = url.hostname.toLowerCase();
+  const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
+  const segments = normalizedPath.split("/").filter(Boolean);
+
+  if (normalizedPath === "/api/index/upsert") {
       if (request.method === "GET") {
         return new Response("OK: /api/index/upsert жив. Используй POST + X-API-Key + JSON body.", {
           status: 200,
@@ -5405,15 +5412,8 @@ export default {
       return renderArtistPage(artistSlug, env, goIndexBase);
     }
 
-    // Only renderHome for go.sreda.pw domain, not for sreda.pw (which should be handled above)
-    if (segments.length === 0 && hostname === "go.sreda.pw") {
-      console.log("[routing] Rendering ISKRA home for", hostname);
-      return renderHome(env);
-    }
-    
-    // Fallback: if we reach here and segments.length === 0, something went wrong
+    // Root path for go.sreda.pw renders ISKRA home
     if (segments.length === 0) {
-      console.warn("[routing] WARNING: Root path reached but no hostname match. hostname:", hostname, "rendering home as fallback");
       return renderHome(env);
     }
 
@@ -5504,5 +5504,24 @@ export default {
       console.error("smartlink fetch error", error);
       return renderError();
     }
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    const hostname = url.hostname.toLowerCase();
+
+    // Strict domain separation: sreda.pw vs go.sreda.pw
+    if (hostname === "sreda.pw" || hostname === "www.sreda.pw") {
+      return handleSreda(request, env);
+    }
+
+    // go.sreda.pw and workers.dev subdomain use GO routing
+    if (hostname === "go.sreda.pw" || hostname.endsWith(".workers.dev")) {
+      return handleGo(request, env);
+    }
+
+    // Default fallback: treat as GO domain
+    return handleGo(request, env);
   },
 };
