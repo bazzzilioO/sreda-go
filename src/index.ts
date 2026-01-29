@@ -5391,7 +5391,8 @@ export default {
       return renderArtistPage(artistSlug, env, goIndexBase);
     }
 
-    if (segments.length === 0) {
+    // Only renderHome for go.sreda.pw domain, not for sreda.pw (which should be handled above)
+    if (segments.length === 0 && hostname === "go.sreda.pw") {
       return renderHome(env);
     }
 
