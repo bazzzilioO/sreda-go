@@ -1021,7 +1021,7 @@ async function syncSmartlinkToWeb(
   }
 }
 
-const CACHE_HEADERS = { "Cache-Control": "public, max-age=60" } as const;
+const CACHE_HEADERS = { "Cache-Control": "public, max-age=300" } as const; // 5 minutes cache
 const COVER_PLACEHOLDER_SVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="1200" rx="140" fill="#1E1E1E" />
@@ -1430,10 +1430,16 @@ function htmlPage(
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 462 460.89'%3E%3Cpath fill='%23fff' d='M165.73,415.2c13.25-37.19,39.19-95.74,39.67-134.48.21-17.12-10.5-30.52-27.01-34.36-14.72-3.43-29.51-5.3-44.79-5.9l-51.82-2.03c33.26-4.34,55.52-3.14,89.15-9.5,33.55-6.34,54.03-22.16,72.93-50.3,13.09-19.51,23.97-39.51,32.11-61.56l26.32-71.38-10.96,57.25c-6.33,33.09-14.56,61.02-11.29,96.38,1.41,15.29,11.66,26.25,26.46,30.72,19.15,5.79,39.22,6.84,59.57,7.34,5.1.13,9.77.78,14.16,2.13-75.82,3.48-102.96,7.32-149.04,70.03-24.58,33.52-44.06,68.82-65.44,105.66h-.02Z'/%3E%3Cpath fill='%23fff' d='M190.17,199.95c-1.75-18.02-12.05-27.83-30.55-28.53,23.04-6.28,24.72-9.14,30.53-30.27,3.63,20.62,8.29,25.14,28.37,30.25-17.65,1.14-26.91,11.44-28.35,28.56h0Z'/%3E%3C/svg%3E">
   <title>${escapeHtml(title)}</title>
   <style>
+    @font-face {
+      font-family: 'Plus Jakarta Sans';
+      font-style: normal;
+      font-weight: 500 700;
+      font-display: swap;
+      src: url('https://fonts.gstatic.com/s/plusjakartasans/v8/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU79TR_I.ttf') format('truetype');
+    }
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     html { 
