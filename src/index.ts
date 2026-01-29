@@ -3569,6 +3569,7 @@ function generateArtistCards(
     cover_url: string | null;
     cover_source: string | null;
     cover_version: number | null;
+    artist_photo_url: string | null;
     cnt: number | null;
   }>,
   goIndexBase: string
@@ -3577,17 +3578,28 @@ function generateArtistCards(
     const artistSlug = record.artist_slug;
     const latestSlug = (record.slug || "").trim() || "latest";
     const displayName = (record.artist_name || "").trim() || prettifySlug(artistSlug);
-    const coverSource = parseCoverSource(record.cover_source, `[artists] ${artistSlug} cover_source`);
-    const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
-    const coverUrlWithVersion = buildDisplayCoverUrl({
-      coverUrl: record.cover_url,
-      coverSource,
-      artistSlug,
-      slug: latestSlug,
-      goIndexBase,
-      coverVersion,
-      context: `[artists] ${artistSlug} cover_display`,
-    });
+    
+    // Use artist_photo_url if available, otherwise fall back to release cover
+    const artistPhotoUrl = record.artist_photo_url?.trim() || null;
+    let coverUrlWithVersion: string;
+    
+    if (artistPhotoUrl) {
+      // Use artist photo directly
+      coverUrlWithVersion = artistPhotoUrl;
+    } else {
+      // Fall back to release cover
+      const coverSource = parseCoverSource(record.cover_source, `[artists] ${artistSlug} cover_source`);
+      const coverVersion = normalizeCoverVersionInput(record.cover_version ?? null);
+      coverUrlWithVersion = buildDisplayCoverUrl({
+        coverUrl: record.cover_url,
+        coverSource,
+        artistSlug,
+        slug: latestSlug,
+        goIndexBase,
+        coverVersion,
+        context: `[artists] ${artistSlug} cover_display`,
+      });
+    }
     const artistUrl = `/artist/${encodeURIComponent(artistSlug)}`;
     const count = Number(record.cnt || 0);
     const releaseLabel =
@@ -3664,6 +3676,12 @@ async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: UR
          SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
          FROM smartlinks
          GROUP BY artist_slug
+       ),
+       artist_photos AS (
+         SELECT artist_slug, MAX(artist_photo_url) AS artist_photo_url
+         FROM smartlinks
+         WHERE artist_photo_url IS NOT NULL AND artist_photo_url != ''
+         GROUP BY artist_slug
        )
        SELECT
          s.artist_slug AS artist_slug,
@@ -3672,11 +3690,13 @@ async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: UR
          s.cover_url AS cover_url,
          s.cover_source AS cover_source,
          s.cover_version AS cover_version,
+         COALESCE(p.artist_photo_url, s.artist_photo_url) AS artist_photo_url,
          l.cnt AS cnt
        FROM smartlinks s
        JOIN latest l
          ON l.artist_slug = s.artist_slug
         AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
+       LEFT JOIN artist_photos p ON p.artist_slug = s.artist_slug
        ${whereClause}
        GROUP BY s.artist_slug
        ORDER BY ${orderBy}
@@ -3688,6 +3708,7 @@ async function handleArtistsSearch(env: Env, goIndexBase: string, requestUrl: UR
       cover_url: string | null;
       cover_source: string | null;
       cover_version: number | null;
+      artist_photo_url: string | null;
       cnt: number | null;
     }>();
 
@@ -3756,6 +3777,12 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
          SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
          FROM smartlinks
          GROUP BY artist_slug
+       ),
+       artist_photos AS (
+         SELECT artist_slug, MAX(artist_photo_url) AS artist_photo_url
+         FROM smartlinks
+         WHERE artist_photo_url IS NOT NULL AND artist_photo_url != ''
+         GROUP BY artist_slug
        )
        SELECT
          s.artist_slug AS artist_slug,
@@ -3764,12 +3791,14 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
          s.cover_url AS cover_url,
          s.cover_source AS cover_source,
          s.cover_version AS cover_version,
+         COALESCE(p.artist_photo_url, s.artist_photo_url) AS artist_photo_url,
          l.cnt AS cnt,
          l.max_ts AS updated_at
        FROM smartlinks s
        JOIN latest l
          ON l.artist_slug = s.artist_slug
         AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
+       LEFT JOIN artist_photos p ON p.artist_slug = s.artist_slug
        ${whereClause}
        GROUP BY s.artist_slug
        ORDER BY ${orderBy}
@@ -3781,6 +3810,7 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
       cover_url: string | null;
       cover_source: string | null;
       cover_version: number | null;
+      artist_photo_url: string | null;
       cnt: number | null;
     }>();
 
