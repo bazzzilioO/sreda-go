@@ -2902,7 +2902,7 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
   console.log("[renderSredaBrandLanding] Called - rendering SREDA brand landing");
   const telegramUrl = "https://t.me/iskramusic_bot";
   const iskraUrl = "https://go.sreda.pw/";
-  const updatesUrl = "/updates";
+  const updatesUrl = "https://t.me/sreda_music";
   
   const body = `
     <section class="home">
@@ -2918,7 +2918,7 @@ async function renderSredaBrandLanding(env: Env): Promise<Response> {
               Открыть ИСКРУ в Telegram
             </a>
           </div>
-          <a class="home-nav-link" href="${escapeHtml(updatesUrl)}">Обновления проекта</a>
+          <a class="home-nav-link" href="${escapeHtml(updatesUrl)}" target="_blank" rel="noopener noreferrer">Обновления проекта</a>
           <p class="home-status">SREDA находится в разработке. Новые инструменты запускаются постепенно.</p>
         </div>
       </div>
