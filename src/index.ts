@@ -532,9 +532,12 @@ async function handleTelegramFileRequest(
     return jsonResponse({ error: "telegram_token_missing" }, 502);
   }
 
+  const COVER_FETCH_TIMEOUT_MS = 25000;
+
   try {
     const fileInfoResponse = await fetch(
       `https://api.telegram.org/bot${botToken}/getFile?file_id=${encodeURIComponent(fileId)}`,
+      { signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS) },
     );
 
     if (!fileInfoResponse.ok) {
@@ -555,7 +558,9 @@ async function handleTelegramFileRequest(
     }
 
     const fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
-    const fileResponse = await fetch(fileUrl);
+    const fileResponse = await fetch(fileUrl, {
+      signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS),
+    });
 
     if (!fileResponse.ok || !fileResponse.body) {
       console.warn("[telegram cover] file fetch failed", fileResponse.status);
@@ -575,12 +580,19 @@ async function handleTelegramFileRequest(
     const fallbackEtag = `W/"tg-${fileId}-${filePath}"`;
     return finalizeImageResponse(fileResponse, cacheKey, fallbackEtag);
   } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      console.warn("[telegram cover] fetch timeout (api.telegram.org slow/unreachable)", fileId);
+      return respondWithPlaceholderCover(cacheKey, { skipCache: true });
+    }
     console.error("[telegram cover] fetch error", error);
     return respondWithPlaceholderCover(cacheKey);
   }
 }
 
-async function respondWithPlaceholderCover(cacheKey?: Request): Promise<Response> {
+async function respondWithPlaceholderCover(
+  cacheKey?: Request,
+  opts?: { skipCache?: boolean },
+): Promise<Response> {
   const headers = new Headers({
     "Content-Type": "image/svg+xml",
     "Cache-Control": "public, max-age=31536000, immutable",
@@ -592,7 +604,7 @@ async function respondWithPlaceholderCover(cacheKey?: Request): Promise<Response
     headers,
   });
 
-  if (cacheKey) {
+  if (cacheKey && !opts?.skipCache) {
     await caches.default.put(cacheKey, placeholder.clone());
   }
 
@@ -725,6 +737,8 @@ async function resolveCoverResponse(
   return respondWithPlaceholderCover(cacheKey);
 }
 
+const EXTERNAL_COVER_FETCH_TIMEOUT_MS = 25000;
+
 async function handleExternalCover(
   request: Request,
   targetUrl: string,
@@ -733,7 +747,9 @@ async function handleExternalCover(
 ): Promise<Response> {
   try {
     const resolvedUrl = new URL(targetUrl, request.url).toString();
-    const fileResponse = await fetch(resolvedUrl);
+    const fileResponse = await fetch(resolvedUrl, {
+      signal: AbortSignal.timeout(EXTERNAL_COVER_FETCH_TIMEOUT_MS),
+    });
 
     if (!fileResponse.ok || !fileResponse.body) {
       console.warn(`[cover external] fetch failed ${context}`, resolvedUrl, fileResponse.status);
@@ -743,6 +759,10 @@ async function handleExternalCover(
     const fallbackEtag = `W/"external-${resolvedUrl}"`;
     return finalizeImageResponse(fileResponse, cacheKey, fallbackEtag);
   } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      console.warn(`[cover external] fetch timeout ${context}`, targetUrl);
+      return respondWithPlaceholderCover(cacheKey, { skipCache: true });
+    }
     console.warn(`[cover external] invalid url ${context}`, targetUrl, error);
     return new Response("Invalid cover url", { status: 400 });
   }
@@ -1027,8 +1047,8 @@ const COVER_PLACEHOLDER_SVG = `<?xml version="1.0" encoding="UTF-8"?>
   <rect width="1200" height="1200" rx="140" fill="#1E1E1E" />
   <rect x="120" y="120" width="960" height="960" rx="100" fill="#262626" stroke="#262626" stroke-width="8" />
   <rect x="220" y="220" width="760" height="760" rx="80" fill="#1E1E1E" stroke="#262626" stroke-width="6" />
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="96" font-weight="700" fill="#FFFFFF">SREDA</text>
-  <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle" font-family="'Inter', 'Segoe UI', system-ui" font-size="32" font-weight="500" fill="#D9D9D9">cover unavailable</text>
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, 'Segoe UI', sans-serif" font-size="96" font-weight="700" fill="#FFFFFF">SREDA</text>
+  <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle" font-family="system-ui, 'Segoe UI', sans-serif" font-size="32" font-weight="500" fill="#D9D9D9">cover unavailable</text>
 </svg>`;
 const COVER_PLACEHOLDER_DATA_URL = `data:image/svg+xml,${encodeURIComponent(COVER_PLACEHOLDER_SVG)}`;
 const LINK_ORDER = [
@@ -1285,7 +1305,8 @@ const THEME = {
     borderSubtle: "rgba(255,255,255,0.08)",
   },
   fonts: {
-    body: '"Inter", "SF Pro Display", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    // System stack only — no external font requests. Critical for fast load from Russia/restricted networks where Google (fonts.googleapis.com) is slow or times out.
+    body: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
   radii: {
     card: "26px",
@@ -1428,9 +1449,6 @@ function htmlPage(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 462 460.89'%3E%3Cpath fill='%23fff' d='M165.73,415.2c13.25-37.19,39.19-95.74,39.67-134.48.21-17.12-10.5-30.52-27.01-34.36-14.72-3.43-29.51-5.3-44.79-5.9l-51.82-2.03c33.26-4.34,55.52-3.14,89.15-9.5,33.55-6.34,54.03-22.16,72.93-50.3,13.09-19.51,23.97-39.51,32.11-61.56l26.32-71.38-10.96,57.25c-6.33,33.09-14.56,61.02-11.29,96.38,1.41,15.29,11.66,26.25,26.46,30.72,19.15,5.79,39.22,6.84,59.57,7.34,5.1.13,9.77.78,14.16,2.13-75.82,3.48-102.96,7.32-149.04,70.03-24.58,33.52-44.06,68.82-65.44,105.66h-.02Z'/%3E%3Cpath fill='%23fff' d='M190.17,199.95c-1.75-18.02-12.05-27.83-30.55-28.53,23.04-6.28,24.72-9.14,30.53-30.27,3.63,20.62,8.29,25.14,28.37,30.25-17.65,1.14-26.91,11.44-28.35,28.56h0Z'/%3E%3C/svg%3E">
   <title>${escapeHtml(title)}</title>
   <style>
@@ -1653,7 +1671,7 @@ function htmlPage(
       gap: 0.13rem;
     }
     .artists-header__title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-family: ${THEME.fonts.body};
       font-size: 1.6rem;
       font-weight: 700;
       color: #fff;
@@ -2209,7 +2227,7 @@ function htmlPage(
       flex-shrink: 0;
     }
     .home-feature-title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-family: ${THEME.fonts.body};
       font-size: 0.85rem;
       font-weight: 700;
       letter-spacing: -0.01em;
@@ -2227,7 +2245,7 @@ function htmlPage(
       margin-top: 2.5rem;
     }
     .home-cards-title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-family: ${THEME.fonts.body};
       font-size: 1.1rem;
       font-weight: 700;
       letter-spacing: -0.01em;
@@ -2258,7 +2276,7 @@ function htmlPage(
       border-color: rgba(255,255,255,0.09);
     }
     .home-card-title {
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+      font-family: ${THEME.fonts.body};
       font-size: 0.9rem;
       font-weight: 700;
       letter-spacing: -0.01em;
@@ -2311,8 +2329,8 @@ function htmlPage(
     }
     .smartlink-release__body { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 0 1.5rem 0.75rem; margin-top: -2rem; position: relative; z-index: 1; }
     .smartlink-release__info { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; width: 100%; }
-    .smartlink-release__title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.15; letter-spacing: -0.02em; }
-    .smartlink-release__artist { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.88rem; font-weight: 500; }
+    .smartlink-release__title { font-family: ${THEME.fonts.body}; font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; line-height: 1.15; letter-spacing: -0.02em; }
+    .smartlink-release__artist { font-family: ${THEME.fonts.body}; font-size: 0.88rem; font-weight: 500; }
     .smartlink-release__artist .artist-link { 
       display: inline-flex;
       align-items: center;
@@ -2564,7 +2582,7 @@ function htmlPage(
     .smartlink-cover { width: 100%; aspect-ratio: 1 / 1; border-radius: 0; border: none; background: rgba(30,30,30,0.5); box-shadow: none; overflow: hidden; position: relative; }
     .smartlink-content { display: flex; flex-direction: column; gap: 0.08rem; padding: 0.4rem 0.5rem; }
     .smartlink-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; }
-    .smartlink-title { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: -0.01em; color: ${THEME.colors.textPrimary}; line-height: 1.2; }
+    .smartlink-title { font-family: ${THEME.fonts.body}; font-size: 0.85rem; font-weight: 700; letter-spacing: -0.01em; color: ${THEME.colors.textPrimary}; line-height: 1.2; }
     .platform-chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.18rem 0.55rem; border-radius: ${THEME.radii.pill}; background: rgba(46,46,46,0.55); border: 1px solid ${THEME.colors.borderSubtle}; color: ${THEME.colors.textSecondary}; font-weight: 740; font-size: 0.82rem; min-width: 2rem; text-align: center; gap: 0.3rem; }
     .platform-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: ${THEME.colors.accent}; box-shadow: 0 0 0 3px rgba(245,158,11,0.08); }
     .meta-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.65rem; align-items: center; color: ${THEME.colors.textSecondary}; font-size: 0.9rem; }
@@ -2607,7 +2625,7 @@ function htmlPage(
       text-align: left;
     }
     .artist-name { 
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; 
+      font-family: ${THEME.fonts.body}; 
       color: #FFFFFF; 
       font-size: 1.75rem; 
       font-weight: 700; 
@@ -3764,57 +3782,57 @@ async function renderArtistsIndex(env: Env, goIndexBase: string, requestUrl: URL
     else if (sortParam === "releases_desc") orderBy = "l.cnt DESC, LOWER(COALESCE(s.artist_name, s.artist_slug)) ASC";
     else if (sortParam === "date_desc") orderBy = "l.max_ts DESC";
 
-    // Get total count for pagination
-    const countQuery = await env.DB.prepare(
-      `SELECT COUNT(DISTINCT artist_slug) as total FROM smartlinks s ${whereClause}`
-    ).bind(...params).first<{ total: number }>();
-    const totalCount = countQuery?.total ?? 0;
+    // Run count and data queries in parallel to reduce TTFB (helps avoid ERR_TIMED_OUT on slow networks/VPN)
+    const [countResult, dataResult] = await Promise.all([
+      env.DB.prepare(
+        `SELECT COUNT(DISTINCT artist_slug) as total FROM smartlinks s ${whereClause}`
+      ).bind(...params).first<{ total: number }>(),
+      env.DB.prepare(
+        `WITH latest AS (
+           SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
+           FROM smartlinks
+           GROUP BY artist_slug
+         ),
+         artist_photos AS (
+           SELECT artist_slug, MAX(artist_photo_url) AS artist_photo_url
+           FROM smartlinks
+           WHERE artist_photo_url IS NOT NULL AND artist_photo_url != ''
+           GROUP BY artist_slug
+         )
+         SELECT
+           s.artist_slug AS artist_slug,
+           s.slug AS slug,
+           s.artist_name AS artist_name,
+           s.cover_url AS cover_url,
+           s.cover_source AS cover_source,
+           s.cover_version AS cover_version,
+           COALESCE(p.artist_photo_url, s.artist_photo_url) AS artist_photo_url,
+           l.cnt AS cnt,
+           l.max_ts AS updated_at
+         FROM smartlinks s
+         JOIN latest l
+           ON l.artist_slug = s.artist_slug
+          AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
+         LEFT JOIN artist_photos p ON p.artist_slug = s.artist_slug
+         ${whereClause}
+         GROUP BY s.artist_slug
+         ORDER BY ${orderBy}
+         LIMIT ? OFFSET ?`
+      ).bind(...params, PER_PAGE, offset).all<{
+        artist_slug: string;
+        slug: string;
+        artist_name: string | null;
+        cover_url: string | null;
+        cover_source: string | null;
+        cover_version: number | null;
+        artist_photo_url: string | null;
+        cnt: number | null;
+      }>(),
+    ]);
+
+    const totalCount = countResult?.total ?? 0;
     const totalPages = Math.ceil(totalCount / PER_PAGE);
-
-    // Get paginated results
-    const query = await env.DB.prepare(
-      `WITH latest AS (
-         SELECT artist_slug, MAX(COALESCE(updated_at, created_at, '')) AS max_ts, COUNT(*) AS cnt
-         FROM smartlinks
-         GROUP BY artist_slug
-       ),
-       artist_photos AS (
-         SELECT artist_slug, MAX(artist_photo_url) AS artist_photo_url
-         FROM smartlinks
-         WHERE artist_photo_url IS NOT NULL AND artist_photo_url != ''
-         GROUP BY artist_slug
-       )
-       SELECT
-         s.artist_slug AS artist_slug,
-         s.slug AS slug,
-         s.artist_name AS artist_name,
-         s.cover_url AS cover_url,
-         s.cover_source AS cover_source,
-         s.cover_version AS cover_version,
-         COALESCE(p.artist_photo_url, s.artist_photo_url) AS artist_photo_url,
-         l.cnt AS cnt,
-         l.max_ts AS updated_at
-       FROM smartlinks s
-       JOIN latest l
-         ON l.artist_slug = s.artist_slug
-        AND COALESCE(s.updated_at, s.created_at, '') = l.max_ts
-       LEFT JOIN artist_photos p ON p.artist_slug = s.artist_slug
-       ${whereClause}
-       GROUP BY s.artist_slug
-       ORDER BY ${orderBy}
-       LIMIT ? OFFSET ?`
-    ).bind(...params, PER_PAGE, offset).all<{
-      artist_slug: string;
-      slug: string;
-      artist_name: string | null;
-      cover_url: string | null;
-      cover_source: string | null;
-      cover_version: number | null;
-      artist_photo_url: string | null;
-      cnt: number | null;
-    }>();
-
-    const items = query.results ?? [];
+    const items = dataResult.results ?? [];
     const cards = generateArtistCards(items, goIndexBase);
 
     // Build URL helper
