@@ -55,7 +55,7 @@ jobs:
           tar -xzf /tmp/vocalos-source.tar.gz -C /tmp/vocalos
           mv /tmp/vocalos/Vocal-OS-0.10.1-full-parity "$GITHUB_WORKSPACE/vocalos"
 
-      - name: Restore 0.9 alpha signing identity and upgrade metadata
+      - name: Restore upgrade identity and clean legacy runtime declarations
         shell: bash
         run: |
           set -euo pipefail
@@ -67,7 +67,6 @@ jobs:
           android {
               namespace 'com.vocalos.app'
               compileSdk 36
-
               defaultConfig {
                   applicationId 'com.vocalos.trainer'
                   minSdk 24
@@ -75,7 +74,6 @@ jobs:
                   versionCode 11
                   versionName '0.10.1-full-parity'
               }
-
               signingConfigs {
                   alphaDev {
                       storeFile file('vocalos-alpha-dev.jks')
@@ -84,7 +82,6 @@ jobs:
                       keyPassword 'vocalos-alpha-2026'
                   }
               }
-
               buildTypes {
                   debug {
                       applicationIdSuffix '.engine010full'
@@ -98,6 +95,19 @@ jobs:
           }
           EOF
           sed -i 's/android:label="Vocal OS 0.10.1 Full"/android:label="Vocal OS"/' vocalos/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('vocalos/app/src/main/assets/runtime.js')
+          s=p.read_text()
+          names=['renderSkills','getAdaptivePattern','applyAdaptiveDefaults','beginGame','renderLibrary','resetAdaptation']
+          for name in names:
+              old=f'function {name}('
+              i=s.find(old)
+              if i < 0:
+                  raise SystemExit(f'missing legacy declaration: {name}')
+              s=s[:i]+f'function legacy_{name}('+s[i+len(old):]
+          p.write_text(s)
+          PY
 
       - name: Static parity and runtime QA
         shell: bash
@@ -106,26 +116,26 @@ jobs:
           node --check vocalos/app/src/main/assets/runtime.js
           python3 - <<'PY'
           from pathlib import Path
-          import re, xml.etree.ElementTree as ET
+          import re, collections, xml.etree.ElementTree as ET
           p=Path('vocalos')
           idx=(p/'app/src/main/assets/index.html').read_text()
           run=(p/'app/src/main/assets/runtime.js').read_text()
           ids=re.findall(r'\bid=["\']([^"\']+)["\']',idx,re.I)
           assert len(ids)==len(set(ids)), 'duplicate DOM ids'
+          funcs=re.findall(r'(?m)^function\s+([A-Za-z_$][\w$]*)\s*\(',run)
+          dups={k:v for k,v in collections.Counter(funcs).items() if v>1}
+          assert not dups, f'duplicate function declarations: {dups}'
           pos=idx.lower().rfind('</html>')
           assert pos >= 0 and idx[pos+7:].strip()=='', 'runtime exists after </html>'
           assert re.findall(r'<script[^>]+src=["\']([^"\']+)',idx,re.I)==['runtime.js']
-          assert 'calibrationVersion=7' in run
-          assert 'trainer.startAt=engineNowMs()' in run
-          assert 'gameStart=engineNowMs()' in run
-          assert "__gameJudge10='MISS'" in run
-          assert 'MISS' in run and 'CLOSE' in run and 'GOOD' in run and 'PERFECT' in run and 'MASTER' in run
+          for needle in ['calibrationVersion=7','trainer.startAt=engineNowMs()','gameStart=engineNowMs()',"__gameJudge10='MISS'",'MISS','CLOSE','GOOD','PERFECT','MASTER']:
+              assert needle in run, needle
           java=(p/'app/src/main/java/com/vocalos/app/MainActivity.java').read_text()
           assert 'RealtimeAudioEngine' in java and 'new AudioEngine' not in java
           for m in ['startAnalyzer','stopAnalyzer','suppressAnalyzer','startRecording','stopRecording','playTone','startDrone','stopDrone']:
               assert m+'(' in java, m
           ET.parse(p/'app/src/main/AndroidManifest.xml')
-          print('static parity QA: OK; DOM ids=',len(ids))
+          print('static parity QA: OK; DOM ids=',len(ids),'duplicate functions=',dups)
           PY
 
       - name: Engine v2 synthetic regression
