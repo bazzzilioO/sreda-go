@@ -1,0 +1,242 @@
+name: Vocal OS 0.10.3 Play Ready Build
+
+on:
+  push:
+    branches:
+      - chatgpt-vocalos-0103-playready-20260825
+    paths:
+      - 'ci-vocalos-0103/**'
+      - '.github/workflows/vocalos-0103-play-ready.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Reconstruct 0.10.1 verified base
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            ci-vocalos-0101/part-00 \
+            ci-vocalos-0101/part-01 \
+            ci-vocalos-0101/part-02 \
+            ci-vocalos-0101/part-03 \
+            ci-vocalos-0101/part-04a \
+            ci-vocalos-0101/part-04b \
+            ci-vocalos-0101/part-05 \
+            ci-vocalos-0101/part-06 \
+            ci-vocalos-0101/part-07 > /tmp/vocalos-source.b64
+          base64 -d /tmp/vocalos-source.b64 > /tmp/vocalos-source.tar.gz
+          echo '0b519f593a0b692d0be1becc8582d378242e3acce80c0bf1ec9ac8034394ae44  /tmp/vocalos-source.tar.gz' | sha256sum -c -
+          mkdir -p /tmp/vocalos
+          tar -xzf /tmp/vocalos-source.tar.gz -C /tmp/vocalos
+          mv /tmp/vocalos/Vocal-OS-0.10.1-full-parity "$GITHUB_WORKSPACE/vocalos"
+
+      - name: Normalize base to shipped 0.10.1 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > vocalos/app/build.gradle <<'EOF'
+          plugins { id 'com.android.application' }
+
+          android {
+              namespace 'com.vocalos.app'
+              compileSdk 36
+              defaultConfig {
+                  applicationId 'com.vocalos.trainer'
+                  minSdk 24
+                  targetSdk 36
+                  versionCode 11
+                  versionName '0.10.1-full-parity'
+              }
+              signingConfigs {
+                  alphaDev {
+                      storeFile file('vocalos-alpha-dev.jks')
+                      storePassword 'vocalos-alpha-2026'
+                      keyAlias 'vocalos-alpha'
+                      keyPassword 'vocalos-alpha-2026'
+                  }
+              }
+              buildTypes {
+                  debug {
+                      applicationIdSuffix '.engine010full'
+                      signingConfig signingConfigs.alphaDev
+                  }
+                  release {
+                      minifyEnabled false
+                      signingConfig signingConfigs.alphaDev
+                  }
+              }
+          }
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('vocalos/app/src/main/assets/runtime.js')
+          s=p.read_text()
+          names=['renderSkills','getAdaptivePattern','applyAdaptiveDefaults','beginGame','renderLibrary','resetAdaptation']
+          for name in names:
+              old=f'function {name}('
+              i=s.find(old)
+              if i < 0:
+                  raise SystemExit(f'missing legacy declaration: {name}')
+              s=s[:i]+f'function legacy_{name}('+s[i+len(old):]
+          p.write_text(s)
+          PY
+
+      - name: Apply verified 0.10.3 Play Ready patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ci-vocalos-0103/patch-part-00 ci-vocalos-0103/patch-part-01 ci-vocalos-0103/patch-part-02 ci-vocalos-0103/patch-part-03 ci-vocalos-0103/patch-part-04 > /tmp/vocal0103.patch.b64
+          base64 -d /tmp/vocal0103.patch.b64 > /tmp/vocal0103.patch.gz
+          echo '57c0980e6d42af8dd865c084344edabff32e6c9bd1447fe4e65b6b5e48b2192a  /tmp/vocal0103.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/vocal0103.patch.gz > /tmp/vocal0103.patch
+          echo 'de9fc200faa6335fddb99a396f2e7c0b930ac057a3e9b07e545428509bc6bab1  /tmp/vocal0103.patch' | sha256sum -c -
+          cd vocalos
+          patch --batch -p4 < /tmp/vocal0103.patch
+          rm -f app/vocalos-alpha-dev.jks
+
+      - name: Play readiness and product QA
+        shell: bash
+        working-directory: vocalos
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/runtime.js
+          python3 tools/static_qa.py
+          python3 tools/game_regression.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          gradle=Path('app/build.gradle').read_text()
+          manifest=Path('app/src/main/AndroidManifest.xml').read_text()
+          idx=Path('app/src/main/assets/index.html').read_text()
+          run=Path('app/src/main/assets/runtime.js').read_text()
+          java=Path('app/src/main/java/com/vocalos/app/MainActivity.java').read_text()
+          assert "applicationId 'com.vocalos.trainer'" in gradle
+          assert 'targetSdk 36' in gradle and 'compileSdk 36' in gradle
+          assert 'versionCode 13' in gradle and "versionName '0.10.3-play-ready'" in gradle
+          assert 'android.permission.RECORD_AUDIO' in manifest
+          assert 'android.permission.INTERNET' not in manifest
+          assert 'android:allowBackup="false"' in manifest
+          assert 'android:usesCleartextTraffic="false"' in manifest
+          assert 'android.hardware.microphone' in manifest and 'android:required="false"' in manifest
+          assert 'micDisclosure' in idx and 'privacyModal' in idx
+          assert 'showMicDisclosure10' in run and 'ensureMicReady10' in run
+          assert 'openPrivacyPolicy' in java
+          assert 'setAllowContentAccess(false)' in java
+          assert not Path('app/vocalos-alpha-dev.jks').exists()
+          assert not list(Path('.').rglob('*.jks'))
+          assert 'INTERNET' not in manifest
+          print('Play readiness assertions: OK')
+          PY
+
+      - name: Engine v2 synthetic regression
+        shell: bash
+        working-directory: vocalos
+        run: |
+          set -euo pipefail
+          bash tools/run_engine_tests.sh | tee "$GITHUB_WORKSPACE/engine-tests.txt"
+
+      - name: Build unsigned Play AAB
+        shell: bash
+        working-directory: vocalos
+        run: |
+          set -euo pipefail
+          gradle --no-daemon --stacktrace :app:bundleRelease
+          test -s app/build/outputs/bundle/release/app-release.aab
+          cp app/build/outputs/bundle/release/app-release.aab "$GITHUB_WORKSPACE/Vocal-OS-0.10.3-play-ready-unsigned.aab"
+
+      - name: Build alpha-compatible test APK
+        shell: bash
+        working-directory: vocalos
+        run: |
+          set -euo pipefail
+          base64 -d "$GITHUB_WORKSPACE/ci-vocalos-0101/alpha-key.b64" > /tmp/vocalos-alpha-dev.jks
+          echo '87a081bf085c98776d18554ada0ff38b485e1568efaf91fca18a8f8171b80532  /tmp/vocalos-alpha-dev.jks' | sha256sum -c -
+          gradle --no-daemon --stacktrace :app:assembleRelease \
+            -PVOCALOS_KEYSTORE=/tmp/vocalos-alpha-dev.jks \
+            -PVOCALOS_STORE_PASSWORD=vocalos-alpha-2026 \
+            -PVOCALOS_KEY_ALIAS=vocalos-alpha \
+            -PVOCALOS_KEY_PASSWORD=vocalos-alpha-2026
+          test -s app/build/outputs/apk/release/app-release.apk
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/Vocal-OS-0.10.3-play-ready-alpha.apk"
+
+      - name: Verify APK and AAB
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=Vocal-OS-0.10.3-play-ready-alpha.apk
+          AAB=Vocal-OS-0.10.3-play-ready-unsigned.aab
+          unzip -t "$APK" >/dev/null
+          unzip -t "$AAB" >/dev/null
+          unzip -l "$AAB" | grep -q 'base/manifest/AndroidManifest.xml'
+          unzip -l "$AAB" | grep -q 'base/dex/classes.dex'
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          SIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          "$AAPT" dump badging "$APK" | tee /tmp/badging.txt
+          grep -q "package: name='com.vocalos.trainer' versionCode='13'" /tmp/badging.txt
+          grep -q "targetSdkVersion:'36'" /tmp/badging.txt
+          "$SIGNER" verify --verbose --print-certs "$APK" | tee /tmp/apk-signature.txt
+          grep -qi '351e64f51bacc138c4f61da5167d1e905742f8f0985a6fb9cb6af9f6b344132f' /tmp/apk-signature.txt
+          {
+            echo 'Vocal OS 0.10.3 Play Ready QA'
+            echo 'package=com.vocalos.trainer'
+            echo 'versionCode=13'
+            echo 'versionName=0.10.3-play-ready'
+            echo 'compileSdk=36'
+            echo 'targetSdk=36'
+            echo 'APK certificate SHA-256=351e64f51bacc138c4f61da5167d1e905742f8f0985a6fb9cb6af9f6b344132f'
+            echo 'AAB state=unsigned; intended for dedicated Play upload-key signing after CI'
+            echo 'Privacy policy=https://github.com/bazzzilioO/sreda-site/blob/main/vocalos/privacy-policy.md'
+            echo
+            sha256sum "$APK" "$AAB"
+            echo
+            cat /tmp/apk-signature.txt
+          } > qa-report.txt
+
+      - name: Package clean production source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf vocalos/app/build vocalos/.gradle
+          find vocalos -name '*.jks' -o -name '*.keystore' | tee /tmp/key-files.txt
+          test ! -s /tmp/key-files.txt
+          tar --exclude='.gradle' --exclude='build' --exclude='*.jks' --exclude='*.keystore' -czf Vocal-OS-0.10.3-play-ready-source-ci.tar.gz -C vocalos .
+          sha256sum Vocal-OS-0.10.3-play-ready-alpha.apk Vocal-OS-0.10.3-play-ready-unsigned.aab Vocal-OS-0.10.3-play-ready-source-ci.tar.gz | tee hashes.txt
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vocal-OS-0.10.3-play-ready
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            Vocal-OS-0.10.3-play-ready-alpha.apk
+            Vocal-OS-0.10.3-play-ready-unsigned.aab
+            Vocal-OS-0.10.3-play-ready-source-ci.tar.gz
+            engine-tests.txt
+            qa-report.txt
+            hashes.txt
