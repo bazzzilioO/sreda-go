@@ -1,0 +1,67 @@
+name: Vocal OS 0.10 APK Build
+
+on:
+  push:
+    branches:
+      - chatgpt-vocalos-apk-20260825
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch isolated Vocal OS source payload
+        run: |
+          git clone --depth 1 --branch chatgpt-vocalos-apk-20260825 https://github.com/bazzzilioO/sreda-site.git vocalos-payload
+          cat vocalos-payload/vocalos-build/part-* > vocalos010.tar.gz.b64
+          base64 -d vocalos010.tar.gz.b64 > vocalos010.tar.gz
+          echo "49cd388770082d3390c3432c91155920bae513309e6c825cfa0f2ea9386b1b19  vocalos010.tar.gz" | sha256sum -c -
+          tar -xzf vocalos010.tar.gz
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 36
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build debug APK
+        working-directory: Vocal-OS-0.10-engine-rewrite
+        run: gradle --no-daemon assembleDebug
+
+      - name: Verify APK
+        run: |
+          APK=Vocal-OS-0.10-engine-rewrite/app/build/outputs/apk/debug/app-debug.apk
+          test -f "$APK"
+          unzip -t "$APK"
+          sha256sum "$APK" | tee apk-sha256.txt
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vocal-OS-0.10-engine-rewrite-debug
+          path: |
+            Vocal-OS-0.10-engine-rewrite/app/build/outputs/apk/debug/app-debug.apk
+            apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
