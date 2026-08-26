@@ -52,16 +52,25 @@ jobs:
           rm -f app/build.gradle.rej app/vocalos-alpha-dev.jks
           cat > app/build.gradle <<'EOF'
           plugins { id 'com.android.application' }
-          def ksPath = project.findProperty('VOCALOS_KEYSTORE')
-          def ksPassword = project.findProperty('VOCALOS_STORE_PASSWORD')
-          def ksAlias = project.findProperty('VOCALOS_KEY_ALIAS')
-          def keyPassword = project.findProperty('VOCALOS_KEY_PASSWORD')
-          def hasSigning = ksPath && ksPassword && ksAlias && keyPassword
+          def signingStoreFile = project.findProperty('VOCALOS_KEYSTORE')
+          def signingStorePassword = project.findProperty('VOCALOS_STORE_PASSWORD')
+          def signingKeyAlias = project.findProperty('VOCALOS_KEY_ALIAS')
+          def signingKeyPassword = project.findProperty('VOCALOS_KEY_PASSWORD')
+          def hasSigning = signingStoreFile && signingStorePassword && signingKeyAlias && signingKeyPassword
           android {
             namespace 'com.vocalos.app'
             compileSdk 36
             defaultConfig { applicationId 'com.vocalos.trainer'; minSdk 24; targetSdk 36; versionCode 13; versionName '0.10.3-play-ready' }
-            if (hasSigning) { signingConfigs { releaseUpload { storeFile file(ksPath); storePassword ksPassword; keyAlias ksAlias; keyPassword keyPassword } } }
+            if (hasSigning) {
+              signingConfigs {
+                releaseUpload {
+                  storeFile file(signingStoreFile)
+                  storePassword signingStorePassword
+                  keyAlias signingKeyAlias
+                  keyPassword signingKeyPassword
+                }
+              }
+            }
             buildTypes { debug { applicationIdSuffix '.debug' }; release { minifyEnabled false; if (hasSigning) signingConfig signingConfigs.releaseUpload } }
           }
           EOF
