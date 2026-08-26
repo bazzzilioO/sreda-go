@@ -60,20 +60,9 @@ jobs:
           android {
             namespace 'com.vocalos.app'
             compileSdk 36
-            defaultConfig {
-              applicationId 'com.vocalos.trainer'
-              minSdk 24
-              targetSdk 36
-              versionCode 13
-              versionName '0.10.3-play-ready'
-            }
-            if (hasSigning) {
-              signingConfigs { releaseUpload { storeFile file(ksPath); storePassword ksPassword; keyAlias ksAlias; keyPassword keyPassword } }
-            }
-            buildTypes {
-              debug { applicationIdSuffix '.debug' }
-              release { minifyEnabled false; if (hasSigning) signingConfig signingConfigs.releaseUpload }
-            }
+            defaultConfig { applicationId 'com.vocalos.trainer'; minSdk 24; targetSdk 36; versionCode 13; versionName '0.10.3-play-ready' }
+            if (hasSigning) { signingConfigs { releaseUpload { storeFile file(ksPath); storePassword ksPassword; keyAlias ksAlias; keyPassword keyPassword } } }
+            buildTypes { debug { applicationIdSuffix '.debug' }; release { minifyEnabled false; if (hasSigning) signingConfig signingConfigs.releaseUpload } }
           }
           EOF
       - name: QA
@@ -101,7 +90,18 @@ jobs:
           set -euo pipefail
           base64 -d "$GITHUB_WORKSPACE/ci-vocalos-0101/alpha-key.b64" > /tmp/alpha.jks
           echo '87a081bf085c98776d18554ada0ff38b485e1568efaf91fca18a8f8171b80532  /tmp/alpha.jks' | sha256sum -c -
-          gradle --no-daemon --stacktrace :app:assembleRelease -PVOCALOS_KEYSTORE=/tmp/alpha.jks -PVOCALOS_STORE_PASSWORD=vocalos-alpha-2026 -PVOCALOS_KEY_ALIAS=vocalos-alpha -PVOCALOS_KEY_PASSWORD=vocalos-alpha-2026
+          set +e
+          gradle --no-daemon --console=plain :app:assembleRelease -PVOCALOS_KEYSTORE=/tmp/alpha.jks -PVOCALOS_STORE_PASSWORD=vocalos-alpha-2026 -PVOCALOS_KEY_ALIAS=vocalos-alpha -PVOCALOS_KEY_PASSWORD=vocalos-alpha-2026 > /tmp/gradle-build.log 2>&1
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            echo '=== GRADLE FAILURE ==='
+            grep -nE '(^| )error:|FAILURE:|What went wrong|Execution failed|Could not|Exception|Caused by:' /tmp/gradle-build.log | tail -80 || true
+            echo '=== BUILD LOG TAIL ==='
+            tail -160 /tmp/gradle-build.log
+            exit "$rc"
+          fi
+          tail -40 /tmp/gradle-build.log
           cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/Vocal-OS-0.10.3-play-ready.apk"
       - name: Verify
         shell: bash
