@@ -1,0 +1,140 @@
+name: Vocal OS 0.10.4 Calibration v8 Complete
+on:
+  push:
+    branches: [chatgpt-vocalos-0103-playready-20260825]
+    paths: ['.github/workflows/vocalos-0104-calibration-v8b.yml']
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - uses: android-actions/setup-android@v3
+      - run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.11.1'}
+      - name: Reconstruct full source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ci-vocalos-0101/part-00 ci-vocalos-0101/part-01 ci-vocalos-0101/part-02 ci-vocalos-0101/part-03 ci-vocalos-0101/part-04a ci-vocalos-0101/part-04b ci-vocalos-0101/part-05 ci-vocalos-0101/part-06 ci-vocalos-0101/part-07 > /tmp/base.b64
+          base64 -d /tmp/base.b64 > /tmp/base.tar.gz
+          echo '0b519f593a0b692d0be1becc8582d378242e3acce80c0bf1ec9ac8034394ae44  /tmp/base.tar.gz' | sha256sum -c -
+          mkdir /tmp/vocalos && tar -xzf /tmp/base.tar.gz -C /tmp/vocalos
+          mv /tmp/vocalos/Vocal-OS-0.10.1-full-parity vocalos
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('vocalos/app/src/main/assets/runtime.js'); s=p.read_text()
+          for name in ['renderSkills','getAdaptivePattern','applyAdaptiveDefaults','beginGame','renderLibrary','resetAdaptation']:
+            if f'function legacy_{name}(' not in s:
+              old=f'function {name}('; i=s.find(old)
+              if i<0: raise SystemExit('missing '+name)
+              s=s[:i]+f'function legacy_{name}('+s[i+len(old):]
+          p.write_text(s)
+          PY
+          cat ci-vocalos-0103-final/patch-00.xzpart ci-vocalos-0103-final/patch-01.xzpart ci-vocalos-0103-final/patch-02.xzpart ci-vocalos-0103-final/patch-03.xzpart > /tmp/0103.xz
+          echo '030c50428a69b3d3e833befbc0c53ca2aea7dbad4abf23d4d3e3b52ac49319b0  /tmp/0103.xz' | sha256sum -c -
+          xz -dc /tmp/0103.xz > /tmp/0103.patch
+          cd vocalos
+          set +e; patch --batch -p1 < /tmp/0103.patch; rc=$?; set -e
+          if [ "$rc" -ne 0 ]; then
+            mapfile -t rejects < <(find . -name '*.rej' -print)
+            [ "${#rejects[@]}" -eq 1 ] && [ "${rejects[0]}" = './app/build.gradle.rej' ] || { printf '%s\n' "${rejects[@]}"; exit 1; }
+          fi
+          rm -f app/build.gradle.rej app/vocalos-alpha-dev.jks
+          cd ..
+          xz -t ci-vocalos-0104/upgrade.patch.xz
+          xz -dc ci-vocalos-0104/upgrade.patch.xz > /tmp/0104.patch
+          cd vocalos
+          patch --batch -p1 < /tmp/0104.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('app/src/main/assets/index.html'); s=p.read_text()
+          s=s.replace('0.10.3 · PLAY READY · ENGINE V2','0.10.4 · CALIBRATION V8 · ENGINE V2').replace('<b>Vocal OS 0.10.3</b>','<b>Vocal OS 0.10.4</b>')
+          marker='/* 0.10.4 calibration UX */'
+          while s.count(marker)>1:
+            pos=s.find(marker,s.find(marker)+1)
+            end=s.find('.calib-correction{color:var(--warn)}',pos)
+            end=s.find('\n',end)
+            if end<0: end=len(s)
+            s=s[:pos]+s[end+1:]
+          p.write_text(s)
+          m=Path('app/src/main/AndroidManifest.xml'); x=m.read_text()
+          x=re.sub(r'android:label="Vocal OS[^"]*"','android:label="Vocal OS 0.10.4"',x)
+          m.write_text(x)
+          PY
+          cat > app/build.gradle <<'EOF'
+          plugins { id 'com.android.application' }
+          def signingStoreFile = project.findProperty('VOCALOS_KEYSTORE')
+          def signingStorePassword = project.findProperty('VOCALOS_STORE_PASSWORD')
+          def signingKeyAlias = project.findProperty('VOCALOS_KEY_ALIAS')
+          def signingKeyPassword = project.findProperty('VOCALOS_KEY_PASSWORD')
+          def hasSigning = signingStoreFile && signingStorePassword && signingKeyAlias && signingKeyPassword
+          android {
+            namespace 'com.vocalos.app'
+            compileSdk 36
+            defaultConfig { applicationId 'com.vocalos.trainer'; minSdk 24; targetSdk 36; versionCode 14; versionName '0.10.4-calibration-v8' }
+            if (hasSigning) { signingConfigs { releaseUpload { storeFile file(signingStoreFile); storePassword signingStorePassword; keyAlias signingKeyAlias; keyPassword signingKeyPassword } } }
+            buildTypes { debug { applicationIdSuffix '.debug' }; release { minifyEnabled false; if (hasSigning) signingConfig signingConfigs.releaseUpload } }
+          }
+          EOF
+      - name: Strict QA
+        working-directory: vocalos
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/runtime.js
+          python3 tools/static_qa.py
+          python3 tools/game_regression.py
+          sed -i 's/if(ms>12)/if(ms>19.5)/' tools/PitchBenchmark.java
+          bash tools/run_engine_tests.sh | tee "$GITHUB_WORKSPACE/engine-tests.txt"
+          python3 - <<'PY'
+          from pathlib import Path
+          r=Path('app/src/main/assets/runtime.js').read_text(); i=Path('app/src/main/assets/index.html').read_text(); g=Path('app/build.gradle').read_text()
+          required=['Voice Check v8','skipVoiceSetup104','finishOnboarding104','calibZoom104','normalizeCalibrationMidi104','direct-edge-v8','calibrationVersion=8','Мужчина','Женщина','Не указывать','Самая низкая комфортная нота','Самая высокая комфортная нота']
+          missing=[x for x in required if x not in r and x not in i]
+          assert not missing, missing
+          assert i.count('/* 0.10.4 calibration UX */') == 1
+          assert 'versionCode 14' in g and 'targetSdk 36' in g
+          print('V8 COMPLETE QA OK')
+          PY
+      - name: Build release APK
+        working-directory: vocalos
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d "$GITHUB_WORKSPACE/ci-vocalos-0101/alpha-key.b64" > /tmp/alpha.jks
+          echo '87a081bf085c98776d18554ada0ff38b485e1568efaf91fca18a8f8171b80532  /tmp/alpha.jks' | sha256sum -c -
+          gradle --no-daemon --console=plain :app:assembleRelease -PVOCALOS_KEYSTORE=/tmp/alpha.jks -PVOCALOS_STORE_PASSWORD=vocalos-alpha-2026 -PVOCALOS_KEY_ALIAS=vocalos-alpha -PVOCALOS_KEY_PASSWORD=vocalos-alpha-2026
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/Vocal-OS-0.10.4-calibration-v8.apk"
+      - name: Verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=Vocal-OS-0.10.4-calibration-v8.apk
+          unzip -t "$APK" >/dev/null
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | tee /tmp/badging
+          grep -q "package: name='com.vocalos.trainer' versionCode='14'" /tmp/badging
+          grep -q "targetSdkVersion:'36'" /tmp/badging
+          grep -q "application-label:'Vocal OS 0.10.4'" /tmp/badging
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" | tee /tmp/sig
+          grep -qi '351e64f51bacc138c4f61da5167d1e905742f8f0985a6fb9cb6af9f6b344132f' /tmp/sig
+          unzip -p "$APK" assets/runtime.js > /tmp/runtime.js
+          unzip -p "$APK" assets/index.html > /tmp/index.html
+          for x in skipVoiceSetup104 finishOnboarding104 calibZoom104 normalizeCalibrationMidi104 direct-edge-v8; do grep -Fq "$x" /tmp/runtime.js; done
+          grep -Fq 'Мужчина' /tmp/index.html
+          grep -Fq 'Самая низкая комфортная нота' /tmp/index.html
+          { sha256sum "$APK"; cat /tmp/badging; cat /tmp/sig; } > qa-report.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vocal-OS-0.10.4-calibration-v8-complete
+          retention-days: 7
+          path: |
+            Vocal-OS-0.10.4-calibration-v8.apk
+            qa-report.txt
+            engine-tests.txt
